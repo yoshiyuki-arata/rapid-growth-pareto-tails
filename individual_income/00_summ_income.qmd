@@ -1,0 +1,64 @@
+---
+title: "Income process analysis: replication overview"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+This overview file describes how to run the income and growth analysis using a synthetic panel of individual incomes.
+It provides links to the computational code (QMD) and output (HTML) corresponding to the empirical analysis in *Rapid Growth and the Emergence of Pareto Tails*.
+The simulated data are intended to verify that the analytical procedures run successfully; they do not reproduce the paper's empirical results.
+
+First, run [01_data_simulation.qmd](01_data_simulation.qmd) to save `sample_size_tb` and `sample_growth_tb` in `../income_board_replicate/`.
+In 01, a fixed random seed is used to generate log income at age 20 from a Laplace distribution and subsequent annual log growth rates from a signed Weibull distribution for 1.5 million individuals born in 1950–2000.
+The income panel saved for analysis covers 2014–2020, with income in yen stored as `main_var`.
+Then run each analysis in 02–11.
+Use the folder containing each QMD as its working directory during execution.
+Both the output directory for 01 and the input directory for 02–11 are `../income_board_replicate`.
+
+## List of analyses
+
+<table class="table table-sm">
+<thead>
+<tr><th scope="col">Analysis</th><th scope="col">Description</th><th scope="col" style="white-space: nowrap;">Code</th><th scope="col" style="white-space: nowrap;">Output</th></tr>
+</thead>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Data preparation and summary statistics</th></tr>
+<tr><td>01 Synthetic data generation</td><td>Generate individual attributes, an income panel for 2014–2020, and log growth rates</td><td><a href="01_data_simulation.qmd">QMD</a></td><td><a href="01_data_simulation.html">HTML</a></td></tr>
+<tr><td>02 Summary statistics</td><td>Summary statistics for log income in 2014–2020 and growth rates over six annual periods and five multiyear periods starting in 2014</td><td><a href="02_summ_stat.qmd">QMD</a></td><td><a href="02_summ_stat.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Income distribution and age</th></tr>
+<tr><td>03 Income distribution by age</td><td>Age distribution, income distributions by year, and income distributions, Q-Q plots, and age composition by income threshold for ages 26–60 in 2020</td><td><a href="03_dist_by_age.qmd">QMD</a></td><td><a href="03_dist_by_age.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Growth dependence and distributions</th></tr>
+<tr><td>04 Growth dependence</td><td>Spearman rank correlations over six periods from 2014–15 to 2019–20, a tail dependence measure for two consecutive periods, and cumulative means of nonnegative growth in the following period</td><td><a href="04_random_walk.qmd">QMD</a></td><td><a href="04_random_walk.html">HTML</a></td></tr>
+<tr><td>05 Growth distributions</td><td>Densities and mean excess functions for annual and cumulative log growth rates starting in 2014</td><td><a href="05_growth_dist.qmd">QMD</a></td><td><a href="05_growth_dist.html">HTML</a></td></tr>
+<tr><td>06 Girard's method</td><td>Estimate tail parameters, extreme quantiles, and tail probabilities from the largest positive growth rates in the sample of finite growth rates for 2019–2020</td><td><a href="06_Girard.qmd">QMD</a></td><td><a href="06_Girard.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Initial income and high-growth groups</th></tr>
+<tr><td>07 Initial income distribution</td><td>Compare log income distributions and mean excess functions at age 25 across 2014–2020</td><td><a href="07_init_size.qmd">QMD</a></td><td><a href="07_init_size.html">HTML</a></td></tr>
+<tr><td>08 Tail index</td><td>Hill estimation for income ratios over 2014–2020, income at age 25 in 2020, and income by age for ages 25–60 in 2020</td><td><a href="08_tail_slope.qmd">QMD</a></td><td><a href="08_tail_slope.html">HTML</a></td></tr>
+<tr><td>09 Minimum growth rate</td><td>Classify high-growth groups using six-year growth and compare distributions and summary statistics of minimum annual growth rates (six periods for HGF and five for non-HGF)</td><td><a href="09_k-1_smallest.qmd">QMD</a></td><td><a href="09_k-1_smallest.html">HTML</a></td></tr>
+<tr><td>10 U-shape</td><td>Compare the ratio of log growth over the first three years to cumulative log growth over 2014–2020 across cumulative growth thresholds</td><td><a href="10_u-shape.qmd">QMD</a></td><td><a href="10_u-shape.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Relationships between income, age, and growth</th></tr>
+<tr><td>11 Growth, age, and initial income</td><td>Compare 2014–2015 growth by beginning-of-period income and age classes, and plot mean excess functions for a sample restricted by income and age</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
+</tbody>
+</table>

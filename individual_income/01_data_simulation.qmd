@@ -1,0 +1,203 @@
+---
+title: "Simulation data preparation"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Generate a synthetic panel of individual incomes for public release.
+No actual data, previously saved analytical results, or parameters estimated from actual data are used.
+The distributions and parameters below are chosen for this computational example and do not guarantee replication of the empirical results or the validity of the model.
+
+Save the income panel `sample_size_tb` and growth data `sample_growth_tb` in `qs2` format in `../income_board_replicate/`, matching the columns, types, and units read by the analysis code in 02–11.
+Income in yen is stored as `main_var`, and birth year as a four-digit string in `birth_date`.
+Render this document first, then run each analysis in 02–11.
+
+## 1 Setup and generation parameters
+
+Fix the random number generator and seed.
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+
+# Specify the relative path to the replication board.
+board <- board_folder("../income_board_replicate")
+
+simulation_seed <- 20261020L
+# The second threshold in 06 reaches rank 300,000. The next growth rate must also be positive.
+n_individuals <- 1500000L
+birth_years <- 1950:2000
+income_start_age <- 20L
+simulation_years <- 2014:2020
+process_years <- (min(birth_years) + income_start_age):max(simulation_years)
+
+# Median initial income at age 20 is 10 million yen. This is not an estimate from actual data.
+initial_log_income_location <- log(1e7)
+initial_log_income_sd <- 0.1
+initial_log_income_scale <- initial_log_income_sd / sqrt(2)
+annual_drift <- 0
+shock_shape <- 0.55
+shock_scale <- 0.06
+
+RNGkind("Mersenne-Twister", "Inversion", "Rejection")
+set.seed(simulation_seed)
+```
+
+## 2 Synthetic individual attributes and income panel
+
+Individual IDs are sequential numbers prefixed with `SIM`.
+Allocate the 1.5 million individuals as evenly as possible across the 51 birth years from 1950 to 2000.
+Randomize the assignment of birth years to IDs, keeping birth year and industry fixed for each individual.
+Select industry codes from the integers 1111–9999 and store them as four-digit strings.
+
+Let $B_i$ denote individual $i$'s birth year and $A_i=B_i+20$ the first year in which income is generated.
+Independently generate the natural logarithm of income in yen at age 20 from a common Laplace distribution, regardless of birth year.
+
+$$L_{i,A_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(10^7),\qquad s_0=1/\sqrt{2}.$$
+
+Generate annual growth rates independently of initial log income.
+From age 21 onward, add a signed Weibull log growth rate once per year.
+
+$$g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.$$
+
+$$L_{it}=L_{i,A_i}+\sum_{u=A_i+1}^{t}g_{iu},\qquad Y_{it}=\exp(L_{it}),\qquad t\geq A_i.$$
+
+In the year the individual turns 20, the empty sum is defined as zero.
+Here, $\mu=0$, $a=0.55$, and $b=0.06$.
+For example, log income in 2014 for an individual born in 1950 includes the value at age 20 and 44 growth increments from 1971 to 2014.
+
+```{r}
+
+individual_tb <- tibble(
+  id = sprintf("SIM%07d", seq_len(n_individuals)),
+  birth_date = as.character(sample(rep(birth_years, length.out = n_individuals))),
+  ind_class = sprintf("%04d", sample(1111:9999, n_individuals, replace = TRUE)),
+  initial_log_income = initial_log_income_location + initial_log_income_scale *
+    sample(c(-1, 1), n_individuals, replace = TRUE) * rexp(n_individuals)
+)
+start_year <- as.integer(individual_tb$birth_date) + income_start_age
+birth_cohort_counts <- individual_tb |> count(birth_date, name = "n_individuals")
+stopifnot(diff(range(birth_cohort_counts$n_individuals)) <= 1L)
+
+log_income <- rep(NA_real_, n_individuals)
+n_growth_steps <- integer(n_individuals)
+annual_tables <- vector("list", length(simulation_years))
+for (this_year in process_years) {
+  entrants <- which(start_year == this_year)
+  log_income[entrants] <- individual_tb$initial_log_income[entrants]
+
+  continuing <- which(start_year < this_year)
+  shock <- sample(c(-1, 1), length(continuing), replace = TRUE) *
+    rweibull(length(continuing), shape = shock_shape, scale = shock_scale)
+  log_income[continuing] <- log_income[continuing] + annual_drift + shock
+  n_growth_steps[continuing] <- n_growth_steps[continuing] + 1L
+
+  active <- which(start_year <= this_year)
+  stopifnot(
+    all(n_growth_steps[active] == this_year - start_year[active]),
+    all(log_income[entrants] == individual_tb$initial_log_income[entrants]),
+    all(is.finite(log_income[active])),
+    all(is.na(log_income[start_year > this_year]))
+  )
+
+  if (this_year %in% simulation_years) {
+    annual_tables[[match(this_year, simulation_years)]] <- individual_tb[active, ] |>
+      transmute(id, year = as.character(this_year), birth_date, ind_class,
+                main_var = exp(log_income[active]))
+  }
+}
+sample_size_tb <- bind_rows(annual_tables)
+rm(annual_tables, individual_tb, start_year, log_income, n_growth_steps,
+   entrants, continuing, active, shock)
+gc(verbose = FALSE)
+
+sample_size_tb |> head(10)
+
+```
+
+The only income variable in `sample_size_tb` is `main_var`; use it to construct `sample_growth_tb` as follows.
+
+## 3 Growth
+
+Calculate $g_{i,t,s}=\log(Y_{it})-\log(Y_{is})$ for six annual periods (2014–15 through 2019–20) and five periods starting in 2014 (2014–16 through 2014–20).
+Here, $Y$ is income in yen (`main_var`), and multiyear growth rates are not annualized.
+
+First verify that ID–year combinations are unique, then create combinations of IDs and the 11 growth periods.
+Join beginning-of-period income `pre_income` and end-of-period income `post_income` to each row, and store their log difference as `growth`.
+Exclude rows with missing or nonfinite growth rates, including periods in which income is unavailable because the individual is under 20 at the beginning or end.
+
+For birth year `birth_date` and industry `ind_class`, use the attributes from the first year in which each ID appears in `sample_size_tb`.
+Create `sample_growth_tb` with these attributes and beginning- and end-of-period incomes.
+
+```{r}
+growth_f <- function(sample_size_tb) {
+
+  stopifnot(!anyDuplicated(sample_size_tb[c("id", "year")]))
+
+  # Six annual growth periods and five growth periods starting in 2014.
+  periods <- tibble(
+    post_year = as.character(c(2020:2015, 2016:2020)),
+    pre_year = as.character(c(2019:2014, rep(2014, 5)))
+  ) |>
+    mutate(year = str_c(
+      "g_", str_sub(post_year, 3, 4), "_", str_sub(pre_year, 3, 4)
+    ))
+
+  income_tb <- sample_size_tb |> select(id, year, main_var)
+  attributes_tb <- sample_size_tb |>
+    select(id, birth_date, ind_class) |>
+    distinct(id, .keep_all = TRUE)
+
+  # Arrange periods for each ID in the same order as in the original code.
+  expand_grid(id = unique(sample_size_tb$id), year = periods$year) |>
+    left_join(periods, by = "year") |>
+    left_join(
+      income_tb |> rename(pre_year = year, pre_income = main_var),
+      by = c("id", "pre_year")
+    ) |>
+    left_join(
+      income_tb |> rename(post_year = year, post_income = main_var),
+      by = c("id", "post_year")
+    ) |>
+    mutate(growth = log(post_income) - log(pre_income)) |>
+    filter(is.finite(growth)) |>
+    left_join(attributes_tb, by = "id") |>
+    select(id, year, growth, birth_date, ind_class, pre_income, post_income)
+}
+
+sample_growth_tb <- growth_f(sample_size_tb)
+
+sample_growth_tb |> head(10)
+```
+
+## 4 Saving the data
+
+Save `sample_size_tb` and `sample_growth_tb` to the board.
+
+```{r}
+
+board |> pin_write(sample_size_tb, "sample_size_tb", type = "qs2")
+board |> pin_write(sample_growth_tb, "sample_growth_tb", type = "qs2")
+
+```
+
+
+
+
+
+

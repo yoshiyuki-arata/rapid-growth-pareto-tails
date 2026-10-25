@@ -1,0 +1,334 @@
+---
+title: "Firm size distribution"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Use firm-year sales data `sample_size_tb` to examine distributions of firm age and sales size, sales distributions by year, and how closely log sales follow a normal distribution.
+Use 2020 data for age-specific analyses and 2010–2020 data for annual comparisons.
+Finally, for firms aged 50 or younger whose sales exceed each threshold, calculate the composition by age class.
+
+## 1 Distributions of firm age and sales size
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+**Loading data and creating age classes**
+
+Load firm-year sales data and calculate firm age `age` as observation year `year` minus establishment year `birth_year`.
+Use observations meeting the following conditions.
+
+* Positive sales `sale`
+* Observation year from 2010 through 2020
+* The first two digits of industry code `ind_class` are 01–66 or 68–92
+
+Add `sale_yen`, calculated by multiplying `sale` in thousands of yen by 1000, to `sample_size_yen_tb` for plotting.
+Leave the original `sample_size_tb` and `sale` unchanged.
+
+```{r}
+
+sample_size_tb <- board |> pin_read("sample_size_tb", type = "qs2") |> 
+  mutate(age = as.numeric(year) - birth_year) |> 
+  filter(sale > 0, 
+         as.numeric(year) >= 2010, as.numeric(year) <= 2020, 
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0))   
+
+# Retain the original sale and add a yen-denominated column for plotting and composition calculations.
+sample_size_yen_tb <- sample_size_tb |>
+  mutate(sale_yen = sale * 1000)
+
+```
+
+Create `size_20_tb` restricted to 2020 and use `cut()` to classify firm age into five-year intervals in `age_class`.
+The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to `age_95_over`.
+Assign firms with missing or negative ages to `age_other`.
+
+Also create `size_20_yen_tb` with sales in yen and age classifications.
+Define `age_group` as minus for negative ages, young for ages 0–50, middle for ages above 50 through 70, old for ages above 70, and other otherwise.
+
+```{r}
+
+size_20_tb <- sample_size_tb |> 
+  filter(year == "2020") |>  
+  mutate(
+    age_class = cut(
+      age,
+      breaks = c(seq(0, 95, by = 5), Inf),  # 0–5, ..., 91–95, 96+
+      right = TRUE,
+      labels = c(
+        str_c("age_", str_pad(seq(5, 95, by = 5), 2, pad = "0")),
+        "age_95_over"
+      ),
+      include.lowest = TRUE
+    ),
+    age_class = if_else(is.na(age_class) | age < 0, "age_other", age_class)
+  ) 
+
+age_class_labels <- c(
+  "age_05" = "0–5",   "age_10" = "6–10",  "age_15" = "11–15", "age_20" = "16–20",
+  "age_25" = "21–25", "age_30" = "26–30", "age_35" = "31–35", "age_40" = "36–40",
+  "age_45" = "41–45", "age_50" = "46–50", "age_55" = "51–55", "age_60" = "56–60",
+  "age_65" = "61–65", "age_70" = "66–70", "age_75" = "71–75", "age_80" = "76–80",
+  "age_85" = "81–85", "age_90" = "86–90", "age_95" = "91–95", "age_95_over" = "96+"
+)
+
+size_20_yen_tb <- size_20_tb |>
+  mutate(
+    sale_yen = sale * 1000,
+    age_group = case_when(
+      age < 0 ~ "minus", 
+      0 <= age & age <= 50 ~ "young",
+      age > 50 & age <= 70 ~ "middle",
+      age > 70 ~ "old",
+      TRUE ~ "other"
+    ),
+    age_group = factor(
+      age_group,
+      levels = c("minus", "young", "middle", "old", "other")
+    )
+  )
+
+```
+
+Display observation counts. The data also contain firms with negative ages.
+
+```{r}
+#| layout-ncol: 2
+
+size_20_yen_tb |> count(age_group, name = "n_obs")
+
+```
+
+Plot a histogram with one-year bins for observations with firm ages from 0 to 120.
+
+```{r}
+#| layout-ncol: 2
+
+size_20_tb |> 
+  filter(age_class != "age_other", 
+         age >= 0, age <= 120) |> 
+  ggplot(aes(x = age)) +
+  geom_histogram(binwidth = 1, fill = "#2C3E50", color = "white", linewidth = 0.3) +
+  labs(
+    x = "Firm Age (Years)",
+    y = "Number of Firms"
+  ) +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(face = "bold")
+  )
+ggsave(filename = "age_dist.png", path = "graph")
+
+```
+
+**Sales size distributions by age**
+
+First plot the full 2020 sample, then compare the three groups young, middle, and old.
+For the three-group comparison, use only young, middle, and old, excluding minus and other.
+For the full-sample figure, impose no additional age exclusions.
+
+```{r}
+#| layout-ncol: 2
+
+# Shared density plot for data containing sales in yen as sale_yen.
+plot_size_density <- function(data, color_var = NULL) {
+  p <- ggplot(data, aes(x = sale_yen))
+
+  if (!is.null(color_var)) {
+    p <- p + aes(color = .data[[color_var]])
+  }
+
+  p +
+    geom_density() +
+    scale_x_log10() +
+    scale_y_log10() +
+    coord_cartesian(ylim = c(10^-4, 10^0.1)) +
+    labs(
+      x = "Sales (log scale)",
+      y = "Density (log scale)"
+    ) +
+    theme(axis.title = element_text(face = "bold"))
+}
+
+plot_size_density(size_20_yen_tb)
+ggsave(filename = "size_df_agg.png", path = "graph")
+
+size_20_yen_tb |>
+  filter(age_group %in% c("young", "middle", "old")) |>
+  plot_size_density("age_group") +
+  scale_color_discrete(labels = c(
+    young = "Young (≤50)", middle = "Middle (51–70)", old = "Old (>70)"
+  )) +
+  labs(color = "Age Group")
+ggsave(filename = "size_df_three_age_group.png", path = "graph")
+
+```
+
+Compare sales distributions across five-year `age_class` intervals.
+The figure for ages above 50 also includes firms older than 95.
+Use the shared function's logarithmic axes, density estimation, and displayed vertical range for all figures.
+
+```{r}
+#| layout-ncol: 2
+
+size_20_yen_tb |>
+  filter(age > 5, age <= 50) |>
+  plot_size_density("age_class") +
+  scale_color_viridis_d(option = "C", labels = age_class_labels) +
+  labs(color = "Age Group")
+ggsave(filename = "size_df_young.png", path = "graph")
+
+size_20_yen_tb |>
+  filter(age > 50) |>
+  plot_size_density("age_class") +
+  scale_color_viridis_d(option = "C", labels = age_class_labels) +
+  labs(color = "Age Group")
+ggsave(filename = "size_df_old.png", path = "graph")
+
+```
+
+**Annual comparison of sales distributions**
+
+Using the 2010–2020 data selected when loading, compare density curves for sales in yen, colored by year.
+Impose no additional age restrictions and use the shared function's logarithmic axes and display ranges.
+
+```{r}
+#| layout-ncol: 2
+
+# The 2010–2020 restriction was already applied when loading the data.
+sample_size_yen_tb |>
+  plot_size_density("year") +
+  scale_color_viridis_d(
+    option = "C",
+    labels = age_class_labels
+  ) +
+  labs(color = "Year")
+ggsave(filename = "size_df_agg_diff_year.png", path = "graph")
+
+```
+
+## 2 Comparing log sales with a normal distribution: Q-Q plots
+
+Select age classes `age_10`, `age_20`, …, `age_90` from the 2020 data.
+For each class, take the natural logarithm of original sales in thousands of yen, subtract its median, and divide by the MAD (median absolute deviation).
+Do not use the mean and standard deviation for this standardization.
+
+Use Q-Q plots to compare sample quantiles of standardized log sales with theoretical quantiles of the standard normal distribution.
+Add a reference line with intercept zero and slope one.
+
+```{r}
+#| layout-ncol: 2
+
+size_20_tb |> 
+  filter(age_class %in% str_c("age_", str_pad(seq(10, 90, 10), width = 2, pad = "0")), 
+         sale > 0) |> 
+  group_by(age_class) |> 
+  mutate(log_sale = log(sale), 
+         log_sale_normalized = (log_sale - median(log_sale))/mad(log_sale) ) |> 
+ggplot(aes(sample = log_sale_normalized, color = age_class)) + 
+  stat_qq(size = 0.7) + #stat_qq_line() + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = age_class_labels) + 
+  geom_abline(intercept = 0, slope = 1, color="black") + 
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Normalized log(Sales)",
+    color = "Age Group"
+  ) +
+  theme(axis.title = element_text(face = "bold"))
+ggsave(filename = "size_qqplot_by_age.png", path = "graph")
+
+```
+
+## 3 Age composition by sales threshold
+
+For firms aged 50 or younger in 2020, examine the age composition of firms whose sales exceed a threshold.
+
+Set sales thresholds in yen to $10^9, 10^{9.2}, \ldots, 10^{14}$, giving 26 points spaced by 0.2 in base-10 logarithms.
+For each threshold, select observations with `sale_yen` strictly above that value and calculate composition shares `n_ratio`, using the total count `n_total` as the denominator and the count in each age class as the numerator.
+
+```{r}
+
+x_val <- 10^seq(9.0, 14, 0.2)
+
+compute_frac_tb <- function(df, thresholds) {
+  map_dfr(thresholds, function(threshold) {
+    sub_tb <- df |> filter(sale_yen > threshold)
+    n_total <- nrow(sub_tb)
+    if (n_total == 0) return(NULL)
+
+    sub_tb |>
+      group_by(age_class) |>
+      summarise(n_ratio = n() / n_total, .groups = "drop") |>
+      mutate(criteria = threshold, n_total = n_total)
+  })
+}
+
+# Apply the age restriction first. Exclude age_other when plotting.
+frac2_tb <- size_20_yen_tb |>
+  filter(age <= 50) |>
+  compute_frac_tb(thresholds = x_val)
+
+```
+
+For thresholds with more than 200 qualifying firms, plot age-class shares using points and lines.
+Firms with unknown ages do not satisfy `age <= 50` and are therefore excluded from the calculations.
+
+```{r}
+#| layout-ncol: 2
+
+frac_tb_plot_f <- \(x){x |> 
+  ggplot(aes(criteria, n_ratio, color = age_class)) + 
+    geom_point() + 
+    geom_line() + 
+    scale_color_viridis_d(
+      option = "C",
+      labels = age_class_labels) + 
+    scale_x_log10() + 
+    labs(
+      x = "Sales (log scale)",
+      y = "Proportion",
+      color = "Age Group"
+    ) +
+    theme(axis.title = element_text(face = "bold"))
+}
+
+frac2_tb |> 
+  filter(n_total > 200, 
+         age_class != "age_other") |> 
+  frac_tb_plot_f() + ylim(c(0, .25))
+ggsave(filename = "frac2_age.png", path = "graph")
+
+```
+
+
+
+
+
+
+
+
+
+
+

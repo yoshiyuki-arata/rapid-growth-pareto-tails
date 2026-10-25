@@ -1,0 +1,215 @@
+---
+title: "Growth, age, and income"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use `sample_growth_tb` to compare distributions of log growth over 2014–2015 by beginning-of-period income and age classes.
+Create density plots by income class and age class, and plot mean excess functions by income class for a sample restricted by income and age.
+
+## 1 Setting sample conditions
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+library(scattermore)
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+
+```
+
+**Sample selection and class construction**
+
+Load growth data and extract the six periods whose labels indicate a beginning year of 2014. Calculate beginning-of-period age as 2014 minus the birth year in the first four characters of `birth_date`.
+Classify beginning-of-period income and age as follows, then extract the period analyzed here, 2014–2015 (`g_15_14`).
+
+* Income: classify positive beginning-of-period income `pre_income` in yen using boundaries $10^5,10^{5.5},\ldots,10^9$  
+  Each class excludes its lower bound and includes its upper bound. Assign observations above $10^9$ to `size_9_over` and missing or nonpositive values to `size_other`.
+* Age: classify ages into 0–20, 21–25, subsequent five-year intervals through 76–80, and 81 or older  
+  Assign missing or negative values to `age_other`.
+
+Remove rows with missing class labels, but retain `size_other` and `age_other` at this stage.
+Do not impose conditions requiring income of at least 4 million yen, age 25–60, or a particular industry.
+Store the 2014–2015 data in `growth_2014_tb`. Only for `density_tb`, used in density plots, exclude zero growth and growth with an absolute value of at least 3.5.
+
+```{r}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb")
+
+size_depend_tb <- sample_growth_tb |> 
+  filter(str_sub(year, -2) == "14") |> 
+  mutate(
+    age = as.numeric(str_c("20", str_sub(year, -2))) - as.numeric(str_sub(birth_date, 1, 4)),
+    size_class = ifelse(
+      is.na(pre_income), "size_other",
+      cut(
+        pre_income,
+        breaks = c(-Inf, 0, 10^{seq(5, 9.0, by = .5)}, Inf),
+        labels = c("size_other", "size_5_below", str_c("size_", seq(5.5, 9.0, by = .5)), "size_9_over"),
+        right = T, include.lowest = T) |> as.character()),
+    age_class = ifelse(
+      is.na(age) | age < 0, "age_other",
+      cut(
+        age,
+        breaks = c(0, seq(20, 80, by = 5), Inf),
+        labels = c("age_20_below", str_c("age_", seq(25, 80, by = 5)), "age_80_over"),
+        right = T, include.lowest = T) |> as.character())) |> 
+  filter(!is.na(growth), !is.na(size_class), !is.na(age_class))
+
+growth_2014_tb <- size_depend_tb |>
+  filter(year == "g_15_14")
+
+density_tb <- growth_2014_tb |>
+  filter(growth != 0, abs(growth) < 3.5)
+
+```
+
+```{r}
+#| layout-ncol: 2
+
+age_class_labels <- c(
+  "age_20_below" = "0–20",
+  "age_25"       = "21–25",
+  "age_30"       = "26–30",  # 26–30 rather than 25–29
+  "age_35"       = "31–35",
+  "age_40"       = "36–40",
+  "age_45"       = "41–45",
+  "age_50"       = "46–50",
+  "age_55"       = "51–55",
+  "age_60"       = "56–60",
+  "age_65"       = "61–65",
+  "age_70"       = "66–70",
+  "age_75"       = "71–75",
+  "age_80"       = "76–80",
+  "age_80_over"  = "81+",
+  "age_other"    = "Other"
+)
+
+size_class_labels <- c(
+  size_other   = '"Other/NA"',  
+  size_5_below = 'paste("(", 0,        ", ", 10^5,      "]")',
+  size_5.5     = 'paste("(", 10^5,     ", ", 10^{5.5},  "]")',
+  size_6       = 'paste("(", 10^{5.5}, ", ", 10^6,      "]")',
+  size_6.5     = 'paste("(", 10^6,     ", ", 10^{6.5},  "]")',
+  size_7       = 'paste("(", 10^{6.5}, ", ", 10^7,      "]")',
+  size_7.5     = 'paste("(", 10^7,     ", ", 10^{7.5},  "]")',
+  size_8       = 'paste("(", 10^{7.5}, ", ", 10^8,      "]")',
+  size_8.5     = 'paste("(", 10^8,     ", ", 10^{8.5},  "]")',
+  size_9       = 'paste("(", 10^{8.5}, ", ", 10^9,      "]")',
+  size_9_over  = 'paste("(", 10^9,     ", ", infinity,  "  ]")'
+)
+
+```
+
+## 2 Growth densities by income and age class
+
+**Densities by income class**
+
+Use `density_tb` to compare growth densities by beginning-of-period income class.
+For this figure, retain `size_other` and `age_other` and impose no additional income floor or age restrictions.
+Display a horizontal range of −2 to 2 and a vertical range of $10^{-2.5}$ to $10^1$.
+
+```{r}
+#| layout-ncol: 2
+
+density_tb |>
+ggplot() + 
+  geom_density(aes(growth, color = size_class)) + 
+  scale_color_viridis_d(
+    option = "C",
+    breaks = names(size_class_labels),
+    #labels = size_class_labels
+    labels = \(x) parse(text = size_class_labels[x])
+  ) + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0, 2.0), ylim = c(10^{-2.5}, 10^1)) + 
+  labs(x = "Growth rate", 
+       y = "Probability density (log scale)",
+       color = "Size") 
+ggsave(filename = "growth_df_size_income.png", path = graph_dir)
+
+```
+
+**Densities by age class**
+
+Exclude `age_other` from the common density sample `density_tb` and compare growth densities by age class.
+Apply no additional income-class restrictions, and use the same scales and display ranges as in the income-class figure.
+
+```{r}
+#| layout-ncol: 2
+
+density_tb |>
+  filter(age_class != "age_other") |>
+ggplot() + 
+  geom_density(aes(growth, color = age_class)) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = age_class_labels
+  ) + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0, 2.0), ylim = c(10^{-2.5}, 10^1)) + 
+  labs(x = "Growth rate", 
+       y = "Probability density (log scale)",
+       color = "Age") 
+ggsave(filename = "growth_df_age_income.png", path = graph_dir)
+
+```
+
+## 3 Mean excess functions with income and age restrictions
+
+From `growth_2014_tb`, select observations with beginning-of-period income strictly above $10^{6.5}$ yen, outside `size_9_over`, and beginning-of-period age between 26 and 60, inclusive.
+Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the following expression.
+
+$$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$
+
+Plot the growth threshold on the horizontal axis and `m_excess` on the vertical axis, using colors to distinguish income classes.
+Include growth rates outside the displayed range in the calculations, restricting only the plotted horizontal range to 0.1–4 and vertical range to 0–1.
+
+```{r}
+#| layout-ncol: 2
+
+growth_2014_tb |>
+  filter(
+    pre_income >= 10^6.5, size_class != "size_9_over",
+    age >= 26, age <= 60
+  ) |> 
+  arrange(desc(growth)) |> 
+  group_by(size_class) |> 
+  mutate(m_excess = lag(cummean(growth)) - growth) |> 
+ggplot(aes(growth, m_excess, color = size_class)) +
+  geom_scattermore(pointsize = 1.2) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = \(x) parse(text = size_class_labels[x])
+  ) + 
+  coord_cartesian(xlim = c(0.1, 4), ylim = c(0, 1.0)) + 
+  labs(
+    x = "Threshold u", 
+    y = "Mean excess",
+    color = "Size"
+  )
+ggsave(filename = "mean_excess_relevant_income.png", path = graph_dir)
+
+```
+
+<br>
+

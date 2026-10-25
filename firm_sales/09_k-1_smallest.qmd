@@ -1,0 +1,165 @@
+---
+title: "Distribution of k-1 smallest random variables"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Use `sample_growth_tb` to compare distributions of minimum annual growth rates between firms with high growth over 2010–2020 (HGF) and all others (non-HGF).
+Use ten-year growth to classify high growth, and annual growth rates to calculate the minimum.
+The groups use different numbers of periods to calculate the minimum: nine for non-HGF and ten for HGF.
+
+## 0 Data preparation
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+Load `sample_growth_tb` and extract ten annual growth rates from 2010–11 through 2019–20 and growth over 2010–2020 (`g_20_10`).
+Select firms meeting the following conditions.
+
+* Beginning-of-period sales in 2010 of at least $4.0\times10^4$  
+  With sales measured in thousands of yen, this corresponds to at least 40 million yen.
+* Establishment year of 2005 or earlier
+  This corresponds to firm age of at least five, measured as 2010 minus the establishment year.
+* The first two digits of the reference-period industry code are 01–61 or 68–92
+
+Do not impose additional restrictions based on sales, age, or industry in other periods.
+
+```{r}
+#| layout-ncol: 2
+
+library(matrixStats)
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  filter(year %in% c("g_20_19", "g_19_18", "g_18_17", "g_17_16", "g_16_15", 
+                     "g_15_14", "g_14_13", "g_13_12", "g_12_11", "g_11_10", 
+                     "g_20_10"))
+
+growth_wide_tb <- sample_growth_tb |>
+  pivot_wider(id_cols = id, names_from = year, values_from = growth) |> 
+  left_join(sample_growth_tb |> filter(year == "g_11_10") |> select(id, pre_sale, birth_year, ind_class), by = "id") |> 
+  filter(pre_sale >= 4.0*10^{4}, 
+         birth_year <= 2005,
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) |> 
+  na.omit() |> 
+  select(-pre_sale, -birth_year, -ind_class)
+
+```
+
+## 1 Comparing minimum growth rates
+
+**Checking upper percentiles**
+
+Using `growth_wide_tb` after sample selection and removal of missing values, inspect the 90th, 95th, 97th, and 99th percentiles of ten-year growth `g_20_10`.
+Use the 97th percentile of this full sample for the subsequent high-growth classification.
+
+```{r}
+#| layout-ncol: 2
+
+growth_wide_tb |>
+  summarise(q_90 = quantile(g_20_10, 0.90, na.rm = T),
+            q_95 = quantile(g_20_10, 0.95, na.rm = T), 
+            q_97 = quantile(g_20_10, 0.97, na.rm = T),
+            q_99 = quantile(g_20_10, 0.99, na.rm = T))
+
+```
+
+**Creating the minimum-growth table `compare_smallest_tb`**
+
+Classify firms whose `g_20_10` is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator `hg`.
+
+The shared function `add_smallest()` converts the specified growth columns to a matrix, calculates each firm's minimum using `rowOrderStats(..., which = 1)`, and stores it in `smallest_1st`.
+Use the following periods for each group.
+
+* non-HGF: nine periods from 2010–11 through 2018–19 (`g_19_18:g_11_10`)
+* HGF: ten periods from 2010–11 through 2019–20 (`g_20_19:g_11_10`)
+
+```{r}
+
+temp_tb <- growth_wide_tb |>
+  mutate(hg = if_else(g_20_10 > quantile(g_20_10, 0.97, na.rm = T), "HGF", "non-HGF"))  
+
+add_smallest <- function(df, growth_cols) {
+  growth_matrix <- df |>
+    select(all_of(growth_cols)) |>
+    as.matrix()
+
+  df |> mutate(smallest_1st = rowOrderStats(growth_matrix, which = 1))
+}
+
+compare_smallest_tb <- 
+  bind_rows(
+    temp_tb |> 
+      filter(hg == "non-HGF") |> 
+      add_smallest(names(select(temp_tb, g_19_18:g_11_10))),
+    temp_tb |> 
+      filter(hg == "HGF") |>
+      add_smallest(names(select(temp_tb, g_20_19:g_11_10)))
+  )
+
+```
+
+**Visual comparison of distributions**
+
+Compare densities of minimum growth `smallest_1st` between HGF and non-HGF.
+Estimate densities using each group's values without additional restrictions on the absolute value of minimum growth.
+Restrict only the displayed horizontal range to −1.5–1.5.
+
+```{r}
+#| layout-ncol: 2
+
+compare_smallest_tb |> 
+ggplot() + 
+  geom_density(aes(smallest_1st, color = hg)) + 
+  coord_cartesian(xlim = c(-1.5,1.5)) + 
+  labs(
+    x = "Smallest Growth Rate",
+    y = "Density", 
+    color = "Group"
+  ) +
+  theme(axis.title = element_text(face = "bold"))
+ggsave(filename = "compare_smallest_growth.png", path = "graph")
+
+```
+
+**Comparison of summary statistics**
+
+For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of firms `n_obs`.
+
+```{r}
+
+compare_smallest_tb |>
+  group_by(hg) |> 
+  summarise(median(smallest_1st), mean(smallest_1st), n_obs = n())
+
+```
+
+
+
+
+
+
+
+
+
+
+

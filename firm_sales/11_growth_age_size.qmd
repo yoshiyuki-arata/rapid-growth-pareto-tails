@@ -1,0 +1,216 @@
+---
+title: "Growth, age, and firm size"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Use `sample_growth_tb` to compare distributions of log growth over 2010–2011 by beginning-of-period sales and firm age classes.
+Create density plots by sales class and age class, and plot mean excess functions by sales class for a sample restricted by sales and age.
+
+## 1 Setting sample conditions
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+```{r}
+
+library(scattermore)
+
+```
+
+**Sample selection and class construction**
+
+Load growth data and calculate firm age `age` as the beginning year extracted from the period label minus establishment year `birth_year`.
+For periods starting in 2010, select observations with industry codes `ind_class` whose first two digits are 01–61 or 68–92.
+Classify beginning-of-period sales and age as follows.
+
+* Sales: classify positive beginning-of-period sales `pre_sale`, measured in thousands of yen, using boundaries $10^3,10^{3.5},\ldots,10^8$
+* Age: classify ages into 0–5, 6–10, subsequent five-year intervals through 71–75, and 76 or older  
+  Assign missing or negative ages to `age_other`.
+
+Remove observations with missing growth or class labels, but retain `size_other` and `age_other` at this stage.
+Only for `density_tb`, used in density plots, exclude zero growth and growth with an absolute value of at least 3.5.
+
+```{r}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year, 6,7))) - birth_year) 
+
+size_depend_tb <- sample_growth_tb |> 
+  filter(str_sub(year, -2) == "10",
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) |> 
+  mutate(
+    size_class = ifelse(
+      is.na(pre_sale), "size_other",
+      cut(
+        pre_sale,
+        breaks = c(-Inf, 0, 10^{seq(3, 8, by = .5)}, Inf),
+        labels = c("size_other", "size_3_below", str_c("size_", seq(3.5, 8, by = .5)), "size_8_over"),
+        right = T, include.lowest = T) |> as.character()),
+    age_class = ifelse(
+      is.na(age) | age < 0, "age_other",
+      cut(
+        age,
+        breaks = c(0, 5, seq(10, 75, by = 5), Inf),
+        labels = c("age_05", str_c("age_", seq(10, 75, by = 5)), "age_75_over"),
+        right = T, include.lowest = T) |> as.character())) |> 
+  filter(!is.na(growth), !is.na(size_class), !is.na(age_class))
+
+growth_2010_tb <- size_depend_tb |>
+  filter(year == "g_11_10")
+
+density_tb <- growth_2010_tb |>
+  filter(growth != 0, abs(growth) < 3.5)
+
+```
+
+Define the age intervals for the legend in `age_class_labels`.
+For sales-class boundaries, use values multiplied by 1000 in the labels to display classes defined in thousands of yen in yen.
+
+```{r}
+
+age_class_labels <- c(
+  "age_05" = "0–5",   "age_10" = "6–10",  "age_15" = "11–15", "age_20" = "16–20",
+  "age_25" = "21–25", "age_30" = "26–30", "age_35" = "31–35", "age_40" = "36–40",
+  "age_45" = "41–45", "age_50" = "46–50", "age_55" = "51–55", "age_60" = "56–60",
+  "age_65" = "61–65", "age_70" = "66–70", "age_75" = "71–75", 
+  "age_75_over" = "76+"
+)
+
+size_class_labels <- c(
+  size_other   = '"Other/NA"',
+  size_3_below = 'paste("(", 0,    ", ",  10^6,    "]")',
+  size_3.5     = 'paste("(", 10^6, ", ", 10^{6.5}, "]")',
+  size_4       = 'paste("(", 10^{6.5}, ", ", 10^7, "]")',
+  size_4.5     = 'paste("(", 10^7, ", ", 10^{7.5}, "]")',
+  size_5       = 'paste("(", 10^{7.5}, ", ", 10^8, "]")',
+  size_5.5     = 'paste("(", 10^8, ", ", 10^{8.5}, "]")',
+  size_6       = 'paste("(", 10^{8.5}, ", ", 10^9, "]")',
+  size_6.5     = 'paste("(", 10^9, ", ", 10^{9.5}, "]")',
+  size_7       = 'paste("(", 10^{9.5}, ", ", 10^{10}, "]")',
+  size_7.5     = 'paste("(", 10^{10}, ", ", 10^{10.5}, "]")',
+  size_8       = 'paste("(", 10^{10.5}, ", ", 10^{11}, "]")',
+  size_8_over  = 'paste("(", 10^{11}, ", ", infinity, "  ]")'
+)
+
+```
+
+## 2 Growth densities by sales and age class
+
+**Densities by sales class**
+
+Use `density_tb` to compare growth densities by beginning-of-period sales class.
+For this figure, retain `size_other` and `age_other` and impose no additional sales floor or firm age restrictions.
+Use a linear horizontal scale for growth and a logarithmic vertical scale for density.
+Display a horizontal range of −2 to 2 and a vertical range of $10^{-2.5}$ to $10^1$.
+
+```{r}
+#| layout-ncol: 2
+
+density_tb |>
+ggplot() + 
+  geom_density(aes(growth, color = size_class)) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = \(x) parse(text = size_class_labels[x])
+  ) + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0, 2.0), ylim = c(10^{-2.5}, 10^1)) + 
+  labs(x = "Growth rate", 
+       y = "Probability density (log scale)",
+       color = "Size") + 
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "growth_df_size.png", path = "graph")
+
+```
+
+
+**Densities by age class**
+
+Exclude `age_other` from the common density sample `density_tb` and compare growth densities by age class.
+Include `age_05` (ages 0–5) and impose no additional sales-class restrictions.
+Use the same scales and display ranges as in the sales-class figure.
+
+```{r}
+#| layout-ncol: 2
+
+density_tb |>
+  filter(age_class != "age_other") |>
+ggplot() + 
+  geom_density(aes(growth, color = age_class)) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = age_class_labels) + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0, 2.0), ylim = c(10^{-2.5}, 10^1)) + 
+  labs(x = "Growth rate", 
+       y = "Probability density (log scale)",
+       color = "Age") + 
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "growth_df_age.png", path = "graph")
+
+```
+
+
+## 3 Mean excess functions with sales and age restrictions
+
+From `growth_2010_tb`, select observations with beginning-of-period sales of at least $10^{4.5}$ in thousands of yen, excluding `age_other` and `age_05`.
+Do not apply the density-plot restrictions excluding zero growth and requiring an absolute value below 3.5.
+
+Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the mean excess function as follows.
+
+$$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$
+
+Plot the growth threshold on the horizontal axis and `m_excess` on the vertical axis, using colors to distinguish sales classes.
+Display a horizontal range of 0.1–4 and a vertical range of 0–1.
+
+```{r}
+#| layout-ncol: 2
+
+growth_2010_tb |>
+  filter(pre_sale >= 10^{4.5}, 
+         age_class != "age_other", age_class != "age_05") |> 
+  arrange(desc(growth)) |> 
+  group_by(size_class) |> 
+  mutate(m_excess = lag(cummean(growth)) - growth) |> 
+ggplot(aes(growth, m_excess, color = size_class)) +
+  geom_scattermore(pointsize = 1.5) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = \(x) parse(text = size_class_labels[x])
+  ) + 
+  coord_cartesian(xlim = c(0.1, 4), ylim = c(0, 1.0)) + 
+  labs(x = "Threshold u", 
+       y = "Mean excess",
+       color = "Size") + 
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "mean_excess_relevant.png", path = "graph")
+
+```
+
+<br>
+
+
+
+
+

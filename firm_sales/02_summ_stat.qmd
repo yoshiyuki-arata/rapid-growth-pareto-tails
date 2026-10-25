@@ -1,0 +1,208 @@
+---
+title: "Summary statistics"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Load `sample_size_tb` and `sample_growth_tb` and calculate summary statistics for firm sales and growth rates.
+Summarize the natural logarithm of sales converted to yen by year, and summarize the saved `growth` variable by annual period.
+
+## 1 Firm sales
+
+**Setup and data loading**
+
+```{r}
+library(tidyverse)
+library(pins)
+library(kableExtra)
+theme_set(theme_light())
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+
+Load sales data `sample_size_tb` without modification.
+Add beginning-of-period firm age `age` to `sample_growth_tb` as the beginning year extracted from period label `year` minus establishment year `birth_year`.
+Age is the difference between calendar years, without adjustment for the month or day of establishment.
+
+```{r}
+
+sample_size_tb <- board |> pin_read("sample_size_tb", type = "qs2") 
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year, 6,7))) - birth_year) 
+
+```
+
+
+**Sample selection and sales summary statistics**
+
+Use observations meeting the following conditions. Do not restrict firm age.
+
+* Positive sales `sale`
+* Observation year `year` from 2010 through 2020
+* Exclude finance (62–67), public sectors (93–96, 97–98), and unclassified industries (99) based on `ind_class`  
+
+Multiply `sale`, measured in thousands of yen, by 1000 to convert to yen, and create natural log sales as `log_sale = log(sale * 1000)`.
+For each year, calculate the observation count and the mean, standard deviation, first quartile, median, and third quartile of natural log sales.
+
+```{r}
+
+summ_stat_size_tb <- sample_size_tb |> 
+  filter(sale > 0, 
+         as.numeric(year) >= 2010, as.numeric(year) <= 2020, 
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) |> 
+  mutate(log_sale = log(sale * 1000)) |>
+  group_by(year) |> 
+  summarise(count = n(), 
+            mean = mean(log_sale), sd = sd(log_sale), 
+            q1 = quantile(log_sale, probs = 0.25), median = median(log_sale), q3 = quantile(log_sale, probs = 0.75))
+summ_stat_size_tb 
+
+```
+
+
+## 2 Growth rates 
+
+Extract the end and beginning years from period label `year` and retain annual growth rates only, where the difference between the years is one.
+Select observations meeting the following conditions.
+
+* Beginning-of-period sales `pre_sale` of at least $4.0 \times 10^4$  
+  With sales measured in thousands of yen, this corresponds to at least 40 million yen.
+* The first two digits of industry code `ind_class` are 01–61 or 68–92  
+  These are the same industry conditions used for the sales summaries.
+* Beginning-of-period firm age `age` of at least five
+* Finite growth `growth`  
+  Exclude `NA`, `NaN`, and positive or negative infinity.
+
+After sample selection, calculate the observation count, mean, standard deviation, first quartile, median, and third quartile of growth for each period, and sort by beginning year.
+
+```{r}
+
+summ_stat_growth_tb <- sample_growth_tb |>
+  mutate(
+    post = str_sub(year, 3, 4) |> as.integer(),
+    pre  = str_sub(year, 6, 7) |> as.integer(),
+    interval = post - pre
+  ) |> 
+  filter(interval == 1) |> 
+  select(-post, -pre, -interval) |> 
+  filter(pre_sale >= 4.0*10^4,  
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0),
+         age >= 5) |> 
+  filter(is.finite(growth)) |> 
+  group_by(year) |> 
+  summarise(count = n(), 
+            mean = mean(growth), sd = sd(growth), 
+            q1 = quantile(growth, probs = 0.25), median = median(growth), q3 = quantile(growth, probs = 0.75)) |> 
+  arrange(str_sub(year, 6, 7)) 
+summ_stat_growth_tb 
+
+```
+
+## 3 LaTeX table output
+
+Format the summaries in LaTeX using the shared function `write_summary_tex()`.
+Leave the summary values unchanged; format counts as integers and other statistics to three decimal places only when producing output.
+Display missing values as `--`.
+
+Use the column headings Year, N, Mean, Std. Dev., 1st Quartile, Median, and 3rd Quartile in both tables.
+
+```{r}
+
+# Leave summary values unchanged and adjust displayed precision only for table output.
+write_summary_tex <- function(data, file) {
+  x <- as.data.frame(data)[
+    , c("year", "count", "mean", "sd", "q1", "median", "q3")
+  ]
+
+  x$year <- as.character(x$year)
+  x$count <- ifelse(is.na(x$count), "--", sprintf("%.0f", x$count))
+
+  for (column in c("mean", "sd", "q1", "median", "q3")) {
+    x[[column]] <- ifelse(
+      is.na(x[[column]]), "--", sprintf("%.3f", x[[column]])
+    )
+  }
+
+  # Fix the saved table format to LaTeX, including when rendering HTML.
+  table_tex <- x |>
+    kbl(
+      format = "latex",
+      booktabs = TRUE,
+      row.names = FALSE,
+      escape = TRUE,
+      align = c("l", rep("r", 6)),
+      col.names = c(
+        "Year", "N", "Mean", "Std. Dev.",
+        "1st Quartile", "Median", "3rd Quartile"
+      ),
+      linesep = ""
+    ) |>
+    kable_styling(
+      latex_options = "striped",
+      stripe_color = "gray!10",
+      stripe_index = which(seq_len(nrow(x)) %% 2L == 1L),
+      full_width = TRUE,
+      # Specify the table environment and centering in the paper itself.
+      position = "left",
+      font_size = 10
+    )
+
+  writeLines(
+    c(
+      "\\begingroup",
+      "\\renewcommand{\\arraystretch}{1.12}",
+      "\\setlength{\\aboverulesep}{0.5ex}",
+      "\\setlength{\\belowrulesep}{0.5ex}",
+      "\\setlength{\\heavyrulewidth}{0.8pt}",
+      "\\setlength{\\lightrulewidth}{0.4pt}",
+      as.character(table_tex),
+      "\\endgroup"
+    ),
+    con = file,
+    useBytes = TRUE
+  )
+}
+```
+
+For the growth table, convert period labels such as `g_11_10` to `2010--11` to display the period dash in LaTeX.
+
+```{r}
+
+write_summary_tex(
+  summ_stat_size_tb,
+  file.path("latex", "summ_stat_size.tex")
+)
+
+growth_for_tex <- summ_stat_growth_tb |>
+  mutate(
+    year = str_replace(year, "^g_(\\d{2})_(\\d{2})$", "20\\2--\\1")
+  )
+
+write_summary_tex(
+  growth_for_tex,
+  file.path("latex", "summ_stat_growth.tex")
+)
+
+```
+
+
+
+
+
+

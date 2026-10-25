@@ -1,0 +1,98 @@
+---
+title: "U-shaped patterns"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Use `sample_growth_tb` to examine the ratio of log growth in the first year to log growth over the full two years for firms whose 2010–2012 log growth exceeds a threshold.
+Examine whether the ratio exhibits a U-shape concentrated near zero and one, as predicted by subexponentiality.
+
+## 1 Data preparation and ratio construction
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+**Definition of the ratio variable**
+
+Load `sample_growth_tb` and calculate firm age `age` as the beginning year minus establishment year `birth_year`.
+For records in each period, select observations with beginning-of-period sales of at least $4.0\times10^4$, beginning-of-period age of at least five, and industry codes whose first two digits are 01–61 or 68–92.
+Sales are measured in thousands of yen, so this lower bound corresponds to 40 million yen.
+
+Both periods used in the ratio, 2010–2011 (`g_11_10`) and 2010–2012 (`g_12_10`), start in 2010.
+Define the ratio as $r_{12,10}=g_{11,10}/g_{12,10}$.
+
+```{r}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year, 6,7))) - birth_year) |> 
+  filter(pre_sale >= 4.0*10^4,
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0),
+         age >= 5) 
+
+ratio_tb <- sample_growth_tb |> 
+  pivot_wider(id_cols = id, names_from = year, values_from = growth) |>  
+  filter(is.finite(g_11_10), is.finite(g_12_10)) |>
+  mutate(r_12_10 = g_11_10/g_12_10) 
+
+```
+
+## 2 Ratio distributions by threshold
+
+Set 18 threshold values $u$ from 0.1 to 1.8 in increments of 0.1.
+For each threshold, select firms whose two-year growth satisfies $g_{12,10}>u$ and create a histogram after excluding observations with ratios exactly equal to zero or one.
+Restrict the horizontal axis to −0.3–1.3 using `xlim()`.
+
+```{r}
+#| layout-ncol: 6
+
+x_values <- seq(0.1, 1.8, by = 0.1)
+
+plot_tb <- ratio_tb |>
+  select(id, r_12_10, g_12_10) |>
+  filter(r_12_10 != 0, r_12_10 != 1)
+
+plots <- map(x_values, \(threshold) {
+  plot_tb |>
+    filter(g_12_10 > threshold) |>
+    ggplot(aes(r_12_10)) + 
+      geom_histogram(bins = 60) + 
+      xlim(c(-0.3, 1.3)) + 
+      ggtitle(paste("u =", threshold)) +
+      labs(x = "Ratio", y = "Frequency") +
+      theme(axis.title = element_text(face = "bold"))
+})
+
+walk(plots, print)
+
+walk2(plots, x_values, \(plot, threshold) {
+  ggsave(
+    filename = str_c("graph/ratio_x_", threshold, ".png"),
+    plot = plot
+  )
+})
+
+```
+
+
+
+

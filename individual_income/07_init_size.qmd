@@ -1,0 +1,113 @@
+---
+title: "Initial income distribution"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use `sample_size_tb` to compare log income distributions and mean excess functions across 2014–2020 for observations at age 25.
+Corresponding to sales at firm age five in the firm analysis, income at age 25 is treated as initial size in the income analysis.
+Initial income here refers to income at age 25 after five years of growth, rather than income at age 20 when generation begins in 01.
+The figures by year compare different birth cohorts that are age 25 in each observation year.
+
+## 1 Data preparation
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+
+```
+
+Load income data and calculate age `age` as observation year `year` minus the birth year in the first four characters of `birth_date`.
+Retain observations at age 25 with positive income `main_var` in `init_size_tb`.
+
+```{r}
+#| layout-ncol: 2
+
+library(scattermore)
+
+sample_size_tb <- board |> pin_read("sample_size_tb") |> 
+  mutate(age = as.numeric(year) - as.numeric(str_sub(birth_date, 1, 4))) 
+
+init_size_tb <- sample_size_tb |> filter(age == 25, main_var > 0) 
+
+```
+
+## 2 Density estimation
+
+Using the 2014–2020 data saved in 01, compare income distributions at age 25 with density plots colored by year.
+Estimate the density of base-10 log income $\log_{10}(\mathrm{main\_var})$, displaying income amounts on a logarithmic horizontal scale and density on a logarithmic vertical scale.
+Display income in yen from $10^3$ to $10^9$ and density from $10^{-4}$ to $1$.
+
+```{r}
+#| layout-ncol: 2
+
+init_size_tb |> 
+ggplot() +
+  geom_density(aes(main_var, color = year)) +
+  scale_color_viridis_d(option = "C") + 
+  scale_x_log10() + scale_y_log10() + 
+  coord_cartesian(xlim = c(10^3, 10^9), ylim = c(10^{-4}, 10^0)) + 
+  labs(
+      x = "Income (log scale)",
+      y = "Density (log scale)", 
+      color = "Year",
+  ) 
+ggsave(filename = "init_size_diff_birth_age_25_income.png", path = graph_dir)
+
+```
+
+## 3 Mean Excess Function
+
+Let $L_{(i)}$ denote natural log income sorted in descending order. The calculation is as follows.
+
+$$m_{\text{excess},i} = \frac{1}{i-1}\sum_{j=1}^{i-1}L_{(j)} - L_{(i)}, \qquad i\geq2.$$
+
+Use the natural log income threshold on the horizontal axis, displaying values from $\log(10^{6.5})$ to $\log(10^8)$ and a vertical range of 0–1.
+Include observations outside the displayed range when calculating cumulative means.
+
+```{r}
+#| layout-ncol: 2
+
+init_size_tb |> 
+  mutate(log_main_var = log(main_var)) |> 
+    arrange(desc(main_var)) |> 
+    group_by(year) |> 
+    mutate(m_excess = lag(cummean(log_main_var)) - log_main_var) |> 
+  ggplot(aes(log_main_var, m_excess, color = year)) +
+    geom_scattermore(pointsize = 1.2) + 
+    scale_color_viridis_d(option = "C") + 
+  coord_cartesian(
+    xlim = c(log(10^{6.5}), log(10^8)), 
+    ylim = c(0, 1.0)
+  ) + 
+  labs(
+    x = "Threshold u", 
+    y = "Mean Excess", 
+    color = "Year"
+  ) 
+ggsave(filename = "mean_excess_init_size_age_25_income.png", path = graph_dir)
+
+```
+
+

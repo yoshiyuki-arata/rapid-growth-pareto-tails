@@ -1,0 +1,69 @@
+---
+title: "Firm sales process analysis: replication overview"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+This overview file describes how to run the firm sales and growth analysis using a synthetic firm panel.
+It provides links to the analysis code (QMD) and corresponding output (HTML).
+The simulated data are intended for running the analysis code; they do not reproduce the paper's empirical results.
+
+First, run [01_data_simulation.qmd](01_data_simulation.qmd) to save `sample_size_tb` and `sample_growth_tb` in `../Zipf_law_board_replicate_simulation/`.
+In 01, a fixed random seed is used to generate log sales at birth from a Laplace distribution and annual log growth rates from a signed Weibull distribution for 300,000 firms established in 1940–2020.
+Then run each analysis in 02–11.
+12 is an independent theoretical analysis that does not use the firm panel.
+Use the folder containing each QMD as its working directory during execution.
+Use `../Zipf_law_board_replicate_simulation` as both the output directory for 01 and the input directory for 02–11.
+
+## List of analyses
+
+<table class="table table-sm">
+<thead>
+<tr><th scope="col">Analysis</th><th scope="col">Description</th><th scope="col" style="white-space: nowrap;">Code</th><th scope="col" style="white-space: nowrap;">Output</th></tr>
+</thead>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Data preparation and summary statistics</th></tr>
+<tr><td>01 Synthetic data generation</td><td>Generate firm attributes, a sales panel, and log growth rates</td><td><a href="01_data_simulation.qmd">QMD</a></td><td><a href="01_data_simulation.html">HTML</a></td></tr>
+<tr><td>02 Summary statistics</td><td>Summary statistics for log sales and annual growth rates in 2010–2020 (Table 1)</td><td><a href="02_summ_stat.qmd">QMD</a></td><td><a href="02_summ_stat.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Firm sales distributions and age</th></tr>
+<tr><td>03 Sales distributions by age</td><td>Sales distributions by age, Q-Q plots, and age composition by sales threshold in 2020; comparison of sales distributions across 2010–2020 (Figures 1, 2, 3, 8(a))</td><td><a href="03_size_TSR.qmd">QMD</a></td><td><a href="03_size_TSR.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Growth dependence and distributions</th></tr>
+<tr><td>04 Growth dependence</td><td>Spearman rank correlations across ten annual growth periods and a tail dependence measure for two consecutive periods (Table 3, Figure 9)</td><td><a href="04_random_walk.qmd">QMD</a></td><td><a href="04_random_walk.html">HTML</a></td></tr>
+<tr><td>05 Growth distributions</td><td>Densities and mean excess functions for annual growth and cumulative growth starting in 2010 (Figures 11, 12, 13)</td><td><a href="05_growth_rate_TSR.qmd">QMD</a></td><td><a href="05_growth_rate_TSR.html">HTML</a></td></tr>
+<tr><td>06 Girard's method</td><td>Estimate tail parameters, quantiles, and tail probabilities from positive growth rates in 2019–2020 (Figure 14)</td><td><a href="06_Girard.qmd">QMD</a></td><td><a href="06_Girard.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Initial firm size and high-growth groups</th></tr>
+<tr><td>07 Initial firm size distribution</td><td>Compare log sales distributions and mean excess functions at firm age five across 2010–2020 (Figure 18)</td><td><a href="07_init_size.qmd">QMD</a></td><td><a href="07_init_size.html">HTML</a></td></tr>
+<tr><td>08 Tail index</td><td>Hill estimation for growth over 2010–2020, sales at firm age five in 2020, and sales by age for ages 5–40 in 2020 (Figure 20(a))</td><td><a href="08_tail_slope.qmd">QMD</a></td><td><a href="08_tail_slope.html">HTML</a></td></tr>
+<tr><td>09 Minimum growth rate</td><td>Classify high-growth firms using ten-year growth and compare distributions and summary statistics of minimum annual growth rates (Figure 23(a))</td><td><a href="09_k-1_smallest.qmd">QMD</a></td><td><a href="09_k-1_smallest.html">HTML</a></td></tr>
+<tr><td>10 U-shape</td><td>Compare the ratio of log growth in the first year to cumulative log growth over 2010–2012 (Figure 21)</td><td><a href="10_u-shape_TSR.qmd">QMD</a></td><td><a href="10_u-shape_TSR.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Relationships between sales, age, and growth</th></tr>
+<tr><td>11 Growth, age, and initial sales</td><td>Compare 2010–2011 growth by sales and age classes and plot mean excess functions (Figures 1 and 2 in the Appendix)</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
+</tbody>
+<tbody>
+<tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Theoretical distributions and simulations</th></tr>
+<tr><td>12 Distributions of sums and ratios</td><td>Densities of sums of Laplace variables, simulations of sums of symmetric Weibull variables, and conditional ratio densities given a fixed sum of positive Weibull variables (Figures 6, 7)</td><td><a href="12_evolution_growth_size.qmd">QMD</a></td><td><a href="12_evolution_growth_size.html">HTML</a></td></tr>
+</tbody>
+</table>

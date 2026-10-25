@@ -1,0 +1,211 @@
+---
+title: "Income growth rates"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use income growth data `sample_growth_tb` to plot density curves and mean excess functions for annual growth rates and growth rates over each period starting in 2014.
+After applying common income and age conditions, density estimation and mean excess calculations use different additional restrictions.
+
+## 1 Density estimation
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+```
+
+**Data loading and sample selection**
+
+Load `sample_growth_tb` and select observations meeting the following conditions for each period.
+
+* Beginning-of-period income `pre_income` of at least $4 \times 10^6$ yen (4 million yen)
+* Beginning-of-period age $25 \leq \mathrm{age} \leq 60$
+
+Calculate age as the beginning year extracted from period label `year` minus the birth year in the first four characters of `birth_date`.
+Do not add industry-based exclusions.
+
+```{r}
+#| layout-ncol: 2
+
+library(scattermore)
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year,6,7))) - as.numeric(str_sub(birth_date, 1, 4))) |> 
+  filter(pre_income >= 4*10^6, 
+         age >= 25, age <= 60)
+
+year_labels <- c(
+  "g_20_19" = "2019–20",
+  "g_19_18" = "2018–19",
+  "g_18_17" = "2017–18",
+  "g_17_16" = "2016–17",
+  "g_16_15" = "2015–16",
+  "g_15_14" = "2014–15",
+  "g_16_14" = "2014–16",
+  "g_17_14" = "2014–17",
+  "g_18_14" = "2014–18",
+  "g_19_14" = "2014–19",
+  "g_20_14" = "2014–20"
+)
+
+```
+
+**Annual growth distributions by period**
+
+* Compare six annual growth rates from 2014–15 through 2019–20
+* For density plots only, additionally require nonzero growth with an absolute value below 3.5
+* Output two figures, with density on a linear and a logarithmic vertical scale
+
+Use a linear horizontal scale for growth rates in both figures.
+For the linear-density figure, display growth from −1 to 1; for the log-density figure, display growth from −2 to 2 and density from $10^{-3}$ to $10^{1.5}$.
+
+```{r}
+#| layout-ncol: 2
+
+growth_df_plot <- sample_growth_tb |>  
+  filter(year %in% c("g_20_19", "g_19_18", "g_18_17", "g_17_16", "g_16_15", "g_15_14"), 
+         abs(growth) < 3.5, growth != 0) |>  
+ggplot() + 
+  geom_density(aes(growth, color = year)) + 
+  scale_color_viridis_d(
+    option = "C",
+    labels = year_labels
+  ) 
+
+growth_df_plot + 
+  coord_cartesian(xlim = c(-1.0,1.0)) + 
+  labs(
+      x = "Growth Rate",
+      y = "Density (normal scale)", 
+      color = "Year",
+  ) 
+ggsave(filename = "growth_df_main_var_diff_year.png", path = graph_dir)
+growth_df_plot + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0,2.0), ylim = c(10^{-3.0}, 10^{1.5})) + 
+  labs(
+      x = "Growth Rate",
+      y = "Density (log scale)", 
+      color = "Year",
+  ) 
+ggsave(filename = "growth_df_main_var_diff_year_log.png", path = graph_dir)
+
+```
+
+**Growth distributions for periods starting in 2014**
+
+* Compare six periods starting in 2014, from 2014–15 through 2014–20
+* As in the annual growth density plots, use observations with nonzero growth and an absolute value below 3.5
+* Output two figures, with density on a linear and a logarithmic vertical scale
+
+Use the same scales and display ranges as in the annual growth figures.
+
+```{r}
+#| layout-ncol: 2
+
+growth_long_plot <- sample_growth_tb |>  
+  filter(str_sub(year, 6, 7) == "14",
+         abs(growth) < 3.5, growth != 0) |> 
+ggplot() + 
+  geom_density(aes(growth, color = year)) +
+  scale_color_viridis_d(
+    option = "C",
+    labels = year_labels
+  ) 
+
+growth_long_plot + 
+  coord_cartesian(xlim = c(-1.0, 1.0)) + 
+  labs(
+      x = "Growth Rate",
+      y = "Density (normal scale)", 
+      color = "Year",
+  ) 
+ggsave(filename = "long_term_growth_df_main_var.png", path = graph_dir)
+growth_long_plot + 
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-2.0,2.0), ylim = c(10^{-3.0}, 10^{1.5})) + 
+  labs(
+      x = "Growth Rate",
+      y = "Density (log scale)", 
+      color = "Year",
+  ) 
+ggsave(filename = "long_term_growth_df_main_var_log.png", path = graph_dir)
+
+```
+
+## 2 Mean Excess Function
+
+Plot mean excess functions separately for annual growth rates and growth rates over periods starting in 2014.
+Use data satisfying the common income and age conditions, without applying the zero-growth and absolute-value restrictions used only for the density plots.
+
+Sort `growth` in descending order, $g_{(1)}\geq\cdots\geq g_{(n)}$, and calculate the following expression.
+
+$$\widehat m_j=\frac{1}{j-1}\sum_{i=1}^{j-1}g_{(i)}-g_{(j)}, \qquad j\geq2.$$
+
+Plot the growth threshold on the horizontal axis and `m_excess` on the vertical axis, using colors to distinguish periods.
+Display horizontal ranges of 0.1–3 for annual growth and 0.1–4 for growth over periods starting in 2014, with a vertical range of 0–1 in both figures.
+Include growth rates outside the displayed range in the calculations.
+
+```{r}
+#| layout-ncol: 2
+
+mean_excess_plot_f <- \(x){
+  x |>
+    arrange(desc(growth)) |> 
+    group_by(year) |> 
+    mutate(m_excess = lag(cummean(growth)) - growth) |> 
+  ggplot(aes(growth, m_excess, color = year)) +
+    geom_scattermore(pointsize = 1.2) + 
+    scale_color_viridis_d(
+      option = "C",
+      labels = year_labels
+    ) 
+}
+
+sample_growth_tb |> 
+  filter(year %in% c("g_20_19", "g_19_18", "g_18_17", "g_17_16", "g_16_15", "g_15_14")) |>  
+  mean_excess_plot_f() + 
+  coord_cartesian(xlim = c(0.1, 3.0), ylim = c(0, 1.0)) + 
+  labs(
+      x = "Threshold u",
+      y = "Mean Excess", 
+      color = "Year",
+  ) 
+ggsave(filename = "mean_excess_main_var_diff_year.png", path = graph_dir)
+
+sample_growth_tb |>  
+  filter(str_sub(year, 6, 7) == "14") |> 
+  mean_excess_plot_f() + 
+  coord_cartesian(xlim = c(0.1, 4.0), ylim = c(0, 1.0)) + 
+  labs(
+      x = "Threshold u",
+      y = "Mean Excess", 
+      color = "Year",
+  ) 
+ggsave(filename = "mean_excess_main_var_long_growth.png", path = graph_dir)
+
+```
+
+

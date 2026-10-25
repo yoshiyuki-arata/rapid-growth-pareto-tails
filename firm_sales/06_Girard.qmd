@@ -1,0 +1,261 @@
+---
+title: "Girard estimation"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Use `sample_growth_tb` to estimate tail parameters and extreme quantiles with Girard's method.
+The sample consists of firm growth rates for 2019–20 satisfying beginning-of-period sales, firm age, and industry conditions.
+Assuming $\tau = 0$, estimate $\alpha$ from the Hill estimator and use its reciprocal $\theta$ to estimate extreme quantiles and tail probabilities.
+After checking the shape with a linearity plot, estimate $\tau$ over a grid of candidate values.
+
+## 1 Estimation assuming $\tau = 0$
+
+### 1.1 Function definitions
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+**Sample settings**
+
+Load `sample_growth_tb` and calculate firm age `age` as the beginning year extracted from period label `year` minus establishment year `birth_year`.
+For 2019–20 growth (`g_20_19`), select observations meeting the following conditions.
+
+* Beginning-of-period sales `pre_sale` of at least $4.0 \times 10^4$  
+  With sales measured in thousands of yen, this corresponds to at least 40 million yen.
+* Beginning-of-period firm age of at least five  
+* The first two digits of industry code `ind_class` are 01–61 or 68–92  
+* Finite growth `growth`  
+
+**Preparing to calculate the Hill estimator**
+
+Let $X_{(1)}, X_{(2)}, \ldots, X_{(n)}$ denote growth `growth` sorted in descending order. Calculate `hill_est` by dividing the cumulative sum by rank $i$.
+
+$$H(i) = \frac{1}{i}\sum_{j=1}^{i}j\log\left(\frac{X_{(j)}}{X_{(j+1)}}\right) = \frac{1}{i}\sum_{j=1}^{i}\log\left(\frac{X_{(j)}}{X_{(i+1)}}\right).$$
+
+In row $i$, `hill_est` is the mean log excess of the largest $i$ observations above the growth threshold at rank $i+1$.
+Thus, when using growth at rank $k_n$ as the threshold, use `hill_est` from row $k_n-1$, namely $H(k_n-1)$.
+
+```{r}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year, 6,7))) - birth_year)
+
+sample_tb <- sample_growth_tb |>  
+  filter(year %in% c("g_20_19"),
+         is.finite(growth),
+         pre_sale >= 4.0*10^4,
+         age >= 5, 
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) |>  
+  arrange(desc(growth)) |>  
+  select(growth) |>  
+  mutate(i_var = 1:n(), n_i_var = n()/i_var, lead = lead(growth)) |>  
+  mutate(hill_element = i_var*log(growth/lead), 
+         hill_est = cumsum(hill_element)/i_var) 
+
+```
+
+**Definition of the function $\mu_\tau$**
+
+Evaluate the integral for $\tau \neq 0$ using `mu_f()`, switching to `mu_f_tau_0()` when $\tau = 0$.
+Although the theoretical upper integration limit is infinity, the code performs numerical integration with an upper limit of 10.
+
+$$\mu_\tau(t) = \int_0^\infty \{K_\tau(x+t)-K_\tau(t)\}e^{-x}\,dx, \qquad K_0(y)=\log y, \quad K_\tau(y)=\frac{y^\tau-1}{\tau}\ \ (\tau\neq0).$$
+
+```{r}
+
+mu_f_tau_0 <- \(t_x) integrate(\(x) (log(x + t_x) - log(t_x))*exp(-x), 0.0, 10)$value
+mu_f <- function(tau_x, t_x) {
+  if (tau_x == 0) {
+    return(mu_f_tau_0(t_x))
+  }
+  integrate(\(x) ((x + t_x)^{tau_x} - t_x^{tau_x})*exp(-x)/tau_x, 0.0, 10)$value
+}
+
+```
+
+### 1.2 Estimating $\alpha = \theta^{-1}$ under $\tau = 0$
+
+**Estimating $\alpha$ with the Hill estimator**
+
+Set the rank threshold to $k_n=\operatorname{round}(0.05n)$.
+With growth at rank $k_n$, $X_{(k_n)}$, as the threshold, estimate $\alpha=\theta^{-1}$ using `hill_est` from row $k_n-1$ and $\mu_0(t)$ at $t=\log(n/k_n)$.
+The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$. Use the threshold rank $k_n$ unchanged in the argument of $\mu_0$ and subsequent quantile estimation.
+
+$$\widehat\alpha = \left\{\frac{H(k_n-1)}{\mu_0(\log(n/k_n))}\right\}^{-1}.$$
+
+```{r}
+
+n_obs <- sample_tb |> summarise(n_obs = n()) |> pull(n_obs)
+k_n <- round(0.05*n_obs) #k_n <- 3*10^3
+
+est_alpha <- (sample_tb$hill_est[k_n - 1]/mu_f_tau_0(t_x = log(n_obs/k_n)))^{-1}
+str_c("alpha is ", est_alpha)
+
+```
+
+**Checking linearity**
+
+Using descending growth rates $X_{(i)}$, create a scatterplot with $\log\log(n/i)$ on the horizontal axis and $\log X_{(i)}$ on the vertical axis.
+
+```{r}
+#| layout-ncol: 2
+
+sample_tb |>  
+  mutate(x_var = log(log(n_i_var)), y_var = log(growth)) |>  
+  filter(i_var < k_n) |>  
+ggplot(aes(x_var, y_var)) + 
+  geom_point(size = 0.7) + 
+  geom_smooth(method = "lm") + 
+  labs(
+      x = expression(log(log(N / i))),
+      y = expression(log (X[N-i+1]))
+  ) +
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "Weibull_linear_relation.png", path = "graph")
+
+```
+
+### 1.3 Estimating extreme quantiles and tail probabilities
+
+**Creating variables**
+
+Set `growth_kn` to growth at rank $k_n$ in descending order, $X_{(k_n)}$, and `est_theta` to the reciprocal of `est_alpha`.
+Calculate the following columns and save the top $k_n$ observations in `est_quantile_tb`.
+
+* `p_n`: rank-based empirical tail probability $i/n$.
+* `tail_growth`: growth relative to the threshold, $X_{(i)}/X_{(k_n)}$.
+* `prob_var`：$\log(1/p_n)/\log(n/k_n)$。
+* `est_quantile`：$\widehat{x}_{p_n}=X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat\theta}$。
+
+Define `est_pn_f()` to calculate tail probabilities using the same threshold and estimated parameters.
+
+$$\widehat p(x)=\exp\left\{\log(k_n/n)\left(\frac{x}{X_{(k_n)}}\right)^{1/\widehat\theta}\right\}.$$
+
+```{r}
+
+growth_kn <- sample_tb$growth[k_n]
+est_theta <- 1/est_alpha
+
+est_quantile_tb <- sample_tb |> 
+  mutate(p_n = 1/n_i_var, 
+         tail_growth = growth/growth_kn, 
+         prob_var = log(1/p_n)/log(n_obs/k_n), 
+         est_quantile = growth_kn*(log(1/p_n)/log(n_obs/k_n))^est_theta) |>  
+  select(growth, tail_growth, p_n, prob_var, est_quantile) |>  
+  slice(1:k_n) 
+
+est_pn_f <- \(x) exp(log(k_n/n_obs)*(x/growth_kn)^{1/est_theta})
+
+```
+
+**Visualization**
+
+With observed growth on the horizontal axis and tail probability on the vertical axis, compare empirical tail probabilities `p_n` for the top $k_n$ observations with the curve estimated by `est_pn_f()`.
+Use a logarithmic vertical scale, displaying growth from 0 to 3 and tail probabilities from $10^{-5}$ to $10^{-1}$.
+
+```{r}
+#| layout-ncol: 2
+
+est_quantile_tb |>  
+ggplot(aes(growth, p_n)) + 
+  geom_point(aes(color = "empirical"), size = 0.7) + 
+  geom_function(aes(color = "estimate"), fun = est_pn_f) + 
+  coord_cartesian(xlim = c(0, 3), ylim = c(10^{-5}, 10^{-1})) + 
+  scale_y_log10() + 
+  scale_color_manual(values = c("empirical" = "black", "estimate" = "blue")) +
+  labs(
+      x = "Growth Rate",
+      y = "Tail Probability"
+  ) +
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "Weibull_est_th.png", path = "graph")
+
+```
+
+## 2 Estimating $\tau$
+
+**Definition of `tau_est_f()`**
+
+For a given rank threshold $k_n$, set the second threshold to $k'_n=10k_n$.
+Generate candidate values of $\tau$ from $-1$ to $2$ in increments of 0.002 (including $\tau=0$), and calculate the following two ratios for each candidate.
+
+$$\frac{\mu_\tau(\log(n/k_n))}{\mu_\tau(\log(n/k'_n))} \qquad\text{and}\qquad \frac{H(k_n-1)}{H(k'_n-1)}.$$
+
+To align the Hill estimator thresholds with $X_{(k_n)}$ and $X_{(k'_n)}$, reference `hill_est` at the threshold rank minus one.
+Return the candidate that minimizes the absolute difference between the two ratios.
+
+```{r}
+#| layout-ncol: 2
+
+tau_est_f <- \(k_n_x){
+  k_n_2_x <- 10*k_n_x
+  # Divide integers by 500 to create a grid from -1 to 2 that includes zero exactly.
+  tau_seq <- seq(-500L, 1000L) / 500
+
+  mu_ratio <- map_dbl(tau_seq, \(tau_x) mu_f(tau_x, t_x = log(n_obs/k_n_x))/mu_f(tau_x, t_x = log(n_obs/k_n_2_x)))
+  Hill_ratio <- sample_tb$hill_est[k_n_x - 1]/sample_tb$hill_est[k_n_2_x - 1]
+
+  tau_seq[which.min(abs(mu_ratio - Hill_ratio))]    
+}
+
+```
+
+**Threshold-specific $\tau$ estimates and 95% bands**
+
+Estimate $\tau$ at each threshold $k_n=10,20,\ldots,6000$.
+This threshold sequence differs from $\operatorname{round}(0.05n)$ used to estimate $\alpha$.
+Calculate the standard error and 95% bands using the following formula.
+
+$$\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}\{\log\log(n/k_n)-\log\log(n/k'_n)\}}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).$$
+
+```{r}
+#| layout-ncol: 2
+
+# Add the standard error (se) and lower and upper 95% confidence limits to tau_est_tb alongside tau_est.
+tau_est_tb <- tibble(k_n = seq(10, 6000, by = 10)) %>%
+  mutate(
+    tau_est = map_dbl(k_n, tau_est_f),
+    # Calculate k_n_2 (originally k_n_2_x = 10 * k_n_x).
+    k_n_2 = 10 * k_n,
+    # Calculate the specified standard error.
+    se = 1 / (sqrt(k_n) * (log(log(n_obs/k_n)) - log(log(n_obs/k_n_2)))),
+    ci_lower = tau_est - 1.96 * se,
+    ci_upper = tau_est + 1.96 * se
+  )
+
+# Plot: add a confidence ribbon using geom_ribbon().
+tau_est_tb %>%
+  ggplot(aes(x = k_n)) +
+  geom_line(aes(y = tau_est)) +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), alpha = 0.4) +
+  coord_cartesian(xlim = c(0, 4000), ylim = c(-.5, 1.5)) + 
+  labs(
+      x = expression(k[N]),
+      y = expression(hat(tau))
+  ) +
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "Girard_est_tau.png", path = "graph")
+
+```
+

@@ -2216,15 +2216,7 @@ font-weight: bold;
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#概要" id="toc-概要" class="nav-link active" data-scroll-target="#概要">概要</a>
-  <ul class="collapse">
-  <li><a href="#データの準備と記述統計" id="toc-データの準備と記述統計" class="nav-link" data-scroll-target="#データの準備と記述統計">データの準備と記述統計</a></li>
-  <li><a href="#企業売上分布と年齢" id="toc-企業売上分布と年齢" class="nav-link" data-scroll-target="#企業売上分布と年齢">企業売上分布と年齢</a></li>
-  <li><a href="#成長率の依存関係と分布" id="toc-成長率の依存関係と分布" class="nav-link" data-scroll-target="#成長率の依存関係と分布">成長率の依存関係と分布</a></li>
-  <li><a href="#初期企業規模と高成長集団の分析" id="toc-初期企業規模と高成長集団の分析" class="nav-link" data-scroll-target="#初期企業規模と高成長集団の分析">初期企業規模と高成長集団の分析</a></li>
-  <li><a href="#売上年齢と成長率の関係" id="toc-売上年齢と成長率の関係" class="nav-link" data-scroll-target="#売上年齢と成長率の関係">売上・年齢と成長率の関係</a></li>
-  <li><a href="#理論分布とシミュレーション" id="toc-理論分布とシミュレーション" class="nav-link" data-scroll-target="#理論分布とシミュレーション">理論分布とシミュレーション</a></li>
-  </ul></li>
+  <li><a href="#list-of-analyses" id="toc-list-of-analyses" class="nav-link active" data-scroll-target="#list-of-analyses">List of analyses</a></li>
   </ul>
 </nav>
 </div>
@@ -2233,7 +2225,6 @@ font-weight: bold;
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <div class="quarto-title-block"><div><h1 class="title">Firm sales process analysis: replication overview</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">Simulation data for replication of the sales process analysis</p>
 </div>
 
 
@@ -2250,181 +2241,240 @@ font-weight: bold;
 </header>
 
 
-<section id="概要" class="level2">
-<h2 class="anchored" data-anchor-id="概要">概要</h2>
-<p>これは、架空の企業パネルを使って企業売上・成長率の分析を実行するための案内である。 分析コード（QMD）と対応する出力（HTML）へのリンクをまとめる。 simulation data は分析コードを実行するためのものであり、論文の実証結果を再現するものではない。</p>
-<p>最初に <a href="01_data_simulation.qmd">01_data_simulation.qmd</a> を実行し、同じフォルダ内の <code>simulation_board/</code> に <code>sample_size_tb</code>、<code>sample_growth_tb</code>、生成パラメータ <code>simulation_parameters</code> を <code>qs2</code> 形式で保存する。 01では、乱数 seed を固定し、1940–2020年に設立された30万社について、誕生時の対数売上をラプラス分布、年間の対数成長率を符号付き Weibull 分布から生成する。分析用に保存する売上パネルは2005–2020年である。 その後、02–11の各分析を実行する。12は企業パネルを使わない独立した理論・シミュレーション分析である。 各 QMD の実行時の作業ディレクトリは、その QMD のあるフォルダとする。実行手順・必要パッケージは <a href="README.md">README</a> を参照。</p>
-<p>現在の03の QMD は入力先が <code>../Zipf_law_board_replicate</code> のままであり、既存の03の HTML に記載された <code>simulation_board</code> と異なる。03をシミュレーションデータで再実行する前に、入力先を確認する必要がある。 また、分析ページの一部には TSR に関する旧タイトル・説明が残っている。</p>
-<p><br></p>
-<section id="データの準備と記述統計" class="level3">
-<h3 class="anchored" data-anchor-id="データの準備と記述統計">データの準備と記述統計</h3>
-<table class="caption-top table">
+<p>This overview file describes how to run the firm sales and growth analysis using a synthetic firm panel. It provides links to the analysis code (QMD) and corresponding output (HTML). The simulated data are intended for running the analysis code; they do not reproduce the paper’s empirical results.</p>
+<p>First, run <a href="01_data_simulation.qmd">01_data_simulation.qmd</a> to save <code>sample_size_tb</code> and <code>sample_growth_tb</code> in <code>../Zipf_law_board_replicate_simulation/</code>. In 01, a fixed random seed is used to generate log sales at birth from a Laplace distribution and annual log growth rates from a signed Weibull distribution for 300,000 firms established in 1940–2020. Then run each analysis in 02–11. 12 is an independent theoretical analysis that does not use the firm panel. Use the folder containing each QMD as its working directory during execution. Use <code>../Zipf_law_board_replicate_simulation</code> as both the output directory for 01 and the input directory for 02–11.</p>
+<section id="list-of-analyses" class="level2">
+<h2 class="anchored" data-anchor-id="list-of-analyses">List of analyses</h2>
+<table class="table table-sm">
 <thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
+<tr>
+<th scope="col">
+Analysis
+</th>
+<th scope="col">
+Description
+</th>
+<th scope="col" style="white-space: nowrap;">
+Code
+</th>
+<th scope="col" style="white-space: nowrap;">
+Output
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>01 架空データ作成</td>
-<td>企業属性・売上パネル・対数成長率を生成し、入力互換性を検証して simulation_board に保存</td>
-<td><a href="01_data_simulation.qmd">QMD</a></td>
-<td><a href="01_data_simulation.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Data preparation and summary statistics
+</th>
 </tr>
-<tr class="even">
-<td>02 記述統計</td>
-<td>2010–2020年の対数売上と1年間の成長率の記述統計、LaTeX 表の出力</td>
-<td><a href="02_summ_stat.qmd">QMD</a></td>
-<td><a href="02_summ_stat.html">HTML</a></td>
+<tr>
+<td>
+01 Synthetic data generation
+</td>
+<td>
+Generate firm attributes, a sales panel, and log growth rates
+</td>
+<td>
+<a href="01_data_simulation.qmd">QMD</a>
+</td>
+<td>
+<a href="01_data_simulation.html">HTML</a>
+</td>
+</tr>
+<tr>
+<td>
+02 Summary statistics
+</td>
+<td>
+Summary statistics for log sales and annual growth rates in 2010–2020 (Table 1)
+</td>
+<td>
+<a href="02_summ_stat.qmd">QMD</a>
+</td>
+<td>
+<a href="02_summ_stat.html">HTML</a>
+</td>
 </tr>
 </tbody>
-</table>
-<p><br></p>
-</section>
-<section id="企業売上分布と年齢" class="level3">
-<h3 class="anchored" data-anchor-id="企業売上分布と年齢">企業売上分布と年齢</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
-</tr>
-</thead>
 <tbody>
-<tr class="odd">
-<td>03 年齢別売上分布</td>
-<td>2020年の年齢別売上分布・Q-Q plot・売上閾値別の年齢構成比、2010–2020年の売上分布比較</td>
-<td><a href="03_size_TSR.qmd">QMD</a></td>
-<td><a href="03_size_TSR.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Firm sales distributions and age
+</th>
+</tr>
+<tr>
+<td>
+03 Sales distributions by age
+</td>
+<td>
+Sales distributions by age, Q-Q plots, and age composition by sales threshold in 2020; comparison of sales distributions across 2010–2020 (Figures 1, 2, 3, 8(a))
+</td>
+<td>
+<a href="03_size_TSR.qmd">QMD</a>
+</td>
+<td>
+<a href="03_size_TSR.html">HTML</a>
+</td>
 </tr>
 </tbody>
-</table>
-<p><br></p>
-</section>
-<section id="成長率の依存関係と分布" class="level3">
-<h3 class="anchored" data-anchor-id="成長率の依存関係と分布">成長率の依存関係と分布</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
-</tr>
-</thead>
 <tbody>
-<tr class="odd">
-<td>04 成長率の依存関係</td>
-<td>年次成長率10期間の Spearman 順位相関、隣接2期間のテール依存指標と翌期の非負成長率の累積平均</td>
-<td><a href="04_random_walk.qmd">QMD</a></td>
-<td><a href="04_random_walk.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Growth dependence and distributions
+</th>
 </tr>
-<tr class="even">
-<td>05 成長率分布</td>
-<td>1年間および2010年起点の累積成長率の密度と Mean Excess Function</td>
-<td><a href="05_growth_rate_TSR.qmd">QMD</a></td>
-<td><a href="05_growth_rate_TSR.html">HTML</a></td>
+<tr>
+<td>
+04 Growth dependence
+</td>
+<td>
+Spearman rank correlations across ten annual growth periods and a tail dependence measure for two consecutive periods (Table 3, Figure 9)
+</td>
+<td>
+<a href="04_random_walk.qmd">QMD</a>
+</td>
+<td>
+<a href="04_random_walk.html">HTML</a>
+</td>
 </tr>
-<tr class="odd">
-<td>06 Girard の方法</td>
-<td>2019–2020年の正の成長率からテールパラメータ・極端分位点・テール確率を推定</td>
-<td><a href="06_Girard.qmd">QMD</a></td>
-<td><a href="06_Girard.html">HTML</a></td>
+<tr>
+<td>
+05 Growth distributions
+</td>
+<td>
+Densities and mean excess functions for annual growth and cumulative growth starting in 2010 (Figures 11, 12, 13)
+</td>
+<td>
+<a href="05_growth_rate_TSR.qmd">QMD</a>
+</td>
+<td>
+<a href="05_growth_rate_TSR.html">HTML</a>
+</td>
+</tr>
+<tr>
+<td>
+06 Girard’s method
+</td>
+<td>
+Estimate tail parameters, quantiles, and tail probabilities from positive growth rates in 2019–2020 (Figure 14)
+</td>
+<td>
+<a href="06_Girard.qmd">QMD</a>
+</td>
+<td>
+<a href="06_Girard.html">HTML</a>
+</td>
 </tr>
 </tbody>
-</table>
-<p><br></p>
-</section>
-<section id="初期企業規模と高成長集団の分析" class="level3">
-<h3 class="anchored" data-anchor-id="初期企業規模と高成長集団の分析">初期企業規模と高成長集団の分析</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
-</tr>
-</thead>
 <tbody>
-<tr class="odd">
-<td>07 初期企業規模分布</td>
-<td>5歳時点の売上の対数分布と Mean Excess Function を2010–2020年で比較</td>
-<td><a href="07_init_size.qmd">QMD</a></td>
-<td><a href="07_init_size.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Initial firm size and high-growth groups
+</th>
 </tr>
-<tr class="even">
-<td>08 テール指数</td>
-<td>2010–2020年の売上倍率、2020年の5歳時点・5–40歳の年齢別売上の Hill 推定</td>
-<td><a href="08_tail_slope.qmd">QMD</a></td>
-<td><a href="08_tail_slope.html">HTML</a></td>
+<tr>
+<td>
+07 Initial firm size distribution
+</td>
+<td>
+Compare log sales distributions and mean excess functions at firm age five across 2010–2020 (Figure 18)
+</td>
+<td>
+<a href="07_init_size.qmd">QMD</a>
+</td>
+<td>
+<a href="07_init_size.html">HTML</a>
+</td>
 </tr>
-<tr class="odd">
-<td>09 最小成長率</td>
-<td>10年間の成長率で高成長企業を分類し、年次成長率の最小値の分布・要約統計を比較（HGF は10期間、non-HGF は9期間）</td>
-<td><a href="09_k-1_smallest.qmd">QMD</a></td>
-<td><a href="09_k-1_smallest.html">HTML</a></td>
+<tr>
+<td>
+08 Tail index
+</td>
+<td>
+Hill estimation for growth over 2010–2020, sales at firm age five in 2020, and sales by age for ages 5–40 in 2020 (Figure 20(a))
+</td>
+<td>
+<a href="08_tail_slope.qmd">QMD</a>
+</td>
+<td>
+<a href="08_tail_slope.html">HTML</a>
+</td>
 </tr>
-<tr class="even">
-<td>10 U-shape</td>
-<td>2010–2012年の累積対数成長率に対する最初の1年間の対数成長率の比を、累積成長率の閾値別に比較</td>
-<td><a href="10_u-shape_TSR.qmd">QMD</a></td>
-<td><a href="10_u-shape_TSR.html">HTML</a></td>
+<tr>
+<td>
+09 Minimum growth rate
+</td>
+<td>
+Classify high-growth firms using ten-year growth and compare distributions and summary statistics of minimum annual growth rates (Figure 23(a))
+</td>
+<td>
+<a href="09_k-1_smallest.qmd">QMD</a>
+</td>
+<td>
+<a href="09_k-1_smallest.html">HTML</a>
+</td>
+</tr>
+<tr>
+<td>
+10 U-shape
+</td>
+<td>
+Compare the ratio of log growth in the first year to cumulative log growth over 2010–2012 (Figure 21)
+</td>
+<td>
+<a href="10_u-shape_TSR.qmd">QMD</a>
+</td>
+<td>
+<a href="10_u-shape_TSR.html">HTML</a>
+</td>
 </tr>
 </tbody>
-</table>
-<p><br></p>
-</section>
-<section id="売上年齢と成長率の関係" class="level3">
-<h3 class="anchored" data-anchor-id="売上年齢と成長率の関係">売上・年齢と成長率の関係</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
-</tr>
-</thead>
 <tbody>
-<tr class="odd">
-<td>11 成長率・年齢・期首売上</td>
-<td>2010–2011年の成長率を期首売上階級別・年齢階級別に比較し、売上・年齢を限定した Mean Excess Function を描画</td>
-<td><a href="11_growth_age_size.qmd">QMD</a></td>
-<td><a href="11_growth_age_size.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Relationships between sales, age, and growth
+</th>
+</tr>
+<tr>
+<td>
+11 Growth, age, and initial sales
+</td>
+<td>
+Compare 2010–2011 growth by sales and age classes and plot mean excess functions (Figures 1 and 2 in the Appendix)
+</td>
+<td>
+<a href="11_growth_age_size.qmd">QMD</a>
+</td>
+<td>
+<a href="11_growth_age_size.html">HTML</a>
+</td>
 </tr>
 </tbody>
-</table>
-<p><br></p>
-</section>
-<section id="理論分布とシミュレーション" class="level3">
-<h3 class="anchored" data-anchor-id="理論分布とシミュレーション">理論分布とシミュレーション</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>分析</th>
-<th>内容</th>
-<th>コード</th>
-<th>実行結果</th>
-</tr>
-</thead>
 <tbody>
-<tr class="odd">
-<td>12 和と比率の分布</td>
-<td>Laplace 変数の和の解析密度、対称 Weibull 変数の和のシミュレーション、正の Weibull 変数の和を固定した条件付き比率密度</td>
-<td><a href="12_evolution_growth_size.qmd">QMD</a></td>
-<td><a href="12_evolution_growth_size.html">HTML</a></td>
+<tr>
+<th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">
+Theoretical distributions and simulations
+</th>
+</tr>
+<tr>
+<td>
+12 Distributions of sums and ratios
+</td>
+<td>
+Densities of sums of Laplace variables, simulations of sums of symmetric Weibull variables, and conditional ratio densities given a fixed sum of positive Weibull variables (Figures 6, 7)
+</td>
+<td>
+<a href="12_evolution_growth_size.qmd">QMD</a>
+</td>
+<td>
+<a href="12_evolution_growth_size.html">HTML</a>
+</td>
 </tr>
 </tbody>
 </table>
 <!-- -->
 
-</section>
 </section>
 
 </main>
@@ -2882,93 +2932,73 @@ font-weight: bold;
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> &quot;Firm sales process analysis: replication overview&quot;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> &quot;Simulation data for replication of the sales process analysis&quot;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">lang:</span><span class="co"> en</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: cosmo</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    css: custom.css</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    fontsize: small</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: show</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">    df-print: paged</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">    embed-resources: true</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: true</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span><span class="co"> source</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## 概要</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>これは、架空の企業パネルを使って企業売上・成長率の分析を実行するための案内である。</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>分析コード（QMD）と対応する出力（HTML）へのリンクをまとめる。</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>simulation data は分析コードを実行するためのものであり、論文の実証結果を再現するものではない。</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>最初に <span class="co">[</span><span class="ot">01_data_simulation.qmd</span><span class="co">](01_data_simulation.qmd)</span> を実行し、同じフォルダ内の <span class="in">`simulation_board/`</span> に <span class="in">`sample_size_tb`</span>、<span class="in">`sample_growth_tb`</span>、生成パラメータ <span class="in">`simulation_parameters`</span> を <span class="in">`qs2`</span> 形式で保存する。</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>01では、乱数 seed を固定し、1940–2020年に設立された30万社について、誕生時の対数売上をラプラス分布、年間の対数成長率を符号付き Weibull 分布から生成する。分析用に保存する売上パネルは2005–2020年である。</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>その後、02–11の各分析を実行する。12は企業パネルを使わない独立した理論・シミュレーション分析である。</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>各 QMD の実行時の作業ディレクトリは、その QMD のあるフォルダとする。実行手順・必要パッケージは <span class="co">[</span><span class="ot">README</span><span class="co">](README.md)</span> を参照。</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>現在の03の QMD は入力先が <span class="in">`../Zipf_law_board_replicate`</span> のままであり、既存の03の HTML に記載された <span class="in">`simulation_board`</span> と異なる。03をシミュレーションデータで再実行する前に、入力先を確認する必要がある。</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>また、分析ページの一部には TSR に関する旧タイトル・説明が残っている。</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">### データの準備と記述統計</span></span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 01 架空データ作成 <span class="pp">|</span> 企業属性・売上パネル・対数成長率を生成し、入力互換性を検証して simulation_board に保存 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](01_data_simulation.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](01_data_simulation.html)</span> <span class="pp">|</span></span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 02 記述統計 <span class="pp">|</span> 2010–2020年の対数売上と1年間の成長率の記述統計、LaTeX 表の出力 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](02_summ_stat.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](02_summ_stat.html)</span> <span class="pp">|</span></span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="fu">### 企業売上分布と年齢</span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 03 年齢別売上分布 <span class="pp">|</span> 2020年の年齢別売上分布・Q-Q plot・売上閾値別の年齢構成比、2010–2020年の売上分布比較 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](03_size_TSR.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](03_size_TSR.html)</span> <span class="pp">|</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### 成長率の依存関係と分布</span></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 04 成長率の依存関係 <span class="pp">|</span> 年次成長率10期間の Spearman 順位相関、隣接2期間のテール依存指標と翌期の非負成長率の累積平均 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](04_random_walk.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](04_random_walk.html)</span> <span class="pp">|</span></span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 05 成長率分布 <span class="pp">|</span> 1年間および2010年起点の累積成長率の密度と Mean Excess Function <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](05_growth_rate_TSR.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](05_growth_rate_TSR.html)</span> <span class="pp">|</span></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 06 Girard の方法 <span class="pp">|</span> 2019–2020年の正の成長率からテールパラメータ・極端分位点・テール確率を推定 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](06_Girard.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](06_Girard.html)</span> <span class="pp">|</span></span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### 初期企業規模と高成長集団の分析</span></span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 07 初期企業規模分布 <span class="pp">|</span> 5歳時点の売上の対数分布と Mean Excess Function を2010–2020年で比較 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](07_init_size.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](07_init_size.html)</span> <span class="pp">|</span></span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 08 テール指数 <span class="pp">|</span> 2010–2020年の売上倍率、2020年の5歳時点・5–40歳の年齢別売上の Hill 推定 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](08_tail_slope.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](08_tail_slope.html)</span> <span class="pp">|</span></span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 09 最小成長率 <span class="pp">|</span> 10年間の成長率で高成長企業を分類し、年次成長率の最小値の分布・要約統計を比較（HGF は10期間、non-HGF は9期間） <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](09_k-1_smallest.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](09_k-1_smallest.html)</span> <span class="pp">|</span></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 10 U-shape <span class="pp">|</span> 2010–2012年の累積対数成長率に対する最初の1年間の対数成長率の比を、累積成長率の閾値別に比較 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](10_u-shape_TSR.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](10_u-shape_TSR.html)</span> <span class="pp">|</span></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="fu">### 売上・年齢と成長率の関係</span></span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 11 成長率・年齢・期首売上 <span class="pp">|</span> 2010–2011年の成長率を期首売上階級別・年齢階級別に比較し、売上・年齢を限定した Mean Excess Function を描画 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](11_growth_age_size.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](11_growth_age_size.html)</span> <span class="pp">|</span></span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### 理論分布とシミュレーション</span></span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 分析 <span class="pp">|</span> 内容 <span class="pp">|</span> コード <span class="pp">|</span> 実行結果 <span class="pp">|</span></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
-<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 12 和と比率の分布 <span class="pp">|</span> Laplace 変数の和の解析密度、対称 Weibull 変数の和のシミュレーション、正の Weibull 変数の和を固定した条件付き比率密度 <span class="pp">|</span> <span class="co">[</span><span class="ot">QMD</span><span class="co">](12_evolution_growth_size.qmd)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">HTML</span><span class="co">](12_evolution_growth_size.html)</span> <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">lang:</span><span class="co"> en</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: cosmo</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    css: custom.css</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    fontsize: small</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">    df-print: paged</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">    embed-resources: true</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: true</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span><span class="co"> source</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>This overview file describes how to run the firm sales and growth analysis using a synthetic firm panel.</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>It provides links to the analysis code (QMD) and corresponding output (HTML).</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>The simulated data are intended for running the analysis code; they do not reproduce the paper&#39;s empirical results.</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>First, run <span class="co">[</span><span class="ot">01_data_simulation.qmd</span><span class="co">](01_data_simulation.qmd)</span> to save <span class="in">`sample_size_tb`</span> and <span class="in">`sample_growth_tb`</span> in <span class="in">`../Zipf_law_board_replicate_simulation/`</span>.</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>In 01, a fixed random seed is used to generate log sales at birth from a Laplace distribution and annual log growth rates from a signed Weibull distribution for 300,000 firms established in 1940–2020.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>Then run each analysis in 02–11.</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>12 is an independent theoretical analysis that does not use the firm panel.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>Use the folder containing each QMD as its working directory during execution.</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`../Zipf_law_board_replicate_simulation`</span> as both the output directory for 01 and the input directory for 02–11.</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## List of analyses</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">table</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;table table-sm&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">thead</span><span class="dt">&gt;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;col&quot;</span><span class="dt">&gt;</span>Analysis<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;col&quot;</span><span class="dt">&gt;</span>Description<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;col&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;white-space: nowrap;&quot;</span><span class="dt">&gt;</span>Code<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;col&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;white-space: nowrap;&quot;</span><span class="dt">&gt;</span>Output<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">thead</span><span class="dt">&gt;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Data preparation and summary statistics<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>01 Synthetic data generation<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Generate firm attributes, a sales panel, and log growth rates<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;01_data_simulation.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;01_data_simulation.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>02 Summary statistics<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Summary statistics for log sales and annual growth rates in 2010–2020 (Table 1)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;02_summ_stat.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;02_summ_stat.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Firm sales distributions and age<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>03 Sales distributions by age<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Sales distributions by age, Q-Q plots, and age composition by sales threshold in 2020; comparison of sales distributions across 2010–2020 (Figures 1, 2, 3, 8(a))<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;03_size_TSR.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;03_size_TSR.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Growth dependence and distributions<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>04 Growth dependence<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Spearman rank correlations across ten annual growth periods and a tail dependence measure for two consecutive periods (Table 3, Figure 9)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;04_random_walk.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;04_random_walk.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>05 Growth distributions<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Densities and mean excess functions for annual growth and cumulative growth starting in 2010 (Figures 11, 12, 13)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;05_growth_rate_TSR.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;05_growth_rate_TSR.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>06 Girard&#39;s method<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Estimate tail parameters, quantiles, and tail probabilities from positive growth rates in 2019–2020 (Figure 14)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;06_Girard.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;06_Girard.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Initial firm size and high-growth groups<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>07 Initial firm size distribution<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Compare log sales distributions and mean excess functions at firm age five across 2010–2020 (Figure 18)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;07_init_size.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;07_init_size.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>08 Tail index<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Hill estimation for growth over 2010–2020, sales at firm age five in 2020, and sales by age for ages 5–40 in 2020 (Figure 20(a))<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;08_tail_slope.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;08_tail_slope.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>09 Minimum growth rate<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Classify high-growth firms using ten-year growth and compare distributions and summary statistics of minimum annual growth rates (Figure 23(a))<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;09_k-1_smallest.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;09_k-1_smallest.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>10 U-shape<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Compare the ratio of log growth in the first year to cumulative log growth over 2010–2012 (Figure 21)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;10_u-shape_TSR.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;10_u-shape_TSR.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Relationships between sales, age, and growth<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>11 Growth, age, and initial sales<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Compare 2010–2011 growth by sales and age classes and plot mean excess functions (Figures 1 and 2 in the Appendix)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;11_growth_age_size.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;11_growth_age_size.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="ot"> colspan</span><span class="op">=</span><span class="st">&quot;4&quot;</span><span class="ot"> scope</span><span class="op">=</span><span class="st">&quot;rowgroup&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;&quot;</span><span class="dt">&gt;</span>Theoretical distributions and simulations<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>12 Distributions of sums and ratios<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;</span>Densities of sums of Laplace variables, simulations of sums of symmetric Weibull variables, and conditional ratio densities given a fixed sum of positive Weibull variables (Figures 6, 7)<span class="dt">&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;12_evolution_growth_size.qmd&quot;</span><span class="dt">&gt;</span>QMD<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;12_evolution_growth_size.html&quot;</span><span class="dt">&gt;</span>HTML<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">tbody</span><span class="dt">&gt;</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">table</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

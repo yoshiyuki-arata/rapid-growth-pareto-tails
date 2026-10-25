@@ -1,0 +1,180 @@
+---
+title: "Income growth dependence"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use income growth data `sample_growth_tb` to examine dependence across periods. Growth is the log difference between end-of-period and beginning-of-period incomes.
+Select individuals using beginning-of-period income and age conditions for 2014–15, and calculate Spearman rank correlations over the six periods from 2014–15 to 2019–20.
+Also use growth in 2014–15 and 2015–16 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values. Include zero growth in both analyses.
+
+## 1 Rank correlations of growth rates
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+```
+
+**Setting sample conditions**
+
+```{r}
+#| layout-ncol: 2
+
+library(corrr)
+library(scattermore)
+
+```
+
+Define `pobs()` to transform growth rates into rank-based pseudo-observations.
+Use average ranks for ties and divide by the length of the original vector plus one.
+Leave missing values in their original positions.
+
+```{r}
+#| label: define-pobs
+pobs <- function(x) {
+  rank(x, ties.method = "average", na.last = "keep") / (length(x) + 1)
+}
+```
+
+Load `sample_growth_tb` and calculate age `age` as the beginning year extracted from period label `year` minus the birth year in the first four characters of `birth_date`.
+For 2014–15 growth records (`g_15_14`), save the `id` values of individuals with beginning-of-period income `pre_income` of at least 4 million yen and beginning-of-period age 25–60 in `id_tb`.
+Use this set of individuals for both rank correlations and tail analyses.
+Do not impose additional restrictions based on income or age in other periods, or on industry.
+
+```{r}
+#| layout-ncol: 2
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year,6,7))) - as.numeric(str_sub(birth_date,1,4))) 
+
+id_tb <- sample_growth_tb |> 
+  filter(year == "g_15_14", 
+         pre_income >= 4*10^6, 
+         age >= 25, age <= 60) |> 
+  select(id) |> 
+  distinct(id)
+
+```
+
+**Spearman rank correlations across six periods**
+
+Use a common sample with finite growth rates in all six periods from 2014–15 to 2019–20.
+Include zero growth, and exclude individuals with `NA`, `NaN`, or positive or negative infinity.
+
+```{r}
+#| label: prepare-growth-wide
+growth_periods <- c(
+  "g_20_19", "g_19_18", "g_18_17",
+  "g_17_16", "g_16_15", "g_15_14"
+)
+
+growth_wide_tb <- sample_growth_tb |>
+  filter(year %in% growth_periods) |>
+  select(id, year, growth) |>
+  pivot_wider(id_cols = id, names_from = year, values_from = growth) |>
+  inner_join(id_tb, by = "id") |> 
+  select(-id) |> 
+  filter(if_all(everything(), is.finite))
+
+growth_wide_tb |> correlate(method = "spearman") 
+
+```
+
+## 2 Dependence in the tail
+
+**Data for the two-period tail analysis**
+
+For the selected individuals, retain observations with finite growth rates in both 2014–15 and 2015–16 in `normal_tb`.
+Calculate pseudo-observations separately for these two periods.
+Do not require finite values in all six periods here; use `normal_tb` for both the tail dependence measure and cumulative means of growth in the following period.
+
+```{r}
+#| layout-ncol: 2
+
+normal_tb <- sample_growth_tb |> 
+  pivot_wider(id_cols = id, names_from = "year", values_from = "growth") |> 
+  inner_join(id_tb, by = "id") |> 
+  select(g_16_15, g_15_14) |> 
+  filter(is.finite(g_16_15), is.finite(g_15_14)) |> 
+  mutate(pobs_16_15 = pobs(g_16_15), pobs_15_14 = pobs(g_15_14)) 
+
+```
+
+**Tail dependence measure**
+
+Let $N_q$ be the number of observations whose pseudo-observations exceed threshold $q$ in both periods, and $N$ the analysis sample size. Calculate the tail dependence measure as $N_q/[N(1-q)]$.
+Vary $q$ from 0.8 to 0.9995 in increments of 0.0005, save the measure in `tail_tb`, and plot it against $q$.
+Set vertical scale limits of 0–0.3 using `ylim()`.
+
+```{r}
+
+tail_tb <- seq(0.8, 0.9995, by = 0.0005) |> 
+  map_dfr(~ normal_tb |> 
+            filter(pobs_16_15 > .x, pobs_15_14 > .x) |> 
+            summarise(criteria = .x,
+                      tail_coeff = (n()/nrow(normal_tb))/(1 - .x))
+          )
+
+```
+
+```{r}
+#| layout-ncol: 2
+
+tail_tb |> 
+ggplot(aes(criteria, tail_coeff)) + 
+  geom_line(color = "steelblue") + 
+  ylim(0, 0.3) + 
+  labs(x = expression(q), 
+       y = "Tail dependence") 
+ggsave(filename = "tail_coeff_income.png", path = graph_dir)
+
+```
+
+**Cumulative mean of nonnegative growth in the following period**
+
+Sort individuals by descending growth in 2014–15, transform growth in the following period (2015–16) to $\max(g_{16,15}, 0)$, and calculate its cumulative mean.
+Use 2014–15 growth $t$ on the horizontal axis to examine average nonnegative growth in the following period among individuals who experienced large growth.
+Calculate using all of `normal_tb`, restricting only the displayed horizontal range to 0.2–2 and vertical range to 0–0.5.
+
+```{r}
+#| layout-ncol: 2
+
+normal_tb |> 
+  arrange(desc(g_15_14)) |> 
+  mutate(
+    g_16_15 = if_else(g_16_15 > 0, g_16_15, 0),
+    cummean_16_15 = cummean(g_16_15)
+  ) |>
+ggplot(aes(g_15_14, cummean_16_15)) +  
+  geom_scattermore(pointsize = 1.5, color = "steelblue") + 
+  coord_cartesian(xlim = c(0.2, 2), ylim = c(0, 0.5)) + 
+  labs(x = "t", 
+       y = "Conditional tail expectation") 
+ggsave(filename = "cond_tail_expect_g_15_14_transformed_income.png", path = graph_dir)
+
+```
+
+
+

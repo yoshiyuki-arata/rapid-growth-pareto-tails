@@ -1,0 +1,217 @@
+---
+title: "Evolution of growth rate distributions"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Examine how the distribution of a sum of independent and identically distributed random variables changes as the number of summands increases.
+For Laplace variables, calculate the density of the sum analytically; for symmetric Weibull variables, estimate it by simulation.
+Also plot the conditional distribution of a ratio given a fixed sum of positive Weibull variables.
+
+## 1 Convolution: Laplace and Weibull tails
+
+Let $\widetilde{S}_n=\sum_{k=1}^n X_k$ be the sum of independent and identically distributed random variables $X_1,\ldots,X_n$. Compare density changes under convolution for $n=1,\ldots,12$.
+
+```{r}
+library(tidyverse)
+library(hrbrthemes)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+```
+
+**Laplace**
+
+Consider a Laplace distribution with mean zero and scale parameter one.
+Its variance is two, and the density of the sum of $n$ independent variables can be calculated using the following analytical expression.
+
+$$f_{\sum_{k=1}^n X_k}(x)=\frac{e^{-|x|}}{(n-1)!2^n} \sum_{j=0}^{n-1} \frac{(n-1+j)!}{(n-1-j)!j!} \frac{|x|^{n-1-j}}{2^j}, \quad x \in \mathbb{R}$$
+
+Define `my_func()` to calculate the density.
+
+```{r}
+
+set.seed(1234)
+
+library(data.table)
+library(latex2exp)
+
+my_func <- \(x, n) {
+  summation <- 0
+  for (j in 0:(n-1)) {
+    term <- factorial(n-1+j) / (factorial(n-1-j) * factorial(j)) * (abs(x)^(n-1-j)) / (2^j)
+    summation <- summation + term
+  }
+  exp(-abs(x))/(factorial(n-1)*2^n)*summation
+}
+
+```
+
+Use `map()` to overlay density curves for $n=1,\ldots,12$, displaying them with a linear and a logarithmic vertical scale.
+In the logarithmic-scale figure, overlay a dot-dashed curve for the normal distribution $N(0,24)$, which has the same mean and variance as the sum of 12 variables.
+
+```{r}
+#| layout-ncol: 2
+
+Laplace_plot <- ggplot() +
+  map(1:12, ~ geom_function(fun = \(x) my_func(x, .x), 
+                            aes(color = factor(.x, levels = as.character(1:12)))
+                            )) +
+  scale_color_viridis_d(option = "C") +
+  theme(axis.title = element_text(face = "bold"))
+
+Laplace_plot +
+  labs(x = TeX("$\\widetilde{S}_n$"), 
+       y = "Probability density", 
+       color = TeX("$n$")
+       ) + 
+  xlim(-15,15) 
+ggsave(filename = "Laplace_sum.png", path = "graph")
+
+Laplace_plot + 
+  geom_function(fun = \(x) dnorm(x, sd = sqrt(2)*sqrt(12)), size = 0.7, linetype = "dotdash") + 
+  labs(x = TeX("$\\widetilde{S}_n$"), 
+       y = "Probability density (log scale)", 
+       color = TeX("$n$")
+       ) +  
+  xlim(-30,30) + 
+  scale_y_log10(limits = c(10^{-6.5},1)) 
+ggsave(filename = "Laplace_sum_log.png", path = "graph")
+  
+```
+
+**Weibull**
+
+Generate a symmetric distribution with mean zero by independently assigning positive and negative signs, each with probability $1/2$, to Weibull draws with shape parameter $\alpha=0.7$ and scale parameter one.
+Its right tail is represented by the following survival function.
+
+$$\mathbb{P}(X_k>x)=\frac{1}{2}\exp(-x^\alpha), \quad x\geq0,\quad \alpha=0.7.$$
+
+`id` denotes the individual and `year` the number of periods.
+Use grouped operations by individual in `data.table` to calculate cumulative sums `sum_x` and compare their distributions across periods.
+
+```{r}
+
+m <- 10^7   # number of firm
+years <- 12  # number of years per group
+n <- m*years # total number of obs
+
+# use data.table for faster manipulation
+weibull_tb <- 
+  data.table(
+    id = rep(1:m, each = years), 
+    year = rep(1:years, m), 
+    x = rweibull(n, shape = 0.7)*ifelse(rbinom(n, 1, 0.5) == 1, 1, -1)
+  )
+
+# calc cumulative sums efficiently by group
+weibull_tb[, sum_x := cumsum(x), by = id]
+
+```
+
+Estimate kernel densities separately for each period.
+Since the variance of a symmetric Weibull variable is $\Gamma(1+2/\alpha)$, overlay the normal distribution $N(0,12\Gamma(1+2/0.7))$ corresponding to the sum of 12 variables in the logarithmic-scale figure.
+
+```{r}
+#| layout-ncol: 2
+
+weibull_tb |>  
+  filter(abs(sum_x) < 30) |>  
+  mutate(year = str_pad(year, width = 2, pad = "0")) |>  
+ggplot(aes(sum_x, color = year)) + 
+  geom_line(stat = "density", aes(y = after_stat(density))) + 
+  scale_color_viridis_d(option = "C") + 
+  labs(x = TeX("$\\widetilde{S}_n$"), 
+       y = "Probability density", 
+       color = TeX("$n$")
+       ) + 
+  theme(axis.title = element_text(face = "bold")) + 
+  coord_cartesian(xlim = c(-10, 10))
+ggsave(filename = "Weibull_sum.png", path = "graph")
+
+weibull_tb |> 
+  filter(abs(sum_x) < 50) |> 
+  mutate(year = str_pad(year, width = 2, pad = "0")) |> 
+ggplot(aes(sum_x, color = year)) + 
+  geom_line(stat = "density", aes(y = after_stat(density))) + 
+  geom_function(fun = \(x) dnorm(x, sd = sqrt(12 * gamma(1 + 2 / 0.7))), 
+                size = 1.0, linetype = "dotdash", color = "black") + 
+  scale_color_viridis_d(option = "C") + 
+  labs(x = TeX("$\\widetilde{S}_n$"), 
+       y = "Probability density (log scale)", 
+       color = TeX("$n$")
+       ) + 
+  theme(axis.title = element_text(face = "bold")) +  
+  scale_y_log10() + 
+  coord_cartesian(xlim = c(-40, 40), ylim = c(10^{-4.5}, 1.0))
+ggsave(filename = "Weibull_sum_log.png", path = "graph")
+
+```
+
+## 2 Weibull: conditional ratio distribution
+
+Here, consider independent positive Weibull variables $\xi_1,\xi_2$.
+Let both variables have shape parameter $\alpha$ and scale parameter one. Examine the conditional density of the ratio $Z=\xi_1/(\xi_1+\xi_2)$ given the fixed sum $\xi_1+\xi_2=d$.
+Then $0<z<1$, and the density can be expressed as follows using a normalizing constant $C>0$.
+
+$$f(z) = C (z(1 - z))^{\alpha - 1} \exp (- d^\alpha (z^\alpha + (1 - z)^\alpha))$$
+
+Define the unnormalized function in `ratio_f()`.
+Fix the sum at $d=2$ and use `integrate()` to evaluate the integral over $0<z<1$ for each of $\alpha=0.7,1,2$.
+The constant $C$ is the reciprocal of each integral.
+
+```{r}
+
+ratio_f <- \(z, alpha = 0.7, d = 2.0) (z*(1 - z))^(alpha - 1)*exp(-d^alpha*(z^alpha + (1 - z)^alpha))
+ratio_d <- 2.0
+ratio_normalizers <- map_dbl(
+  c("0.7" = 0.7, "1.0" = 1.0, "2.0" = 2.0),
+  \(alpha) integrate(ratio_f, lower = 0, upper = 1, alpha = alpha, d = ratio_d)$value
+)
+ratio_normalizers
+
+```
+
+Normalize each function to a probability density by dividing by its corresponding integral, and compare the three curves.
+
+```{r}
+#| layout-ncol: 2
+
+ggplot() + 
+  geom_function(fun = ~ ratio_f(., alpha = 0.7, d = ratio_d)/ratio_normalizers[["0.7"]], 
+                aes(color = "0.7", linetype = "0.7")) + 
+  geom_function(fun = ~ ratio_f(., alpha = 1.0, d = ratio_d)/ratio_normalizers[["1.0"]], 
+                aes(color = "1.0", linetype = "1.0")) + 
+  geom_function(fun = ~ ratio_f(., alpha = 2.0, d = ratio_d)/ratio_normalizers[["2.0"]], 
+                aes(color = "2.0", linetype = "2.0")) + 
+  ylim(c(0, 3.0)) + 
+  labs(x = TeX("$z$"), 
+       y = "Probability density", 
+       color = TeX("$\\alpha$"), linetype = TeX("$\\alpha$")) +
+  theme(axis.title = element_text(face = "bold")) 
+ggsave(filename = "Weibull_alpha.png", path = "graph")
+
+```
+
+
+
+
+
+
+
+
+
+
+

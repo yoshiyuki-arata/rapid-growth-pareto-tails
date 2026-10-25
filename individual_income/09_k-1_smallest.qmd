@@ -1,0 +1,158 @@
+---
+title: "Distribution of minimum annual income growth rates"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use `sample_growth_tb` to compare distributions of minimum annual growth rates between individuals with high income growth over 2014–2020 (HGF) and all others (non-HGF).
+Use six-year log growth to classify high growth, and annual log growth rates to calculate the minimum.
+
+## 0 Data preparation
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+library(matrixStats)
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+
+```
+
+**Data loading and sample selection**
+
+Load `sample_growth_tb` and extract six annual growth rates from 2014–15 through 2019–20 and growth over 2014–2020 (`g_20_14`).
+Reshape growth rates to wide format by ID and join 2014 income `pre_income` and age `age` (2014 minus birth year) from records for the reference period `g_15_14`.
+Select individuals meeting the following conditions.
+
+* Income in 2014 of at least $4\times10^6$ yen (4 million yen)
+* Age in 2014 between 25 and 60, inclusive
+
+```{r}
+#| layout-ncol: 2
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb") |> 
+  filter(year %in% c("g_20_19", "g_19_18", "g_18_17", "g_17_16", "g_16_15", "g_15_14", "g_20_14"))
+
+growth_wide_tb <- sample_growth_tb |> 
+  pivot_wider(id_cols = id, names_from = year, values_from = growth) |> 
+  inner_join(sample_growth_tb |> filter(year == "g_15_14") |> 
+               mutate(age = as.numeric(str_c(20, str_sub(year,6,7))) - as.numeric(str_sub(birth_date, 1, 4))) |>
+               select(id, pre_income, age), by = "id") |> 
+  filter(pre_income >= 4*10^6, 
+         age >= 25, age <= 60) |> 
+  na.omit() |> 
+  select(-pre_income, -age)
+
+```
+
+## 1 Comparing minimum growth rates
+
+**Checking upper percentiles**
+
+Using `growth_wide_tb` after sample selection and removal of missing values, inspect the 90th, 95th, 97th, and 99th percentiles of six-year growth `g_20_14`.
+Use the 97th percentile of this full sample for the subsequent high-growth classification.
+
+```{r}
+#| layout-ncol: 2
+
+growth_wide_tb |>
+  summarise(q_90 = quantile(g_20_14, 0.90, na.rm = T),
+            q_95 = quantile(g_20_14, 0.95, na.rm = T), 
+            q_97 = quantile(g_20_14, 0.97, na.rm = T),
+            q_99 = quantile(g_20_14, 0.99, na.rm = T))
+
+```
+
+**Creating the minimum-growth table `compare_smallest_tb`**
+
+Classify individuals whose `g_20_14` is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator `hg`.
+The shared function `add_smallest()` converts the specified growth columns to a matrix, calculates each individual's minimum using `rowOrderStats(..., which = 1)`, and stores it in `smallest_1st`.
+Use the following periods for each group and combine the results.
+
+* non-HGF: five periods from 2014–15 through 2018–19
+* HGF: six periods from 2014–15 through 2019–20
+
+```{r}
+
+temp_tb <- growth_wide_tb |>
+  mutate(hg = if_else(g_20_14 > quantile(g_20_14, 0.97, na.rm = T), "HGF", "non-HGF"))  
+
+add_smallest <- function(df, growth_cols) {
+  growth_matrix <- df |>
+    select(all_of(growth_cols)) |>
+    as.matrix()
+
+  df |> mutate(smallest_1st = rowOrderStats(growth_matrix, which = 1))
+}
+
+annual_cols <- c(
+  "g_20_19", "g_19_18", "g_18_17",
+  "g_17_16", "g_16_15", "g_15_14"
+)
+
+compare_smallest_tb <- bind_rows(
+  temp_tb |>
+    filter(hg == "non-HGF") |>
+    add_smallest(annual_cols[-1]),
+  temp_tb |>
+    filter(hg == "HGF") |>
+    add_smallest(annual_cols)
+)
+
+```
+
+**Visual comparison of distributions**
+
+Compare densities of minimum growth `smallest_1st` between HGF and non-HGF.
+Estimate densities using only observations with $|\mathrm{smallest\_1st}| < 3$, and display a horizontal range of −1.5 to 1.5.
+
+```{r}
+#| layout-ncol: 2
+
+compare_smallest_tb |> 
+  filter(abs(smallest_1st) < 3) |> 
+ggplot() + 
+  geom_density(aes(smallest_1st, color = hg)) + 
+  coord_cartesian(xlim = c(-1.5,1.5)) + 
+  labs(
+    x = "Smallest Growth Rate",
+    y = "Density", 
+    color = "Group"
+  ) 
+ggsave(filename = "compare_smallest_growth_income.png", path = graph_dir)
+
+```
+
+
+**Comparison of summary statistics**
+
+For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of individuals `n_obs`.
+
+```{r}
+
+compare_smallest_tb |>
+  group_by(hg) |> 
+  summarise(median(smallest_1st), mean(smallest_1st), n_obs = n())
+
+```
+
+

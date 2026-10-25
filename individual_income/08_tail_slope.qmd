@@ -1,0 +1,175 @@
+---
+title: "Tail slope estimation"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use `sample_growth_tb` and `sample_size_tb` to calculate the tail index $\alpha$, the reciprocal of the Hill estimator.
+The analyses cover income ratios over 2014–2020, income at age 25 in 2020, and age-specific income for ages 25–60 in 2020.
+These correspond to the firm analyses of sales ratios, sales at firm age five, and age-specific sales.
+When the upper tail has the following form, define $\alpha$ as the reciprocal of the Hill estimator $\gamma$.
+
+$$\overline F(x)=Cx^{-\alpha}, \qquad x\geq u>0.$$
+
+## 0 Data preparation
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+
+```
+
+Load growth and income data and add age as the calendar year minus the birth year in the first four characters of `birth_date`.
+For growth data, age is measured at the beginning of each period; for income data, it is measured in the observation year.
+Restrict growth data to beginning-of-period income of at least 4 million yen and beginning-of-period ages 25–60.
+Store positive-income observations for 2020 in `income_2020_tb`, applying age conditions separately in each analysis.
+
+```{r}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year,6,7))) - as.numeric(str_sub(birth_date, 1, 4))) |> 
+  filter(pre_income >= 4*10^6, 
+         age >= 25, age <= 60)
+
+sample_size_tb <- board |> pin_read("sample_size_tb") |> 
+  mutate(age = as.numeric(year) - as.numeric(str_sub(birth_date, 1, 4)))
+
+income_2020_tb <- sample_size_tb |>
+  filter(year == "2020", main_var > 0)
+
+```
+
+The shared function `hill_alpha()` extracts the Hill estimator $\gamma$ from `ReIns::Hill()` and returns its reciprocal $\alpha=1/\gamma$.
+`print_hill_estimates()` prints the baseline `k_n`, five times and ten times that value, each rounded down to an integer rank, and the corresponding estimates of $\alpha$ to three decimal places.
+
+```{r}
+
+hill_alpha <- function(x) {
+  c(ReIns::Hill(x)$gamma, NA)^(-1)
+}
+
+print_hill_estimates <- function(alpha, k_n) {
+  k_values <- floor(c(1, 5, 10) * k_n)
+
+  cat(
+    str_c(
+      c("k_n", "5*k_n", "10*k_n"),
+      " is ", k_values,
+      "; alpha is ", round(alpha[k_values], digits = 3),
+      collapse = "\n"
+    ),
+    "\n"
+  )
+}
+
+```
+
+## 1 Long-term growth over 2014–2020
+
+Extract log growth over 2014–2020 (`g_20_14`) for observations with income of at least 4 million yen and age 25–60 in 2014.
+Apply Hill estimation to the income ratio obtained by exponentiating log growth, $\exp(g_{20,14})=Y_{2020}/Y_{2014}$.
+Set the baseline threshold to $k_n=0.001n$.
+Here, $n$ is the number of observations satisfying the 2014 income and age conditions, before restricting to positive growth.
+
+```{r}
+
+sample_tb <- sample_growth_tb |> 
+  filter(year == "g_20_14", is.finite(growth)) |> 
+  arrange(desc(growth)) |> 
+  mutate(i_var = 1:n(), n_i_var = n()/i_var) 
+
+res_hill_tb <- sample_tb |> mutate(alpha = hill_alpha(exp(growth)))
+k_n <- nrow(sample_tb) * 0.001
+
+print_hill_estimates(res_hill_tb$alpha, k_n)
+
+```
+
+## 2 Income distribution at age 25 in 2020
+
+Select observations at age 25 from `income_2020_tb`, sort income `main_var` in descending order, and apply Hill estimation.
+As in 07, initial income here means income at age 25, rather than income at age 20 when data generation begins.
+Set the baseline threshold to $k_n=0.01n$, or 1% of this sample's size $n$.
+
+```{r}
+#| layout-ncol: 2
+
+sample_tb <- income_2020_tb |>
+  filter(age == 25) |>
+  arrange(desc(main_var)) |> 
+  mutate(i_var = 1:n(), n_i_var = n()/i_var) 
+
+res_hill_tb <- sample_tb |> mutate(alpha = hill_alpha(main_var))
+k_n <- nrow(sample_tb) * 0.01
+
+print_hill_estimates(res_hill_tb$alpha, k_n)
+
+```
+
+## 3 Income distributions by age in 2020
+
+Use positive-income observations aged 25–60 in 2020.
+For each age, sort income in descending order and calculate the tail index $\alpha(i)$ as the number of upper-order observations varies.
+
+```{r}
+#| layout-ncol: 2
+
+sample_tb <- income_2020_tb |>
+  filter(!is.na(age), age >= 25, age <= 60) |>
+  arrange(desc(main_var)) |> 
+  group_by(age) |> 
+  mutate(i_var = 1:n(), n_i_var = n()/i_var)
+
+res_hill_tb <- sample_tb |> mutate(alpha = hill_alpha(main_var))
+
+```
+
+With the number of upper-order observations $i$ on the horizontal axis, compare the estimated series for $i<4000$, colored by age.
+Restrict only the displayed vertical range to 0–3.
+
+```{r}
+#| layout-ncol: 2
+
+res_hill_tb |> 
+  mutate(age = str_pad(age, 2, pad = "0") |> as.character()) |> 
+  filter(i_var < 4000) |>
+ggplot() + 
+  geom_line(aes(i_var, alpha, color = age)) + 
+  scale_color_viridis_d(option = "C") + 
+  coord_cartesian(ylim = c(0, 3)) +
+  labs(
+      x = "Number of Top Order Statistics",
+      y = "Tail Exponent", 
+      color = "Age",
+  ) 
+ggsave(filename = "Hill_est_firm_size_diff_age_income.png", path = graph_dir)
+
+```
+
+
+
+
+
+
+

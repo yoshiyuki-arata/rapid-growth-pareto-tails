@@ -1,0 +1,236 @@
+---
+title: "Random walk"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+
+Examine dependence across periods in firms' sales growth rates.
+Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations over ten periods from 2010–11 through 2019–20.
+Also use growth in 2010–11 and 2011–12 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values.
+Include zero growth in both analyses.
+
+## 1 Rank correlations of growth rates
+
+```{r}
+library(tidyverse)
+library(pins)
+library(hrbrthemes)
+library(kableExtra)
+theme_set(theme_ipsum(base_size = 12, axis_title_size = 13))
+board <- board_folder("../Zipf_law_board_replicate_simulation")
+```
+
+**Setting sample conditions**
+
+Load `sample_growth_tb` and calculate firm age `age` as the beginning year extracted from period label `year` minus establishment year `birth_year`.
+For 2010–11 growth records (`g_11_10`), save the `id` values of firms meeting the following conditions in `id_tb`.
+
+* Beginning-of-period sales `pre_sale` of at least $4.0 \times 10^4$  
+  With sales measured in thousands of yen, this corresponds to at least 40 million yen.
+* Beginning-of-period firm age of at least five  
+* The first two digits of industry code `ind_class` are 01–61 or 68–92
+
+Use this set of firms for both rank correlations and tail analyses. Do not impose additional restrictions based on beginning-of-period sales, firm age, or industry in other periods.
+
+Define `pobs()` to transform growth rates into rank-based pseudo-observations.
+Use average ranks for ties and divide by the length of the original vector plus one.
+
+<!-- Leave missing values in their original positions. -->
+
+```{r}
+
+library(corrr)
+library(scattermore)
+
+pobs <- function(x) {
+  rank(x, ties.method = "average", na.last = "keep") / (length(x) + 1)
+}
+
+sample_growth_tb <- board |> pin_read("sample_growth_tb", type = "qs2") |> 
+  mutate(age = as.numeric(str_c(20, str_sub(year, 6,7))) - birth_year) 
+
+id_tb <- sample_growth_tb |> 
+  filter(year == "g_11_10", 
+         pre_sale >= 4.0*10^4, 
+         age >= 5, 
+         str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) |> 
+  distinct(id)
+
+```
+
+**Data for the two-period tail analysis**
+
+Reshape growth rates for the selected firms to wide format and extract 2011–12 (`g_12_11`) and 2010–11 (`g_11_10`).
+Retain only firms with finite growth rates in both periods in `normal_tb`.
+Exclude `NA`, `NaN`, and positive or negative infinity, but retain zero.
+Transform growth in each period to ranks separately using `pobs()`.
+ 
+```{r}
+
+normal_tb <- sample_growth_tb |> 
+  pivot_wider(id_cols = id, names_from = "year", values_from = "growth") |> 
+  inner_join(id_tb, by = "id") |> 
+  select(g_12_11, g_11_10) |> 
+  filter(is.finite(g_12_11), is.finite(g_11_10)) |>
+  mutate(pobs_12_11 = pobs(g_12_11), pobs_11_10 = pobs(g_11_10)) 
+
+```
+
+**Spearman rank correlations across ten periods**
+
+Reshape annual growth rates from 2010–11 through 2019–20 to wide format and calculate the Spearman rank correlation matrix for firms in `id_tb`.
+Include zero growth.
+At this stage, require a common sample with finite growth rates in all ten periods.
+
+```{r}
+
+spearman_mat_tb <- sample_growth_tb |> 
+  filter(year %in% c("g_20_19", "g_19_18", "g_18_17", "g_17_16", "g_16_15", 
+                     "g_15_14", "g_14_13", "g_13_12", "g_12_11", "g_11_10")) |> 
+  select(id, year, growth) |> 
+  pivot_wider(id_cols = id, names_from = "year", values_from = "growth") |> 
+  inner_join(id_tb, by = "id") |> 
+  select(-id) |> 
+  filter(if_all(everything(), is.finite)) |>
+  correlate(method = "spearman") 
+spearman_mat_tb 
+
+```
+
+## 2 Dependence in the tail
+
+**Tail dependence measure**
+
+Let $N$ be the number of firms in `normal_tb` and $N_q$ the number whose pseudo-observations strictly exceed threshold $q$ in both periods.
+Calculate the tail dependence measure as $N_q/[N(1-q)]$.
+Vary $q$ from 0.8 to 0.9995 in increments of 0.0005 and save the measure at each threshold in `tail_tb`.
+
+```{r}
+#| layout-ncol: 2
+
+tail_tb <- seq(0.8, 0.9995, by = 0.0005) |> 
+  map_dfr(~ normal_tb |> 
+            filter(pobs_12_11 > .x, pobs_11_10 > .x) |> 
+            summarise(criteria = .x,
+                      tail_coeff = (n()/nrow(normal_tb))/(1 - .x))
+          )
+
+tail_tb |> 
+ggplot(aes(criteria, tail_coeff)) + 
+  geom_line(size = 0.8, color = "steelblue") + 
+  ylim(0, 0.3) + 
+  labs(x = expression(q), 
+       y = "Tail dependence") + 
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "tail_coeff_TSR.png", path = "graph")
+
+```
+
+**Cumulative mean of nonnegative growth in the following period**
+
+Sort `normal_tb` by descending growth in 2010–11, transform growth in the following period (2011–12) to $\max(g_{12,11}, 0)$, and calculate its cumulative mean.
+Plot 2010–11 growth $t$ on the horizontal axis and the cumulative mean of nonnegative growth in the following period on the vertical axis to examine subsequent growth among firms that experienced large growth.
+Calculate cumulative means using all of `normal_tb`, restricting only the displayed horizontal range to 0.2–2 and vertical range to 0–0.5.
+
+```{r}
+#| layout-ncol: 2
+
+normal_tb |> 
+  arrange(desc(g_11_10)) |> 
+  mutate(
+    g_12_11 = if_else(g_12_11 > 0, g_12_11, 0),
+    cummean_12_11 = cummean(g_12_11)
+  ) |> 
+ggplot(aes(g_11_10, cummean_12_11)) +  
+  geom_scattermore(pointsize = 1.5, color = "steelblue") + 
+  coord_cartesian(xlim = c(0.2, 2), ylim = c(0, 0.5)) + 
+  labs(x = "t", 
+       y = "Conditional tail expectation") + 
+  theme(axis.title = element_text(face = "bold"))  
+ggsave(filename = "cond_tail_expect_g_11_10_transformed.png", path = "graph")
+
+```
+
+## 3 LaTeX table output
+
+Save the rank correlation matrix `spearman_mat_tb` to `latex/spearman_mat.tex` in the same folder as this QMD.
+Leave correlation coefficients and row and column orders unchanged, formatting values to three decimal places only for output. Display missing values, including diagonal entries, as `--`.
+Convert period labels in row and column headings, for example from `g_11_10` to `2010--11`.
+Wrap period labels in `\mbox{}` to prevent line breaks and, as in `02_summ_stat.qmd`, use `tabularx` to fit the table to the text width. To reduce column spacing and display larger text, use a 9-point font and 0.5-point padding on each side of columns (`\tabcolsep`). Do not specify automatic resizing with `scale_down`.
+Use the same rules and alternating row shading as the LaTeX tables in `02_summ_stat.qmd`, specifying the `table` environment and centering in the paper itself. Load the `tabularx` package in the paper. If text overflows because of the text width or font, adjust the font size further.
+
+```{r}
+
+# Leave the original correlation matrix unchanged and format a copy for output.
+spearman_for_tex <- as.data.frame(spearman_mat_tb)
+spearman_for_tex[[1]] <- str_replace(
+  spearman_for_tex[[1]], "^g_(\\d{2})_(\\d{2})$", "20\\2--\\1"
+)
+period_labels <- str_replace(
+  names(spearman_for_tex)[-1], "^g_(\\d{2})_(\\d{2})$", "20\\2--\\1"
+)
+
+# Prevent line breaks within period labels in row and column headings.
+spearman_for_tex[[1]] <- paste0(
+  "\\mbox{", spearman_for_tex[[1]], "}"
+)
+period_labels <- paste0("\\mbox{", period_labels, "}")
+
+for (column in names(spearman_for_tex)[-1]) {
+  spearman_for_tex[[column]] <- ifelse(
+    is.na(spearman_for_tex[[column]]),
+    "--",
+    sprintf("%.3f", spearman_for_tex[[column]])
+  )
+}
+
+spearman_tex <- spearman_for_tex |>
+  kbl(
+    format = "latex",
+    booktabs = TRUE,
+    row.names = FALSE,
+    escape = FALSE,
+    align = c("l", rep("r", length(period_labels))),
+    col.names = c("Year", period_labels),
+    linesep = ""
+  ) |>
+  kable_styling(
+    latex_options = "striped",
+    stripe_color = "gray!10",
+    stripe_index = which(seq_len(nrow(spearman_for_tex)) %% 2L == 1L),
+    full_width = TRUE,
+    position = "left",
+    font_size = 9
+  )
+
+writeLines(
+  c(
+    "\\begingroup",
+    "\\setlength{\\tabcolsep}{0.5pt}",
+    "\\renewcommand{\\arraystretch}{1.12}",
+    "\\setlength{\\aboverulesep}{0.5ex}",
+    "\\setlength{\\belowrulesep}{0.5ex}",
+    "\\setlength{\\heavyrulewidth}{0.8pt}",
+    "\\setlength{\\lightrulewidth}{0.4pt}",
+    as.character(spearman_tex),
+    "\\endgroup"
+  ),
+  con = file.path("latex", "spearman_mat.tex"),
+  useBytes = TRUE
+)
+```

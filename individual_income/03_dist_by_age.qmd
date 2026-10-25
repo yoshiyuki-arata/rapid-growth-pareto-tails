@@ -1,0 +1,264 @@
+---
+title: "Income distribution by age"
+lang: en
+format:
+  html:
+    theme: cosmo
+    css: custom.css
+    fontsize: small
+    toc: true
+    toc-depth: 3
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+Use individual-year income data `sample_size_tb` to examine the age distribution, income distributions by year and age, and how closely log income follows a normal distribution.
+Use 2020 data for the age-specific analyses and the 2014–2020 data saved in 01 for annual comparisons.
+Finally, for individuals aged 26–60 in 2020, calculate the age-class composition of those whose income exceeds each threshold.
+
+## 1 Distributions of individual age and income
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(pins)
+
+# Specify relative paths for the board, figure output directory, and plotting theme.
+board <- board_folder("../income_board_replicate")
+graph_dir <- "graph"
+dir.create(graph_dir, recursive = TRUE, showWarnings = FALSE)
+source("theme_ipsum_like.R")
+theme_set(theme_ipsum())
+```
+
+**Loading data and creating age classes**
+
+Load income data `sample_size_tb` from `../income_board_replicate/` and retain observations with positive income `main_var`.
+Do not impose additional age, industry, or year restrictions when loading the data.
+
+Calculate individual age `age` as observation year `year` minus the birth year in the first four characters of `birth_date`.
+Define `age_class` as `age_20` for ages 20 and under, `age_25` for ages 21–25, and subsequent five-year classes through `age_80` for ages 76–80.
+Assign observations above age 80 or with missing age to `age_other`.
+
+```{r}
+#| layout-ncol: 2
+
+sample_size_tb <- board |> pin_read("sample_size_tb") |> 
+  filter(main_var > 0)
+
+size_age_tb <- sample_size_tb |>
+  mutate(
+    age = as.numeric(year) - as.numeric(str_sub(birth_date, 1, 4)),
+    age_class = case_when(
+      age <= 20 ~ "age_20",
+      age <= 80 ~ str_c("age_", 5 * ceiling(age / 5)),
+      TRUE ~ "age_other"
+    )
+  )
+
+age_class_labels <- c(
+  "age_20" = "0–20",
+  "age_25" = "21–25", "age_30" = "26–30", "age_35" = "31–35", "age_40" = "36–40",
+  "age_45" = "41–45", "age_50" = "46–50", "age_55" = "51–55", "age_60" = "56–60"
+)
+
+```
+
+**Age distribution**
+
+Plot a histogram with one-year bins for observations aged 20–100 in 2020.
+Apply this age restriction only when creating the figure. In the data generated in 01, observed ages in 2020 range from 20 to 70.
+
+```{r}
+#| layout-ncol: 2
+
+size_age_tb |> 
+  filter(
+    year == "2020",
+    age >= 20, age <= 100
+  ) |> 
+ggplot(aes(age)) + 
+  geom_histogram(binwidth = 1, 
+                 fill = "#2C3E50", color = "white", 
+                 linewidth = 0.3) + 
+  labs(
+    x = "Individual Age (Years)",
+    y = "Number of Individuals"
+  ) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+ggsave(filename = "age_dist_income.png", path = graph_dir)
+
+```
+
+**Annual comparison of income distributions**
+
+Compare income density curves by year using the positive-income observations selected when loading the data. Impose no additional age restrictions.
+Use base-10 logarithmic scales on both axes, with displayed income in yen ranging from $10^3$ to $10^{10}$ and density from $10^{-6}$ to $10^0$.
+Because `scale_x_log10()` transforms the horizontal axis before density estimation, the vertical axis shows the density of base-10 log income on a logarithmic scale.
+
+```{r}
+#| layout-ncol: 2
+
+sample_size_tb |> 
+  ggplot() + 
+  geom_density(aes(main_var, color = year)) + 
+  scale_color_viridis_d(option = "C") + 
+  scale_x_log10() + 
+  scale_y_log10() +
+  coord_cartesian(xlim = c(10^3, 10^{10}), ylim = c(10^{-6}, 10^0)) +
+  labs(
+    x = "income",
+    y = "Density (log scale)",
+    color = "Year"
+  )
+ggsave(filename = "main_var_df_log.png", path = graph_dir)
+
+```
+
+**Income distribution by age**
+
+For observations aged 26–60 in 2020, compare income distributions across seven age classes: 26–30, 31–35, …, 56–60.
+As in the annual comparison, estimate the density of base-10 log income and use logarithmic scales on both axes.
+Display income in yen from $10^3$ to $10^9$ and density from $10^{-5}$ to $10^0$.
+
+```{r}
+#| layout-ncol: 2
+
+size_age_tb |> 
+  filter(year == "2020",
+         age >= 26, age <= 60) |> 
+  ggplot() + 
+  geom_density(aes(main_var, color = age_class)) + 
+  scale_color_viridis_d(
+    option = "C", 
+    labels = age_class_labels
+    ) + 
+  scale_x_log10() + 
+  scale_y_log10() +
+  coord_cartesian(xlim = c(10^3, 10^9), ylim = c(10^{-5}, 10^0)) +
+  labs(
+    x = "Income (log scale)",
+    y = "Density (log scale)", 
+    color = "Age Group",
+  ) 
+
+ggsave(filename = "main_var_df_age_class_log.png", path = graph_dir)
+
+```
+
+## 2 Comparing log income with a normal distribution: Q-Q plots
+
+Select the seven age classes `age_30`, `age_35`, …, `age_60` (ages 26–60) from the 2020 data.
+For each class, take the natural logarithm of income in yen, subtract its median, and divide by the scaled median absolute deviation returned by `mad()` with its default settings.
+Do not standardize using the mean and standard deviation.
+
+The standardized value is $z=(\log(Y)-\operatorname{median}(\log(Y)))/\operatorname{MAD}(\log(Y))$, where $Y$ is `main_var`.
+Here, MAD is the median absolute deviation from the median multiplied by 1.4826.
+
+Use `stat_qq()` to compare sample quantiles of standardized log income with theoretical quantiles of the standard normal distribution.
+Add a reference line with intercept zero and slope one; do not estimate a reference line using `stat_qq_line()`.
+
+```{r}
+#| layout-ncol: 2
+
+size_age_tb |> 
+  filter(year == "2020", 
+         age_class %in% c("age_30", "age_35", "age_40",
+                          "age_45", "age_50", "age_55", "age_60"), 
+         main_var > 0) |> 
+  group_by(age_class) |> 
+  mutate(log_size = log(main_var), 
+         log_size_normalized = (log_size - median(log_size))/mad(log_size) ) |> 
+ggplot(aes(sample = log_size_normalized, color = age_class)) + 
+  stat_qq(size = 0.7) + #stat_qq_line() + 
+  scale_color_viridis_d(
+    option = "C", 
+    labels = age_class_labels
+  ) + 
+  geom_abline(intercept = 0, slope = 1, color="black") + 
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Normalized log(Income)",
+    color = "Age Group"
+  ) 
+ggsave(filename = "income_size_qqplot_by_age.png", path = graph_dir)
+
+```
+
+## 3 Age composition by income threshold
+
+For individuals aged 26–60 in 2020, examine the age composition of those whose income exceeds a threshold.
+
+Set income thresholds `criteria` in yen to $10^{6.6}, 10^{6.8}, \ldots, 10^{10}$, giving 18 points spaced by 0.2 in base-10 logarithms.
+First restrict the data to 2020 and ages 26–60, then select observations with `main_var` strictly above each threshold.
+Create `frac2_tb` by calculating composition shares `n_ratio`, using the total number selected `n_total` as the denominator and the count in each age class as the numerator.
+Omit thresholds with no qualifying observations.
+
+```{r}
+
+# Threshold vector (10^i)
+x_val <- 10 ^ seq(6.6, 10, 0.2)
+
+# Use observations aged 26–60 in 2020.
+target_tb <- size_age_tb |>
+  filter(year == "2020", age >= 26, age <= 60)
+
+frac2_tb <- map_dfr(x_val, function(criteria) {
+  sub_tb <- target_tb |> filter(main_var > criteria)
+
+  n_total <- nrow(sub_tb)
+  if (n_total == 0) return(NULL)
+
+  sub_tb |>
+    count(age_class, name = "n") |>
+    transmute(
+      age_class,
+      n_ratio = n / n_total,
+      criteria = criteria,
+      n_total = n_total
+    )
+})
+
+```
+
+
+**Plotting the shares**
+
+For thresholds with more than 1,000 qualifying individuals (`n_total`), plot age-class shares using points and lines.
+The denominator is the total number of individuals aged 26–60 above each threshold, rather than the total population of each age class.
+Show the income threshold in yen on a logarithmic horizontal axis and the composition share on the vertical axis, with a displayed range of 0–0.3.
+
+```{r}
+#| layout-ncol: 2
+
+frac2_tb |>
+  filter(n_total > 10^3) |>
+  ggplot(aes(criteria, n_ratio, color = age_class)) + 
+    geom_point() + 
+    geom_line() + 
+    scale_color_viridis_d(
+      option = "C",
+      labels = age_class_labels
+    ) + 
+    scale_x_log10() + 
+    labs(
+      x = "Income (log scale)",
+      y = "Proportion",
+      color = "Age Group"
+    ) +
+    ylim(c(0, .3))
+ggsave(filename = "frac2_age_main_var_middile.png", path = graph_dir)
+
+```
+
+<br>
+
+
