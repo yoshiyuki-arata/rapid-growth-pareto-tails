@@ -7,7 +7,7 @@ Because the firm-level data used in the paper's empirical analysis cannot be mad
 Using these simulated data in place of the empirical data allows users to run the computational procedures used in the actual analysis and examine the complete workflow, from data generation to estimation and the output of figures and tables.
 The estimates, figures, and tables obtained from the simulation do not reproduce the numerical results, figures, or tables reported in the paper.
 
-Overviews of each analysis, along with links to the corresponding computational code (QMD) and execution results (HTML), are provided in [Firm sales](firm_sales/00_summ_Zipf.qmd) and [Individual income](individual_income/00_summ_income.qmd).
+Overviews of each analysis, along with links to the corresponding computational code (QMD) and execution results (HTML), are provided in [Firm sales](https://yoshiyuki-arata.github.io/rapid-growth-pareto-tails/firm_sales/00_summ_Zipf.html) and [Individual income]([individual_income/00_summ_income.qmd](https://yoshiyuki-arata.github.io/rapid-growth-pareto-tails/individual_income/00_summ_income.html)).
 
 ## Requirements
 
