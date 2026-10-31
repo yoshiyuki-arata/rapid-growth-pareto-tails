@@ -21,7 +21,6 @@ editor: source
 Use `sample_growth_tb` to estimate tail parameters and extreme quantiles with Girard's method.
 The sample consists of income growth rates for 2019–20 satisfying beginning-of-period income and age conditions.
 Assuming $\tau = 0$, estimate $\alpha$ from the Hill estimator and use its reciprocal $\theta$ to estimate extreme quantiles and tail probabilities.
-After checking the shape with a linearity plot, estimate $\tau$ over a grid of candidate values.
 
 ## 1 Estimation assuming $\tau = 0$
 
@@ -43,12 +42,11 @@ theme_set(theme_ipsum())
 **Sample settings**
 
 Load `sample_growth_tb` and calculate age `age` as the beginning year extracted from period label `year` minus the birth year in the first four characters of `birth_date`.
-Select observations meeting the following conditions, then extract finite 2019–20 growth rates (`g_20_19`) when calculating the Hill estimator below.
+Select observations meeting the following conditions and extract finite growth rates for 2019–20 (`g_20_19`).
 
 * Beginning-of-period income `pre_income` of at least $4 \times 10^6$ yen (4 million yen)
 * Beginning-of-period age between 25 and 60, inclusive
 
-Do not select by industry.
 
 ```{r}
 
@@ -86,7 +84,7 @@ sample_tb <- sample_growth_tb |>
 **Definition of the function $\mu_\tau$**
 
 Evaluate the integral for $\tau\neq0$ using `mu_f()`, switching to `mu_f_tau_0()` when $\tau=0$.
-Although the theoretical upper integration limit is infinity, both implementations use `integrate()` for numerical integration with an upper limit of 10.
+Although the theoretical upper integration limit is infinity, the code performs numerical integration with an upper limit of 10.
 
 $$\mu_\tau(t)=\int_0^\infty\{K_\tau(x+t)-K_\tau(t)\}e^{-x}\,dx, \qquad K_0(y)=\log y, \quad K_\tau(y)=\frac{y^\tau-1}{\tau}\ \ (\tau\neq0).$$
 
@@ -106,7 +104,7 @@ mu_f <- function(tau_x, t_x) {
 
 **Estimating $\alpha$ with the Hill estimator**
 
-Store the selected sample size in `n_obs` and set the rank threshold to $k_n=\operatorname{round}(0.05n)$.
+Set the rank threshold to $k_n=\operatorname{round}(0.05n)$.
 With growth at rank $k_n$, $X_{(k_n)}$, as the threshold, estimate $\alpha=\theta^{-1}$ using the Hill estimator $H(k_n-1)$ from row $k_n-1$ and $\mu_0(t)$ at $t=\log(n/k_n)$.
 
 The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$.
@@ -152,8 +150,8 @@ Calculate the following columns.
 
 * `p_n`: rank-based empirical tail probability $i/n$
 * `tail_growth`: growth relative to the threshold, $X_{(i)}/X_{(k_n)}$
-* `prob_var`：$\log(1/p_n)/\log(n/k_n)$
-* `est_quantile`：$\widehat{x}_{p_n} = X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat{\theta}}$
+* `prob_var`: $\log(1/p_n)/\log(n/k_n)$
+* `est_quantile`: $\widehat{x}_{p_n} = X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat{\theta}}$
 
 Define `est_pn_f` to calculate tail probabilities using the same threshold and estimated parameters.
 
@@ -230,11 +228,10 @@ tau_est_f <- \(k_n_x){
 
 Estimate $\tau$ at each threshold $k_n=30,60,\ldots,30000$.
 The second thresholds are $k'_n=300,600,\ldots,300000$. Assume $n>k'_n$, positive growth at the thresholds, and finite Hill estimators and their ratio.
-Calculate the standard error and 95% bands (`ci_lower`, `ci_upper`) using the following formula.
+Calculate the standard error and 95% bands using the following formula.
 
 $$\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}\{\log\log(n/k_n)-\log\log(n/k'_n)\}}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).$$
 
-Plot the estimates as a line and the 95% bands as a ribbon, displaying horizontal values from 300 to 30000 and vertical values from −0.5 to 1.5. Estimate values for thresholds outside the displayed range as well.
 
 ```{r}
 #| layout-ncol: 2

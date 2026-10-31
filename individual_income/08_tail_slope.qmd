@@ -20,7 +20,6 @@ editor: source
 
 Use `sample_growth_tb` and `sample_size_tb` to calculate the tail index $\alpha$, the reciprocal of the Hill estimator.
 The analyses cover income ratios over 2014–2020, income at age 25 in 2020, and age-specific income for ages 25–60 in 2020.
-These correspond to the firm analyses of sales ratios, sales at firm age five, and age-specific sales.
 When the upper tail has the following form, define $\alpha$ as the reciprocal of the Hill estimator $\gamma$.
 
 $$\overline F(x)=Cx^{-\alpha}, \qquad x\geq u>0.$$
@@ -61,7 +60,7 @@ income_2020_tb <- sample_size_tb |>
 ```
 
 The shared function `hill_alpha()` extracts the Hill estimator $\gamma$ from `ReIns::Hill()` and returns its reciprocal $\alpha=1/\gamma$.
-`print_hill_estimates()` prints the baseline `k_n`, five times and ten times that value, each rounded down to an integer rank, and the corresponding estimates of $\alpha$ to three decimal places.
+Use `print_hill_estimates()` to display the baseline rank `k_n`, five times and ten times that rank, and the tail index estimates.
 
 ```{r}
 
@@ -90,7 +89,7 @@ print_hill_estimates <- function(alpha, k_n) {
 Extract log growth over 2014–2020 (`g_20_14`) for observations with income of at least 4 million yen and age 25–60 in 2014.
 Apply Hill estimation to the income ratio obtained by exponentiating log growth, $\exp(g_{20,14})=Y_{2020}/Y_{2014}$.
 Set the baseline threshold to $k_n=0.001n$.
-Here, $n$ is the number of observations satisfying the 2014 income and age conditions, before restricting to positive growth.
+Here, $n$ is the number of observations satisfying the 2014 income and age conditions.
 
 ```{r}
 
@@ -109,7 +108,7 @@ print_hill_estimates(res_hill_tb$alpha, k_n)
 ## 2 Income distribution at age 25 in 2020
 
 Select observations at age 25 from `income_2020_tb`, sort income `main_var` in descending order, and apply Hill estimation.
-As in 07, initial income here means income at age 25, rather than income at age 20 when data generation begins.
+Initial income refers to income at age 25.
 Set the baseline threshold to $k_n=0.01n$, or 1% of this sample's size $n$.
 
 ```{r}
@@ -146,7 +145,6 @@ res_hill_tb <- sample_tb |> mutate(alpha = hill_alpha(main_var))
 ```
 
 With the number of upper-order observations $i$ on the horizontal axis, compare the estimated series for $i<4000$, colored by age.
-Restrict only the displayed vertical range to 0–3.
 
 ```{r}
 #| layout-ncol: 2

@@ -3653,7 +3653,7 @@ font-weight: bold;
 </header>
 
 
-<p>Examine dependence across periods in firms’ sales growth rates. Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations over ten periods from 2010–11 through 2019–20. Also use growth in 2010–11 and 2011–12 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values. Include zero growth in both analyses.</p>
+<p>Examine dependence across periods in firms’ sales growth rates. Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations among the ten periods from 2010–11 through 2019–20. Also use growth rates in 2010–11 and 2011–12 to calculate a tail dependence measure and the cumulative mean of the following period’s growth after transforming it to nonnegative values.</p>
 <section id="rank-correlations-of-growth-rates" class="level2">
 <h2 class="anchored" data-anchor-id="rank-correlations-of-growth-rates">1 Rank correlations of growth rates</h2>
 <div class="cell">
@@ -3673,7 +3673,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 </li>
 <li>The first two digits of industry code <code>ind_class</code> are 01–61 or 68–92</li>
 </ul>
-<p>Use this set of firms for both rank correlations and tail analyses. Do not impose additional restrictions based on beginning-of-period sales, firm age, or industry in other periods.</p>
+<p>Use this set of firms for both rank correlations and tail analyses.</p>
 <p>Define <code>pobs()</code> to transform growth rates into rank-based pseudo-observations. Use average ranks for ties and divide by the length of the original vector plus one.</p>
 <!-- Leave missing values in their original positions. -->
 <div class="cell">
@@ -3695,7 +3695,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Data for the two-period tail analysis</strong></p>
-<p>Reshape growth rates for the selected firms to wide format and extract 2011–12 (<code>g_12_11</code>) and 2010–11 (<code>g_11_10</code>). Retain only firms with finite growth rates in both periods in <code>normal_tb</code>. Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity, but retain zero. Transform growth in each period to ranks separately using <code>pobs()</code>.</p>
+<p>Extract growth rates for 2011–12 (<code>g_12_11</code>) and 2010–11 (<code>g_11_10</code>), retaining only firms with finite growth rates in both periods in <code>normal_tb</code>. Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity. Transform growth in each period to ranks separately using <code>pobs()</code>.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>normal_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span> </span>
@@ -3705,7 +3705,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pobs_12_11 =</span> <span class="fu">pobs</span>(g_12_11), <span class="at">pobs_11_10 =</span> <span class="fu">pobs</span>(g_11_10)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Spearman rank correlations across ten periods</strong></p>
-<p>Reshape annual growth rates from 2010–11 through 2019–20 to wide format and calculate the Spearman rank correlation matrix for firms in <code>id_tb</code>. Include zero growth. At this stage, require a common sample with finite growth rates in all ten periods.</p>
+<p>Calculate the Spearman rank correlation matrix for firms in <code>id_tb</code>. At this stage, require a common sample with finite growth rates in all ten periods.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>spearman_mat_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>, <span class="st">&quot;g_19_18&quot;</span>, <span class="st">&quot;g_18_17&quot;</span>, <span class="st">&quot;g_17_16&quot;</span>, <span class="st">&quot;g_16_15&quot;</span>, </span>
@@ -3729,7 +3729,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <section id="dependence-in-the-tail" class="level2">
 <h2 class="anchored" data-anchor-id="dependence-in-the-tail">2 Dependence in the tail</h2>
 <p><strong>Tail dependence measure</strong></p>
-<p>Let <span class="math inline">\(N\)</span> be the number of firms in <code>normal_tb</code> and <span class="math inline">\(N_q\)</span> the number whose pseudo-observations strictly exceed threshold <span class="math inline">\(q\)</span> in both periods. Calculate the tail dependence measure as <span class="math inline">\(N_q/[N(1-q)]\)</span>. Vary <span class="math inline">\(q\)</span> from 0.8 to 0.9995 in increments of 0.0005 and save the measure at each threshold in <code>tail_tb</code>.</p>
+<p>Let <span class="math inline">\(N\)</span> be the number of firms in <code>normal_tb</code> and <span class="math inline">\(N_q\)</span> the number whose pseudo-observations strictly exceed threshold <span class="math inline">\(q\)</span> in both periods. Calculate the tail dependence measure as <span class="math inline">\(N_q/[N(1-q)]\)</span>. Vary <span class="math inline">\(q\)</span> from 0.8 to 0.9995 in increments of 0.0005.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tail_tb <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.8</span>, <span class="fl">0.9995</span>, <span class="at">by =</span> <span class="fl">0.0005</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span> normal_tb <span class="sc">|&gt;</span> </span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(pobs_12_11 <span class="sc">&gt;</span> .x, pobs_11_10 <span class="sc">&gt;</span> .x) <span class="sc">|&gt;</span> </span>
@@ -3777,7 +3777,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 </section>
 <section id="latex-table-output" class="level2">
 <h2 class="anchored" data-anchor-id="latex-table-output">3 LaTeX table output</h2>
-<p>Save the rank correlation matrix <code>spearman_mat_tb</code> to <code>latex/spearman_mat.tex</code> in the same folder as this QMD. Leave correlation coefficients and row and column orders unchanged, formatting values to three decimal places only for output. Display missing values, including diagonal entries, as <code>--</code>. Convert period labels in row and column headings, for example from <code>g_11_10</code> to <code>2010--11</code>. Wrap period labels in <code>\mbox{}</code> to prevent line breaks and, as in <code>02_summ_stat.qmd</code>, use <code>tabularx</code> to fit the table to the text width. To reduce column spacing and display larger text, use a 9-point font and 0.5-point padding on each side of columns (<code>\tabcolsep</code>). Do not specify automatic resizing with <code>scale_down</code>. Use the same rules and alternating row shading as the LaTeX tables in <code>02_summ_stat.qmd</code>, specifying the <code>table</code> environment and centering in the paper itself. Load the <code>tabularx</code> package in the paper. If text overflows because of the text width or font, adjust the font size further.</p>
+<p>Save the rank correlation matrix <code>spearman_mat_tb</code> to <code>latex/spearman_mat.tex</code> in the same folder as this QMD. Display missing values as <code>--</code>, including those on the diagonal.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave the original correlation matrix unchanged and format a copy for output.</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>spearman_for_tex <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(spearman_mat_tb)</span>
@@ -4316,216 +4316,210 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>Examine dependence across periods in firms&#39; sales growth rates.</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations over ten periods from 2010–11 through 2019–20.</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>Also use growth in 2010–11 and 2011–12 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values.</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>Include zero growth in both analyses.</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Rank correlations of growth rates</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>**Setting sample conditions**</span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and calculate firm age <span class="in">`age`</span> as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
-<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>For 2010–11 growth records (<span class="in">`g_11_10`</span>), save the <span class="in">`id`</span> values of firms meeting the following conditions in <span class="in">`id_tb`</span>.</span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales <span class="in">`pre_sale`</span> of at least $4.0 \times 10^4$  </span>
-<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
-<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period firm age of at least five  </span>
-<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–61 or 68–92</span>
-<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>Use this set of firms for both rank correlations and tail analyses. Do not impose additional restrictions based on beginning-of-period sales, firm age, or industry in other periods.</span>
-<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`pobs()`</span> to transform growth rates into rank-based pseudo-observations.</span>
-<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>Use average ranks for ties and divide by the length of the original vector plus one.</span>
-<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Leave missing values in their original positions. --&gt;</span></span>
-<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrr)</span>
-<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scattermore)</span>
-<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>pobs <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rank</span>(x, <span class="at">ties.method =</span> <span class="st">&quot;average&quot;</span>, <span class="at">na.last =</span> <span class="st">&quot;keep&quot;</span>) <span class="sc">/</span> (<span class="fu">length</span>(x) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year) </span>
-<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>id_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;g_11_10&quot;</span>, </span>
-<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>         pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, </span>
-<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">5</span>, </span>
-<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id)</span>
-<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>**Data for the two-period tail analysis**</span>
-<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>Reshape growth rates for the selected firms to wide format and extract 2011–12 (<span class="in">`g_12_11`</span>) and 2010–11 (<span class="in">`g_11_10`</span>).</span>
-<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>Retain only firms with finite growth rates in both periods in <span class="in">`normal_tb`</span>.</span>
-<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>Exclude <span class="in">`NA`</span>, <span class="in">`NaN`</span>, and positive or negative infinity, but retain zero.</span>
-<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>Transform growth in each period to ranks separately using <span class="in">`pobs()`</span>.</span>
-<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>normal_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(id_tb, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(g_12_11, g_11_10) <span class="sc">|&gt;</span> </span>
-<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.finite</span>(g_12_11), <span class="fu">is.finite</span>(g_11_10)) <span class="sc">|&gt;</span></span>
-<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pobs_12_11 =</span> <span class="fu">pobs</span>(g_12_11), <span class="at">pobs_11_10 =</span> <span class="fu">pobs</span>(g_11_10)) </span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations among the ten periods from 2010–11 through 2019–20.</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>Also use growth rates in 2010–11 and 2011–12 to calculate a tail dependence measure and the cumulative mean of the following period&#39;s growth after transforming it to nonnegative values.</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Rank correlations of growth rates</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>**Setting sample conditions**</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and calculate firm age <span class="in">`age`</span> as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>For 2010–11 growth records (<span class="in">`g_11_10`</span>), save the <span class="in">`id`</span> values of firms meeting the following conditions in <span class="in">`id_tb`</span>.</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales <span class="in">`pre_sale`</span> of at least $4.0 \times 10^4$  </span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period firm age of at least five  </span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–61 or 68–92</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>Use this set of firms for both rank correlations and tail analyses.</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`pobs()`</span> to transform growth rates into rank-based pseudo-observations.</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>Use average ranks for ties and divide by the length of the original vector plus one.</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Leave missing values in their original positions. --&gt;</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrr)</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scattermore)</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>pobs <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rank</span>(x, <span class="at">ties.method =</span> <span class="st">&quot;average&quot;</span>, <span class="at">na.last =</span> <span class="st">&quot;keep&quot;</span>) <span class="sc">/</span> (<span class="fu">length</span>(x) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year) </span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>id_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;g_11_10&quot;</span>, </span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>         pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, </span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">5</span>, </span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id)</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>**Data for the two-period tail analysis**</span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>Extract growth rates for 2011–12 (<span class="in">`g_12_11`</span>) and 2010–11 (<span class="in">`g_11_10`</span>), retaining only firms with finite growth rates in both periods in <span class="in">`normal_tb`</span>.</span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>Exclude <span class="in">`NA`</span>, <span class="in">`NaN`</span>, and positive or negative infinity.</span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>Transform growth in each period to ranks separately using <span class="in">`pobs()`</span>.</span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>normal_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(id_tb, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(g_12_11, g_11_10) <span class="sc">|&gt;</span> </span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.finite</span>(g_12_11), <span class="fu">is.finite</span>(g_11_10)) <span class="sc">|&gt;</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pobs_12_11 =</span> <span class="fu">pobs</span>(g_12_11), <span class="at">pobs_11_10 =</span> <span class="fu">pobs</span>(g_11_10)) </span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>**Spearman rank correlations across ten periods**</span>
 <span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>**Spearman rank correlations across ten periods**</span>
-<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>Reshape annual growth rates from 2010–11 through 2019–20 to wide format and calculate the Spearman rank correlation matrix for firms in <span class="in">`id_tb`</span>.</span>
-<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>Include zero growth.</span>
-<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>At this stage, require a common sample with finite growth rates in all ten periods.</span>
-<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>spearman_mat_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>, <span class="st">&quot;g_19_18&quot;</span>, <span class="st">&quot;g_18_17&quot;</span>, <span class="st">&quot;g_17_16&quot;</span>, <span class="st">&quot;g_16_15&quot;</span>, </span>
-<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_15_14&quot;</span>, <span class="st">&quot;g_14_13&quot;</span>, <span class="st">&quot;g_13_12&quot;</span>, <span class="st">&quot;g_12_11&quot;</span>, <span class="st">&quot;g_11_10&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, year, growth) <span class="sc">|&gt;</span> </span>
-<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(id_tb, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>id) <span class="sc">|&gt;</span> </span>
-<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_all</span>(<span class="fu">everything</span>(), is.finite)) <span class="sc">|&gt;</span></span>
-<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>  <span class="fu">correlate</span>(<span class="at">method =</span> <span class="st">&quot;spearman&quot;</span>) </span>
-<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>spearman_mat_tb </span>
-<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Dependence in the tail</span></span>
-<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>**Tail dependence measure**</span>
-<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a>Let $N$ be the number of firms in <span class="in">`normal_tb`</span> and $N_q$ the number whose pseudo-observations strictly exceed threshold $q$ in both periods.</span>
-<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a>Calculate the tail dependence measure as $N_q/<span class="co">[</span><span class="ot">N(1-q)</span><span class="co">]</span>$.</span>
-<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a>Vary $q$ from 0.8 to 0.9995 in increments of 0.0005 and save the measure at each threshold in <span class="in">`tail_tb`</span>.</span>
-<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>tail_tb <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.8</span>, <span class="fl">0.9995</span>, <span class="at">by =</span> <span class="fl">0.0005</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span> normal_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(pobs_12_11 <span class="sc">&gt;</span> .x, pobs_11_10 <span class="sc">&gt;</span> .x) <span class="sc">|&gt;</span> </span>
-<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">criteria =</span> .x,</span>
-<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a>                      <span class="at">tail_coeff =</span> (<span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(normal_tb))<span class="sc">/</span>(<span class="dv">1</span> <span class="sc">-</span> .x))</span>
-<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a>          )</span>
-<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a>tail_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(criteria, tail_coeff)) <span class="sc">+</span> </span>
-<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.8</span>, <span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="fl">0.3</span>) <span class="sc">+</span> </span>
-<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">expression</span>(q), </span>
-<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Tail dependence&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;tail_coeff_TSR.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-150"><a href="#cb8-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-151"><a href="#cb8-151" aria-hidden="true" tabindex="-1"></a>**Cumulative mean of nonnegative growth in the following period**</span>
-<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a>Sort <span class="in">`normal_tb`</span> by descending growth in 2010–11, transform growth in the following period (2011–12) to $\max(g_{12,11}, 0)$, and calculate its cumulative mean.</span>
-<span id="cb8-154"><a href="#cb8-154" aria-hidden="true" tabindex="-1"></a>Plot 2010–11 growth $t$ on the horizontal axis and the cumulative mean of nonnegative growth in the following period on the vertical axis to examine subsequent growth among firms that experienced large growth.</span>
-<span id="cb8-155"><a href="#cb8-155" aria-hidden="true" tabindex="-1"></a>Calculate cumulative means using all of <span class="in">`normal_tb`</span>, restricting only the displayed horizontal range to 0.2–2 and vertical range to 0–0.5.</span>
-<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-159"><a href="#cb8-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a>normal_tb <span class="sc">|&gt;</span> </span>
-<span id="cb8-163"><a href="#cb8-163" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(g_11_10)) <span class="sc">|&gt;</span> </span>
-<span id="cb8-164"><a href="#cb8-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a>    <span class="at">g_12_11 =</span> <span class="fu">if_else</span>(g_12_11 <span class="sc">&gt;</span> <span class="dv">0</span>, g_12_11, <span class="dv">0</span>),</span>
-<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a>    <span class="at">cummean_12_11 =</span> <span class="fu">cummean</span>(g_12_11)</span>
-<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(g_11_10, cummean_12_11)) <span class="sc">+</span>  </span>
-<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_scattermore</span>(<span class="at">pointsize =</span> <span class="fl">1.5</span>, <span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="dv">2</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)) <span class="sc">+</span> </span>
-<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;t&quot;</span>, </span>
-<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Conditional tail expectation&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;cond_tail_expect_g_11_10_transformed.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-176"><a href="#cb8-176" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 LaTeX table output</span></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>Calculate the Spearman rank correlation matrix for firms in <span class="in">`id_tb`</span>.</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>At this stage, require a common sample with finite growth rates in all ten periods.</span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>spearman_mat_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>, <span class="st">&quot;g_19_18&quot;</span>, <span class="st">&quot;g_18_17&quot;</span>, <span class="st">&quot;g_17_16&quot;</span>, <span class="st">&quot;g_16_15&quot;</span>, </span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_15_14&quot;</span>, <span class="st">&quot;g_14_13&quot;</span>, <span class="st">&quot;g_13_12&quot;</span>, <span class="st">&quot;g_12_11&quot;</span>, <span class="st">&quot;g_11_10&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, year, growth) <span class="sc">|&gt;</span> </span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(id_tb, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>id) <span class="sc">|&gt;</span> </span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_all</span>(<span class="fu">everything</span>(), is.finite)) <span class="sc">|&gt;</span></span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">correlate</span>(<span class="at">method =</span> <span class="st">&quot;spearman&quot;</span>) </span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>spearman_mat_tb </span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Dependence in the tail</span></span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>**Tail dependence measure**</span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>Let $N$ be the number of firms in <span class="in">`normal_tb`</span> and $N_q$ the number whose pseudo-observations strictly exceed threshold $q$ in both periods.</span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>Calculate the tail dependence measure as $N_q/<span class="co">[</span><span class="ot">N(1-q)</span><span class="co">]</span>$.</span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>Vary $q$ from 0.8 to 0.9995 in increments of 0.0005.</span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a>tail_tb <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.8</span>, <span class="fl">0.9995</span>, <span class="at">by =</span> <span class="fl">0.0005</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span> normal_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(pobs_12_11 <span class="sc">&gt;</span> .x, pobs_11_10 <span class="sc">&gt;</span> .x) <span class="sc">|&gt;</span> </span>
+<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">criteria =</span> .x,</span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a>                      <span class="at">tail_coeff =</span> (<span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(normal_tb))<span class="sc">/</span>(<span class="dv">1</span> <span class="sc">-</span> .x))</span>
+<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a>          )</span>
+<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a>tail_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(criteria, tail_coeff)) <span class="sc">+</span> </span>
+<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.8</span>, <span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="fl">0.3</span>) <span class="sc">+</span> </span>
+<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">expression</span>(q), </span>
+<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Tail dependence&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;tail_coeff_TSR.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a>**Cumulative mean of nonnegative growth in the following period**</span>
+<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-150"><a href="#cb8-150" aria-hidden="true" tabindex="-1"></a>Sort <span class="in">`normal_tb`</span> by descending growth in 2010–11, transform growth in the following period (2011–12) to $\max(g_{12,11}, 0)$, and calculate its cumulative mean.</span>
+<span id="cb8-151"><a href="#cb8-151" aria-hidden="true" tabindex="-1"></a>Plot 2010–11 growth $t$ on the horizontal axis and the cumulative mean of nonnegative growth in the following period on the vertical axis to examine subsequent growth among firms that experienced large growth.</span>
+<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a>Calculate cumulative means using all of <span class="in">`normal_tb`</span>, restricting only the displayed horizontal range to 0.2–2 and vertical range to 0–0.5.</span>
+<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-157"><a href="#cb8-157" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb8-158"><a href="#cb8-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-159"><a href="#cb8-159" aria-hidden="true" tabindex="-1"></a>normal_tb <span class="sc">|&gt;</span> </span>
+<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(g_11_10)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a>    <span class="at">g_12_11 =</span> <span class="fu">if_else</span>(g_12_11 <span class="sc">&gt;</span> <span class="dv">0</span>, g_12_11, <span class="dv">0</span>),</span>
+<span id="cb8-163"><a href="#cb8-163" aria-hidden="true" tabindex="-1"></a>    <span class="at">cummean_12_11 =</span> <span class="fu">cummean</span>(g_12_11)</span>
+<span id="cb8-164"><a href="#cb8-164" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(g_11_10, cummean_12_11)) <span class="sc">+</span>  </span>
+<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_scattermore</span>(<span class="at">pointsize =</span> <span class="fl">1.5</span>, <span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="dv">2</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)) <span class="sc">+</span> </span>
+<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;t&quot;</span>, </span>
+<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Conditional tail expectation&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;cond_tail_expect_g_11_10_transformed.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 LaTeX table output</span></span>
+<span id="cb8-176"><a href="#cb8-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a>Save the rank correlation matrix <span class="in">`spearman_mat_tb`</span> to <span class="in">`latex/spearman_mat.tex`</span> in the same folder as this QMD.</span>
+<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a>Display missing values as <span class="in">`--`</span>, including those on the diagonal.</span>
 <span id="cb8-179"><a href="#cb8-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-180"><a href="#cb8-180" aria-hidden="true" tabindex="-1"></a>Save the rank correlation matrix <span class="in">`spearman_mat_tb`</span> to <span class="in">`latex/spearman_mat.tex`</span> in the same folder as this QMD.</span>
-<span id="cb8-181"><a href="#cb8-181" aria-hidden="true" tabindex="-1"></a>Leave correlation coefficients and row and column orders unchanged, formatting values to three decimal places only for output. Display missing values, including diagonal entries, as <span class="in">`--`</span>.</span>
-<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a>Convert period labels in row and column headings, for example from <span class="in">`g_11_10`</span> to <span class="in">`2010--11`</span>.</span>
-<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a>Wrap period labels in <span class="in">`\mbox{}`</span> to prevent line breaks and, as in <span class="in">`02_summ_stat.qmd`</span>, use <span class="in">`tabularx`</span> to fit the table to the text width. To reduce column spacing and display larger text, use a 9-point font and 0.5-point padding on each side of columns (<span class="in">`\tabcolsep`</span>). Do not specify automatic resizing with <span class="in">`scale_down`</span>.</span>
-<span id="cb8-184"><a href="#cb8-184" aria-hidden="true" tabindex="-1"></a>Use the same rules and alternating row shading as the LaTeX tables in <span class="in">`02_summ_stat.qmd`</span>, specifying the <span class="in">`table`</span> environment and centering in the paper itself. Load the <span class="in">`tabularx`</span> package in the paper. If text overflows because of the text width or font, adjust the font size further.</span>
-<span id="cb8-185"><a href="#cb8-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-188"><a href="#cb8-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-189"><a href="#cb8-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave the original correlation matrix unchanged and format a copy for output.</span></span>
-<span id="cb8-190"><a href="#cb8-190" aria-hidden="true" tabindex="-1"></a>spearman_for_tex <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(spearman_mat_tb)</span>
-<span id="cb8-191"><a href="#cb8-191" aria-hidden="true" tabindex="-1"></a>spearman_for_tex[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">str_replace</span>(</span>
-<span id="cb8-192"><a href="#cb8-192" aria-hidden="true" tabindex="-1"></a>  spearman_for_tex[[<span class="dv">1</span>]], <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span></span>
-<span id="cb8-193"><a href="#cb8-193" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-194"><a href="#cb8-194" aria-hidden="true" tabindex="-1"></a>period_labels <span class="ot">&lt;-</span> <span class="fu">str_replace</span>(</span>
-<span id="cb8-195"><a href="#cb8-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(spearman_for_tex)[<span class="sc">-</span><span class="dv">1</span>], <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span></span>
-<span id="cb8-196"><a href="#cb8-196" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave the original correlation matrix unchanged and format a copy for output.</span></span>
+<span id="cb8-184"><a href="#cb8-184" aria-hidden="true" tabindex="-1"></a>spearman_for_tex <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(spearman_mat_tb)</span>
+<span id="cb8-185"><a href="#cb8-185" aria-hidden="true" tabindex="-1"></a>spearman_for_tex[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">str_replace</span>(</span>
+<span id="cb8-186"><a href="#cb8-186" aria-hidden="true" tabindex="-1"></a>  spearman_for_tex[[<span class="dv">1</span>]], <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span></span>
+<span id="cb8-187"><a href="#cb8-187" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-188"><a href="#cb8-188" aria-hidden="true" tabindex="-1"></a>period_labels <span class="ot">&lt;-</span> <span class="fu">str_replace</span>(</span>
+<span id="cb8-189"><a href="#cb8-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(spearman_for_tex)[<span class="sc">-</span><span class="dv">1</span>], <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span></span>
+<span id="cb8-190"><a href="#cb8-190" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-191"><a href="#cb8-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-192"><a href="#cb8-192" aria-hidden="true" tabindex="-1"></a><span class="co"># Prevent line breaks within period labels in row and column headings.</span></span>
+<span id="cb8-193"><a href="#cb8-193" aria-hidden="true" tabindex="-1"></a>spearman_for_tex[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb8-194"><a href="#cb8-194" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;</span><span class="sc">\\</span><span class="st">mbox{&quot;</span>, spearman_for_tex[[<span class="dv">1</span>]], <span class="st">&quot;}&quot;</span></span>
+<span id="cb8-195"><a href="#cb8-195" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-196"><a href="#cb8-196" aria-hidden="true" tabindex="-1"></a>period_labels <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">mbox{&quot;</span>, period_labels, <span class="st">&quot;}&quot;</span>)</span>
 <span id="cb8-197"><a href="#cb8-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-198"><a href="#cb8-198" aria-hidden="true" tabindex="-1"></a><span class="co"># Prevent line breaks within period labels in row and column headings.</span></span>
-<span id="cb8-199"><a href="#cb8-199" aria-hidden="true" tabindex="-1"></a>spearman_for_tex[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
-<span id="cb8-200"><a href="#cb8-200" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;</span><span class="sc">\\</span><span class="st">mbox{&quot;</span>, spearman_for_tex[[<span class="dv">1</span>]], <span class="st">&quot;}&quot;</span></span>
-<span id="cb8-201"><a href="#cb8-201" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-202"><a href="#cb8-202" aria-hidden="true" tabindex="-1"></a>period_labels <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">mbox{&quot;</span>, period_labels, <span class="st">&quot;}&quot;</span>)</span>
-<span id="cb8-203"><a href="#cb8-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-204"><a href="#cb8-204" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (column <span class="cf">in</span> <span class="fu">names</span>(spearman_for_tex)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
-<span id="cb8-205"><a href="#cb8-205" aria-hidden="true" tabindex="-1"></a>  spearman_for_tex[[column]] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb8-206"><a href="#cb8-206" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(spearman_for_tex[[column]]),</span>
-<span id="cb8-207"><a href="#cb8-207" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;--&quot;</span>,</span>
-<span id="cb8-208"><a href="#cb8-208" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>, spearman_for_tex[[column]])</span>
-<span id="cb8-209"><a href="#cb8-209" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb8-210"><a href="#cb8-210" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-211"><a href="#cb8-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-212"><a href="#cb8-212" aria-hidden="true" tabindex="-1"></a>spearman_tex <span class="ot">&lt;-</span> spearman_for_tex <span class="sc">|&gt;</span></span>
-<span id="cb8-213"><a href="#cb8-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(</span>
-<span id="cb8-214"><a href="#cb8-214" aria-hidden="true" tabindex="-1"></a>    <span class="at">format =</span> <span class="st">&quot;latex&quot;</span>,</span>
-<span id="cb8-215"><a href="#cb8-215" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb8-216"><a href="#cb8-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb8-217"><a href="#cb8-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">escape =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb8-218"><a href="#cb8-218" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">c</span>(<span class="st">&quot;l&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;r&quot;</span>, <span class="fu">length</span>(period_labels))),</span>
-<span id="cb8-219"><a href="#cb8-219" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, period_labels),</span>
-<span id="cb8-220"><a href="#cb8-220" aria-hidden="true" tabindex="-1"></a>    <span class="at">linesep =</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb8-221"><a href="#cb8-221" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb8-222"><a href="#cb8-222" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(</span>
-<span id="cb8-223"><a href="#cb8-223" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="st">&quot;striped&quot;</span>,</span>
-<span id="cb8-224"><a href="#cb8-224" aria-hidden="true" tabindex="-1"></a>    <span class="at">stripe_color =</span> <span class="st">&quot;gray!10&quot;</span>,</span>
-<span id="cb8-225"><a href="#cb8-225" aria-hidden="true" tabindex="-1"></a>    <span class="at">stripe_index =</span> <span class="fu">which</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(spearman_for_tex)) <span class="sc">%%</span> <span class="dv">2</span>L <span class="sc">==</span> <span class="dv">1</span>L),</span>
-<span id="cb8-226"><a href="#cb8-226" aria-hidden="true" tabindex="-1"></a>    <span class="at">full_width =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb8-227"><a href="#cb8-227" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="st">&quot;left&quot;</span>,</span>
-<span id="cb8-228"><a href="#cb8-228" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_size =</span> <span class="dv">9</span></span>
-<span id="cb8-229"><a href="#cb8-229" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb8-230"><a href="#cb8-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-231"><a href="#cb8-231" aria-hidden="true" tabindex="-1"></a><span class="fu">writeLines</span>(</span>
-<span id="cb8-232"><a href="#cb8-232" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
-<span id="cb8-233"><a href="#cb8-233" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">begingroup&quot;</span>,</span>
-<span id="cb8-234"><a href="#cb8-234" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">tabcolsep}{0.5pt}&quot;</span>,</span>
-<span id="cb8-235"><a href="#cb8-235" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">renewcommand{</span><span class="sc">\\</span><span class="st">arraystretch}{1.12}&quot;</span>,</span>
-<span id="cb8-236"><a href="#cb8-236" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">aboverulesep}{0.5ex}&quot;</span>,</span>
-<span id="cb8-237"><a href="#cb8-237" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">belowrulesep}{0.5ex}&quot;</span>,</span>
-<span id="cb8-238"><a href="#cb8-238" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">heavyrulewidth}{0.8pt}&quot;</span>,</span>
-<span id="cb8-239"><a href="#cb8-239" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">lightrulewidth}{0.4pt}&quot;</span>,</span>
-<span id="cb8-240"><a href="#cb8-240" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.character</span>(spearman_tex),</span>
-<span id="cb8-241"><a href="#cb8-241" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">endgroup&quot;</span></span>
-<span id="cb8-242"><a href="#cb8-242" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb8-243"><a href="#cb8-243" aria-hidden="true" tabindex="-1"></a>  <span class="at">con =</span> <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;spearman_mat.tex&quot;</span>),</span>
-<span id="cb8-244"><a href="#cb8-244" aria-hidden="true" tabindex="-1"></a>  <span class="at">useBytes =</span> <span class="cn">TRUE</span></span>
-<span id="cb8-245"><a href="#cb8-245" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-246"><a href="#cb8-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-198"><a href="#cb8-198" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (column <span class="cf">in</span> <span class="fu">names</span>(spearman_for_tex)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
+<span id="cb8-199"><a href="#cb8-199" aria-hidden="true" tabindex="-1"></a>  spearman_for_tex[[column]] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb8-200"><a href="#cb8-200" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(spearman_for_tex[[column]]),</span>
+<span id="cb8-201"><a href="#cb8-201" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;--&quot;</span>,</span>
+<span id="cb8-202"><a href="#cb8-202" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>, spearman_for_tex[[column]])</span>
+<span id="cb8-203"><a href="#cb8-203" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-204"><a href="#cb8-204" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-205"><a href="#cb8-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-206"><a href="#cb8-206" aria-hidden="true" tabindex="-1"></a>spearman_tex <span class="ot">&lt;-</span> spearman_for_tex <span class="sc">|&gt;</span></span>
+<span id="cb8-207"><a href="#cb8-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(</span>
+<span id="cb8-208"><a href="#cb8-208" aria-hidden="true" tabindex="-1"></a>    <span class="at">format =</span> <span class="st">&quot;latex&quot;</span>,</span>
+<span id="cb8-209"><a href="#cb8-209" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-210"><a href="#cb8-210" aria-hidden="true" tabindex="-1"></a>    <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-211"><a href="#cb8-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">escape =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-212"><a href="#cb8-212" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">c</span>(<span class="st">&quot;l&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;r&quot;</span>, <span class="fu">length</span>(period_labels))),</span>
+<span id="cb8-213"><a href="#cb8-213" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, period_labels),</span>
+<span id="cb8-214"><a href="#cb8-214" aria-hidden="true" tabindex="-1"></a>    <span class="at">linesep =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-215"><a href="#cb8-215" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-216"><a href="#cb8-216" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(</span>
+<span id="cb8-217"><a href="#cb8-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="st">&quot;striped&quot;</span>,</span>
+<span id="cb8-218"><a href="#cb8-218" aria-hidden="true" tabindex="-1"></a>    <span class="at">stripe_color =</span> <span class="st">&quot;gray!10&quot;</span>,</span>
+<span id="cb8-219"><a href="#cb8-219" aria-hidden="true" tabindex="-1"></a>    <span class="at">stripe_index =</span> <span class="fu">which</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(spearman_for_tex)) <span class="sc">%%</span> <span class="dv">2</span>L <span class="sc">==</span> <span class="dv">1</span>L),</span>
+<span id="cb8-220"><a href="#cb8-220" aria-hidden="true" tabindex="-1"></a>    <span class="at">full_width =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-221"><a href="#cb8-221" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="st">&quot;left&quot;</span>,</span>
+<span id="cb8-222"><a href="#cb8-222" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_size =</span> <span class="dv">9</span></span>
+<span id="cb8-223"><a href="#cb8-223" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-224"><a href="#cb8-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-225"><a href="#cb8-225" aria-hidden="true" tabindex="-1"></a><span class="fu">writeLines</span>(</span>
+<span id="cb8-226"><a href="#cb8-226" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb8-227"><a href="#cb8-227" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">begingroup&quot;</span>,</span>
+<span id="cb8-228"><a href="#cb8-228" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">tabcolsep}{0.5pt}&quot;</span>,</span>
+<span id="cb8-229"><a href="#cb8-229" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">renewcommand{</span><span class="sc">\\</span><span class="st">arraystretch}{1.12}&quot;</span>,</span>
+<span id="cb8-230"><a href="#cb8-230" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">aboverulesep}{0.5ex}&quot;</span>,</span>
+<span id="cb8-231"><a href="#cb8-231" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">belowrulesep}{0.5ex}&quot;</span>,</span>
+<span id="cb8-232"><a href="#cb8-232" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">heavyrulewidth}{0.8pt}&quot;</span>,</span>
+<span id="cb8-233"><a href="#cb8-233" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">lightrulewidth}{0.4pt}&quot;</span>,</span>
+<span id="cb8-234"><a href="#cb8-234" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.character</span>(spearman_tex),</span>
+<span id="cb8-235"><a href="#cb8-235" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="sc">\\</span><span class="st">endgroup&quot;</span></span>
+<span id="cb8-236"><a href="#cb8-236" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-237"><a href="#cb8-237" aria-hidden="true" tabindex="-1"></a>  <span class="at">con =</span> <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;spearman_mat.tex&quot;</span>),</span>
+<span id="cb8-238"><a href="#cb8-238" aria-hidden="true" tabindex="-1"></a>  <span class="at">useBytes =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-239"><a href="#cb8-239" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-240"><a href="#cb8-240" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

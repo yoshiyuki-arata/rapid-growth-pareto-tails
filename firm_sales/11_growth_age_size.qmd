@@ -20,7 +20,7 @@ editor: source
 
 
 Use `sample_growth_tb` to compare distributions of log growth over 2010–2011 by beginning-of-period sales and firm age classes.
-Create density plots by sales class and age class, and plot mean excess functions by sales class for a sample restricted by sales and age.
+Create density plots by sales class and by age class, and plot mean excess functions by sales class for a sample restricted by sales and age.
 
 ## 1 Setting sample conditions
 
@@ -48,8 +48,6 @@ Classify beginning-of-period sales and age as follows.
 * Age: classify ages into 0–5, 6–10, subsequent five-year intervals through 71–75, and 76 or older  
   Assign missing or negative ages to `age_other`.
 
-Remove observations with missing growth or class labels, but retain `size_other` and `age_other` at this stage.
-Only for `density_tb`, used in density plots, exclude zero growth and growth with an absolute value of at least 3.5.
 
 ```{r}
 
@@ -85,7 +83,7 @@ density_tb <- growth_2010_tb |>
 ```
 
 Define the age intervals for the legend in `age_class_labels`.
-For sales-class boundaries, use values multiplied by 1000 in the labels to display classes defined in thousands of yen in yen.
+Display the sales-class boundaries in yen by using labels equal to 1000 times the boundaries originally defined in thousands of yen.
 
 ```{r}
 
@@ -181,7 +179,7 @@ Let $g_{(i)}$ denote growth rates in descending order within each class. Calcula
 
 $$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$
 
-Plot the growth threshold on the horizontal axis and `m_excess` on the vertical axis, using colors to distinguish sales classes.
+Use colors to distinguish sales classes.
 Display a horizontal range of 0.1–4 and a vertical range of 0–1.
 
 ```{r}

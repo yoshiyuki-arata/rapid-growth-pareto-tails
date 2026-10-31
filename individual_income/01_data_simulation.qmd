@@ -18,17 +18,13 @@ execute:
 editor: source
 ---
 
-Generate a synthetic panel of individual incomes for public release.
-No actual data, previously saved analytical results, or parameters estimated from actual data are used.
-The distributions and parameters below are chosen for this computational example and do not guarantee replication of the empirical results or the validity of the model.
+Generate a synthetic panel of individual incomes.
 
-Save the income panel `sample_size_tb` and growth data `sample_growth_tb` in `qs2` format in `../income_board_replicate/`, matching the columns, types, and units read by the analysis code in 02–11.
+Save the income panel `sample_size_tb` and growth data `sample_growth_tb` in `qs2` format in `../income_board_replicate/`.
 Income in yen is stored as `main_var`, and birth year as a four-digit string in `birth_date`.
-Render this document first, then run each analysis in 02–11.
 
 ## 1 Setup and generation parameters
 
-Fix the random number generator and seed.
 
 ```{r}
 #| label: setup
@@ -60,24 +56,20 @@ set.seed(simulation_seed)
 
 ## 2 Synthetic individual attributes and income panel
 
-Individual IDs are sequential numbers prefixed with `SIM`.
-Allocate the 1.5 million individuals as evenly as possible across the 51 birth years from 1950 to 2000.
-Randomize the assignment of birth years to IDs, keeping birth year and industry fixed for each individual.
-Select industry codes from the integers 1111–9999 and store them as four-digit strings.
+Allocate the 1.5 million individuals as evenly as possible across the birth years from 1950 to 2000.
+Select industry codes from 1111–9999 and store them as four-digit strings.
 
 Let $B_i$ denote individual $i$'s birth year and $A_i=B_i+20$ the first year in which income is generated.
 Independently generate the natural logarithm of income in yen at age 20 from a common Laplace distribution, regardless of birth year.
 
-$$L_{i,A_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(10^7),\qquad s_0=1/\sqrt{2}.$$
+$$L_{i,A_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(10^7),\qquad s_0=0.1/\sqrt{2}.$$
 
-Generate annual growth rates independently of initial log income.
 From age 21 onward, add a signed Weibull log growth rate once per year.
 
 $$g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.$$
 
 $$L_{it}=L_{i,A_i}+\sum_{u=A_i+1}^{t}g_{iu},\qquad Y_{it}=\exp(L_{it}),\qquad t\geq A_i.$$
 
-In the year the individual turns 20, the empty sum is defined as zero.
 Here, $\mu=0$, $a=0.55$, and $b=0.06$.
 For example, log income in 2014 for an individual born in 1950 includes the value at age 20 and 44 growth increments from 1971 to 2014.
 
@@ -130,16 +122,14 @@ sample_size_tb |> head(10)
 
 ```
 
-The only income variable in `sample_size_tb` is `main_var`; use it to construct `sample_growth_tb` as follows.
 
 ## 3 Growth
 
 Calculate $g_{i,t,s}=\log(Y_{it})-\log(Y_{is})$ for six annual periods (2014–15 through 2019–20) and five periods starting in 2014 (2014–16 through 2014–20).
-Here, $Y$ is income in yen (`main_var`), and multiyear growth rates are not annualized.
+$Y$ is income in yen (`main_var`), and multiyear growth rates are not annualized.
 
-First verify that ID–year combinations are unique, then create combinations of IDs and the 11 growth periods.
-Join beginning-of-period income `pre_income` and end-of-period income `post_income` to each row, and store their log difference as `growth`.
-Exclude rows with missing or nonfinite growth rates, including periods in which income is unavailable because the individual is under 20 at the beginning or end.
+Join beginning-of-period income `pre_income` and end-of-period income `post_income`, and store their log difference as `growth`.
+Exclude rows with missing or nonfinite growth rates.
 
 For birth year `birth_date` and industry `ind_class`, use the attributes from the first year in which each ID appears in `sample_size_tb`.
 Create `sample_growth_tb` with these attributes and beginning- and end-of-period incomes.

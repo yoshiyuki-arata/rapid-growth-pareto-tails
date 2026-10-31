@@ -18,9 +18,9 @@ execute:
 editor: source
 ---
 
-Use income growth data `sample_growth_tb` to examine dependence across periods. Growth is the log difference between end-of-period and beginning-of-period incomes.
+Use income growth data `sample_growth_tb` to examine dependence across periods.
 Select individuals using beginning-of-period income and age conditions for 2014–15, and calculate Spearman rank correlations over the six periods from 2014–15 to 2019–20.
-Also use growth in 2014–15 and 2015–16 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values. Include zero growth in both analyses.
+Use growth in 2014–15 and 2015–16 to calculate a tail dependence measure and the cumulative mean of growth in the following period after transforming it to nonnegative values.
 
 ## 1 Rank correlations of growth rates
 
@@ -49,7 +49,6 @@ library(scattermore)
 
 Define `pobs()` to transform growth rates into rank-based pseudo-observations.
 Use average ranks for ties and divide by the length of the original vector plus one.
-Leave missing values in their original positions.
 
 ```{r}
 #| label: define-pobs
@@ -61,7 +60,6 @@ pobs <- function(x) {
 Load `sample_growth_tb` and calculate age `age` as the beginning year extracted from period label `year` minus the birth year in the first four characters of `birth_date`.
 For 2014–15 growth records (`g_15_14`), save the `id` values of individuals with beginning-of-period income `pre_income` of at least 4 million yen and beginning-of-period age 25–60 in `id_tb`.
 Use this set of individuals for both rank correlations and tail analyses.
-Do not impose additional restrictions based on income or age in other periods, or on industry.
 
 ```{r}
 #| layout-ncol: 2
@@ -81,7 +79,6 @@ id_tb <- sample_growth_tb |>
 **Spearman rank correlations across six periods**
 
 Use a common sample with finite growth rates in all six periods from 2014–15 to 2019–20.
-Include zero growth, and exclude individuals with `NA`, `NaN`, or positive or negative infinity.
 
 ```{r}
 #| label: prepare-growth-wide
@@ -108,7 +105,6 @@ growth_wide_tb |> correlate(method = "spearman")
 
 For the selected individuals, retain observations with finite growth rates in both 2014–15 and 2015–16 in `normal_tb`.
 Calculate pseudo-observations separately for these two periods.
-Do not require finite values in all six periods here; use `normal_tb` for both the tail dependence measure and cumulative means of growth in the following period.
 
 ```{r}
 #| layout-ncol: 2
@@ -125,8 +121,7 @@ normal_tb <- sample_growth_tb |>
 **Tail dependence measure**
 
 Let $N_q$ be the number of observations whose pseudo-observations exceed threshold $q$ in both periods, and $N$ the analysis sample size. Calculate the tail dependence measure as $N_q/[N(1-q)]$.
-Vary $q$ from 0.8 to 0.9995 in increments of 0.0005, save the measure in `tail_tb`, and plot it against $q$.
-Set vertical scale limits of 0–0.3 using `ylim()`.
+Vary $q$ from 0.8 to 0.9995 in increments of 0.0005.
 
 ```{r}
 

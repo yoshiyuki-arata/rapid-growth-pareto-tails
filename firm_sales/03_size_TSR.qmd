@@ -19,11 +19,10 @@ editor: source
 ---
 
 
-Use firm-year sales data `sample_size_tb` to examine distributions of firm age and sales size, sales distributions by year, and how closely log sales follow a normal distribution.
-Use 2020 data for age-specific analyses and 2010–2020 data for annual comparisons.
-Finally, for firms aged 50 or younger whose sales exceed each threshold, calculate the composition by age class.
+Use `sample_size_tb` to examine the distributions of firm age and sales, sales distributions by year, and how close log sales are to a normal distribution.
+Calculate the shares of each age class among firms aged 50 or younger whose sales exceed a specified threshold.
 
-## 1 Distributions of firm age and sales size
+## 1 Distributions of firm age and sales
 
 ```{r}
 library(tidyverse)
@@ -35,15 +34,14 @@ board <- board_folder("../Zipf_law_board_replicate_simulation")
 
 **Loading data and creating age classes**
 
-Load firm-year sales data and calculate firm age `age` as observation year `year` minus establishment year `birth_year`.
+Load the data and calculate firm age `age` as observation year `year` minus establishment year `birth_year`.
 Use observations meeting the following conditions.
 
 * Positive sales `sale`
 * Observation year from 2010 through 2020
-* The first two digits of industry code `ind_class` are 01–66 or 68–92
+* The first two digits of industry code `ind_class` are 01–61 or 68–92
 
-Add `sale_yen`, calculated by multiplying `sale` in thousands of yen by 1000, to `sample_size_yen_tb` for plotting.
-Leave the original `sample_size_tb` and `sale` unchanged.
+Add sales in yen as `sale_yen` to the plotting dataset `sample_size_yen_tb`, calculated by multiplying `sale`, measured in thousands of yen, by 1000.
 
 ```{r}
 
@@ -59,7 +57,7 @@ sample_size_yen_tb <- sample_size_tb |>
 
 ```
 
-Create `size_20_tb` restricted to 2020 and use `cut()` to classify firm age into five-year intervals in `age_class`.
+Create `size_20_tb` restricted to 2020 and classify firm age into five-year intervals in `age_class`.
 The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to `age_95_over`.
 Assign firms with missing or negative ages to `age_other`.
 
@@ -110,7 +108,6 @@ size_20_yen_tb <- size_20_tb |>
 
 ```
 
-Display observation counts. The data also contain firms with negative ages.
 
 ```{r}
 #| layout-ncol: 2
@@ -141,11 +138,9 @@ ggsave(filename = "age_dist.png", path = "graph")
 
 ```
 
-**Sales size distributions by age**
+**Sales distributions by age**
 
 First plot the full 2020 sample, then compare the three groups young, middle, and old.
-For the three-group comparison, use only young, middle, and old, excluding minus and other.
-For the full-sample figure, impose no additional age exclusions.
 
 ```{r}
 #| layout-ncol: 2
@@ -185,7 +180,6 @@ ggsave(filename = "size_df_three_age_group.png", path = "graph")
 ```
 
 Compare sales distributions across five-year `age_class` intervals.
-The figure for ages above 50 also includes firms older than 95.
 Use the shared function's logarithmic axes, density estimation, and displayed vertical range for all figures.
 
 ```{r}
@@ -230,8 +224,7 @@ ggsave(filename = "size_df_agg_diff_year.png", path = "graph")
 ## 2 Comparing log sales with a normal distribution: Q-Q plots
 
 Select age classes `age_10`, `age_20`, …, `age_90` from the 2020 data.
-For each class, take the natural logarithm of original sales in thousands of yen, subtract its median, and divide by the MAD (median absolute deviation).
-Do not use the mean and standard deviation for this standardization.
+For each class, take the natural logarithm of the original sales measured in thousands of yen, subtract the median of these log sales, and divide by their MAD (median absolute deviation).
 
 Use Q-Q plots to compare sample quantiles of standardized log sales with theoretical quantiles of the standard normal distribution.
 Add a reference line with intercept zero and slope one.
@@ -266,7 +259,7 @@ ggsave(filename = "size_qqplot_by_age.png", path = "graph")
 For firms aged 50 or younger in 2020, examine the age composition of firms whose sales exceed a threshold.
 
 Set sales thresholds in yen to $10^9, 10^{9.2}, \ldots, 10^{14}$, giving 26 points spaced by 0.2 in base-10 logarithms.
-For each threshold, select observations with `sale_yen` strictly above that value and calculate composition shares `n_ratio`, using the total count `n_total` as the denominator and the count in each age class as the numerator.
+For each threshold, select observations strictly above that value and calculate composition shares `n_ratio`, using the total count as the denominator and the count in each age class as the numerator.
 
 ```{r}
 

@@ -20,8 +20,7 @@ editor: source
 
 
 Use `sample_growth_tb` to compare distributions of minimum annual growth rates between firms with high growth over 2010–2020 (HGF) and all others (non-HGF).
-Use ten-year growth to classify high growth, and annual growth rates to calculate the minimum.
-The groups use different numbers of periods to calculate the minimum: nine for non-HGF and ten for HGF.
+Use ten-year growth to identify high-growth firms.
 
 ## 0 Data preparation
 
@@ -83,11 +82,11 @@ growth_wide_tb |>
 
 ```
 
-**Creating the minimum-growth table `compare_smallest_tb`**
+**Creating `compare_smallest_tb` to store minimum growth rates**
 
 Classify firms whose `g_20_10` is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator `hg`.
 
-The shared function `add_smallest()` converts the specified growth columns to a matrix, calculates each firm's minimum using `rowOrderStats(..., which = 1)`, and stores it in `smallest_1st`.
+The function `add_smallest()` converts the specified growth columns to a matrix, calculates each firm's minimum using `rowOrderStats(..., which = 1)`, and stores it in `smallest_1st`.
 Use the following periods for each group.
 
 * non-HGF: nine periods from 2010–11 through 2018–19 (`g_19_18:g_11_10`)
@@ -121,7 +120,6 @@ compare_smallest_tb <-
 **Visual comparison of distributions**
 
 Compare densities of minimum growth `smallest_1st` between HGF and non-HGF.
-Estimate densities using each group's values without additional restrictions on the absolute value of minimum growth.
 Restrict only the displayed horizontal range to −1.5–1.5.
 
 ```{r}
@@ -141,9 +139,7 @@ ggsave(filename = "compare_smallest_growth.png", path = "graph")
 
 ```
 
-**Comparison of summary statistics**
 
-For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of firms `n_obs`.
 
 ```{r}
 

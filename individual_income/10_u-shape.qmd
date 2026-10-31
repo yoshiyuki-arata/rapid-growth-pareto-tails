@@ -19,7 +19,7 @@ editor: source
 ---
 
 Use `sample_growth_tb` to examine the ratio of log growth over the first three years to log growth over the full six years for individuals whose 2014–2020 log growth exceeds a threshold.
-Examine whether the ratio exhibits a U-shape concentrated near zero and one, as predicted by subexponentiality.
+In relation to the predictions of subexponentiality, examine whether the ratio exhibits a U-shape, with concentrations near zero and one.
 
 ## 1 Data preparation and ratio construction
 
@@ -39,8 +39,8 @@ theme_set(theme_ipsum())
 **Definition of the ratio variable**
 
 Load `sample_growth_tb` and calculate age `age` as the beginning year extracted from the period label minus the birth year in the first four characters of `birth_date`.
-For records in each period, select observations with beginning-of-period income of at least 4 million yen and beginning-of-period age 25–60, then reshape growth rates to wide format by ID.
-Both periods used in the ratio, 2014–2017 (`g_17_14`) and 2014–2020 (`g_20_14`), start in 2014, so the same 2014 income and age conditions apply to both.
+For each period, select observations with beginning-of-period income of at least 4 million yen and beginning-of-period age 25–60.
+Both 2014–2017 (`g_17_14`) and 2014–2020 (`g_20_14`) start in 2014.
 Retain observations with finite growth rates in both periods in `ratio_tb`.
 Define the ratio as $r_{20,14}=g_{17,14}/g_{20,14}$.
 
@@ -61,9 +61,8 @@ ratio_tb <- sample_growth_tb |>
 
 ## 2 Ratio distributions by threshold
 
-**Share of growth occurring in the first three years**
 
-Exclude observations with ratios exactly equal to zero or one, and set 28 threshold values $u$ from 0.1 to 2.8 in increments of 0.1.
+Exclude observations with ratios exactly equal to zero or one, and set threshold values $u$ from 0.1 to 2.8 in increments of 0.1.
 For each threshold, select individuals whose six-year growth satisfies $g_{20,14}>u$.
 Restrict the horizontal axis to −0.3–1.3 using `xlim()`.
 

@@ -20,7 +20,7 @@ editor: source
 
 
 Load `sample_size_tb` and `sample_growth_tb` and calculate summary statistics for firm sales and growth rates.
-Summarize the natural logarithm of sales converted to yen by year, and summarize the saved `growth` variable by annual period.
+For firm sales, summarize the natural logarithm of sales after conversion to yen by year; for growth rates, summarize the saved `growth` variable by one-year period.
 
 ## 1 Firm sales
 
@@ -36,7 +36,7 @@ board <- board_folder("../Zipf_law_board_replicate_simulation")
 
 
 Load sales data `sample_size_tb` without modification.
-Add beginning-of-period firm age `age` to `sample_growth_tb` as the beginning year extracted from period label `year` minus establishment year `birth_year`.
+Add firm age `age` at the beginning of each period to `sample_growth_tb`, calculated as the beginning year extracted from period label `year` minus establishment year `birth_year`.
 Age is the difference between calendar years, without adjustment for the month or day of establishment.
 
 ```{r}
@@ -78,7 +78,7 @@ summ_stat_size_tb
 
 ## 2 Growth rates 
 
-Extract the end and beginning years from period label `year` and retain annual growth rates only, where the difference between the years is one.
+Retain only one-year growth rates.
 Select observations meeting the following conditions.
 
 * Beginning-of-period sales `pre_sale` of at least $4.0 \times 10^4$  
@@ -117,7 +117,6 @@ summ_stat_growth_tb
 ## 3 LaTeX table output
 
 Format the summaries in LaTeX using the shared function `write_summary_tex()`.
-Leave the summary values unchanged; format counts as integers and other statistics to three decimal places only when producing output.
 Display missing values as `--`.
 
 Use the column headings Year, N, Mean, Std. Dev., 1st Quartile, Median, and 3rd Quartile in both tables.
@@ -180,7 +179,6 @@ write_summary_tex <- function(data, file) {
 }
 ```
 
-For the growth table, convert period labels such as `g_11_10` to `2010--11` to display the period dash in LaTeX.
 
 ```{r}
 

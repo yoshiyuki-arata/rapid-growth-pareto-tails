@@ -3653,8 +3653,8 @@ font-weight: bold;
 </header>
 
 
-<p>Generate a synthetic firm panel for public release using only random numbers. Do not use the actual data used in the analysis. The distributions and parameters below are chosen for this computational example and do not guarantee replication of the empirical results or the validity of the model.</p>
-<p>Save <code>sample_size_tb</code> and <code>sample_growth_tb</code>, with the same columns, types, and units as the actual data, in both <code>qs2</code> and <code>parquet</code> formats in <code>../Zipf_law_board_replicate_simulation/</code>. Saving in <code>parquet</code> format requires the R package <code>arrow</code>. The QMD files in 02–11 change only the input board path; their computational procedures are those used in the actual analysis.</p>
+<p>Generate a synthetic firm panel.</p>
+<p>Save <code>sample_size_tb</code> and <code>sample_growth_tb</code>, with the same columns, types, and units as the actual data, in both <code>qs2</code> and <code>parquet</code> formats in <code>../Zipf_law_board_replicate_simulation/</code>.</p>
 <section id="setup-and-generation-parameters" class="level2">
 <h2 class="anchored" data-anchor-id="setup-and-generation-parameters">1 Setup and generation parameters</h2>
 <div class="cell">
@@ -3689,14 +3689,13 @@ font-weight: bold;
 </section>
 <section id="synthetic-firm-attributes-and-sales-panel" class="level2">
 <h2 class="anchored" data-anchor-id="synthetic-firm-attributes-and-sales-panel">2 Synthetic firm attributes and sales panel</h2>
-<p>Firm IDs are sequential numbers prefixed with <code>SIM</code>. Firms are born in every year from 1940 to 2020. Allocate 300,000 firms as evenly as possible across the 81 establishment years, so annual firm counts differ by at most one. Construct four-digit industry codes by selecting the first two digits from 01–99 and the last two from 00–99. Include synthetic industries subject to exclusion so that the industry exclusions in the analysis code can be applied without modification.</p>
-<p>Let <span class="math inline">\(B_i\)</span> denote firm <span class="math inline">\(i\)</span>’s establishment year. Independently generate the natural logarithm of sales at birth, measured in thousands of yen, from a common Laplace distribution regardless of establishment year.</p>
+<p>Firms are born in every year from 1940 to 2020. Construct four-digit industry codes by selecting the first two digits from 01–99 and the last two from 00–99. Independently generate the natural logarithm of sales measured in thousands of yen at birth from the same Laplace distribution for all establishment years.</p>
 <p><span class="math display">\[L_{i,B_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(2\times10^5),\qquad s_0=1/\sqrt{2}.\]</span></p>
-<p>Set the location <span class="math inline">\(m_0\)</span> using <code>initial_log_sale_location</code> and the standard deviation of 1 using <code>initial_log_sale_sd</code>. Set the Laplace scale to <code>initial_log_sale_scale</code>, calculated as the standard deviation divided by <span class="math inline">\(\sqrt{2}\)</span>. The density is <span class="math inline">\(f(x)=\exp(-|x-m_0|/s_0)/(2s_0)\)</span>. Median sales at birth are 200 million yen. Generate initial log sales independently of annual growth rates. Do not add a growth shock to sales in the birth year; from the following year onward, add a signed Weibull log growth rate once per year.</p>
+<p>Starting in the following year, add a signed Weibull log growth rate once per year to log sales at birth.</p>
 <p><span class="math display">\[g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.\]</span></p>
 <p><span class="math display">\[L_{it}=L_{i,B_i}+\sum_{u=B_i+1}^{t}g_{iu},\qquad t\geq B_i,\qquad \mathrm{sale}_{it}=\exp(L_{it}).\]</span></p>
-<p>In the birth year, the empty sum is defined as zero. Here, <span class="math inline">\(\mu=0\)</span>, <span class="math inline">\(a=0.55\)</span>, and <span class="math inline">\(b=0.06\)</span>. Initial log sales and growth shocks are independent, as are growth shocks across firms and years.</p>
-<p>Generate the growth process year by year from 1940 through 2020. Save observations for 2005–2020 in <code>sample_size_tb</code> for use in analyses 02–11. For example, log sales in 2005 for a firm born in 1940 include the value at birth and 65 growth increments from 1941 to 2005.</p>
+<p>Here, <span class="math inline">\(\mu=0\)</span>, <span class="math inline">\(a=0.55\)</span>, and <span class="math inline">\(b=0.06\)</span>.</p>
+<p>Generate the growth process year by year from 1940 through 2020. For example, log sales in 2005 for a firm born in 1940 include the value at birth and 65 growth increments from 1941 to 2005.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign firms to every establishment year, then randomize the assignment to IDs.</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>firm_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
@@ -3759,8 +3758,8 @@ font-weight: bold;
 <span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells  1618453  86.5    2508887 134.0  2508887 134.0
-Vcells 38379701 292.9   92903984 708.9 77353320 590.2</code></pre>
+Ncells  1618441  86.5    2508958 134.0  2508958 134.0
+Vcells 38378951 292.9   92903084 708.8 77352570 590.2</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -3774,7 +3773,7 @@ Vcells 38379701 292.9   92903984 708.9 77353320 590.2</code></pre>
 </section>
 <section id="growth" class="level2">
 <h2 class="anchored" data-anchor-id="growth">3 Growth</h2>
-<p>Here, calculate <span class="math inline">\(g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})\)</span> for ten annual periods and nine periods starting in 2010. Growth is <code>NA</code> for periods in which sales are unavailable before establishment.</p>
+<p>Here, calculate <span class="math inline">\(g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})\)</span> for ten one-year periods relative to the preceding year and nine periods relative to 2010. Growth is <code>NA</code> for periods in which sales are unavailable because the firm had not yet been established.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define ten annual periods and nine periods starting in 2010, in the original order.</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>growth_pairs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
@@ -3798,9 +3797,9 @@ Vcells 38379701 292.9   92903984 708.9 77353320 590.2</code></pre>
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;g_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span></span>
 <span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.nan</span>(growth), <span class="sc">!</span><span class="fu">is.infinite</span>(growth))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Create <code>sample_growth_tb</code> with firm attributes (establishment year and industry) and corresponding sales levels (beginning and end years).</p>
+<p>Create <code>sample_growth_tb</code> with firm attributes (establishment year and industry) and the corresponding sales levels in the beginning and end years.</p>
 <ul>
-<li><p>Collect and join each firm’s <code>birth_year</code> and <code>ind_class</code> in <code>firm_attributes</code><br>
+<li><p>Collect each firm’s <code>birth_year</code> and <code>ind_class</code> in <code>firm_attributes</code> and join these attributes to the growth data<br>
 Use the attributes from the firm’s first appearance in <code>sample_size_tb</code>, without restricting to 2010.</p></li>
 <li><p>Add variables <code>pre_sale</code> and <code>post_sale</code><br>
 For example, when year = g_13_10, post_year = 2013 and pre_year = 2010.</p></li>
@@ -4320,209 +4319,196 @@ For example, when year = g_13_10, post_year = 2013 and pre_year = 2010.</p></li>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>Generate a synthetic firm panel for public release using only random numbers.</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>Do not use the actual data used in the analysis.</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>The distributions and parameters below are chosen for this computational example and do not guarantee replication of the empirical results or the validity of the model.</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>Generate a synthetic firm panel.</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>Save <span class="in">`sample_size_tb`</span> and <span class="in">`sample_growth_tb`</span>, with the same columns, types, and units as the actual data, in both <span class="in">`qs2`</span> and <span class="in">`parquet`</span> formats in <span class="in">`../Zipf_law_board_replicate_simulation/`</span>.</span>
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>Save <span class="in">`sample_size_tb`</span> and <span class="in">`sample_growth_tb`</span>, with the same columns, types, and units as the actual data, in both <span class="in">`qs2`</span> and <span class="in">`parquet`</span> formats in <span class="in">`../Zipf_law_board_replicate_simulation/`</span>. Saving in <span class="in">`parquet`</span> format requires the R package <span class="in">`arrow`</span>.</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>The QMD files in 02–11 change only the input board path; their computational procedures are those used in the actual analysis.</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Setup and generation parameters</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_light</span>())</span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same random sequence when rendering again.</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="fu">RNGkind</span>(<span class="st">&quot;Mersenne-Twister&quot;</span>, <span class="st">&quot;Inversion&quot;</span>, <span class="st">&quot;Rejection&quot;</span>)</span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="dv">20261019</span>L</span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
-<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co"># 06_Girard.qmd requires positive growth rates through rank 60,000.</span></span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Using too small a sample causes the final validation to stop execution.</span></span>
-<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>n_firms <span class="ot">&lt;-</span> <span class="dv">300000</span>L</span>
-<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>birth_years <span class="ot">&lt;-</span> <span class="dv">1940</span><span class="sc">:</span><span class="dv">2020</span></span>
-<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>simulation_years <span class="ot">&lt;-</span> <span class="fu">min</span>(birth_years)<span class="sc">:</span><span class="fu">max</span>(birth_years)</span>
-<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>years <span class="ot">&lt;-</span> <span class="dv">2005</span><span class="sc">:</span><span class="dv">2020</span> <span class="co"># Observation period saved for analysis</span></span>
-<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for log sales at birth only; set separately from shock_shape / shock_scale for growth.</span></span>
-<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>initial_log_sale_location <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">2e5</span>) <span class="co"># Location of log sales (median sales are 200 million yen)</span></span>
-<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>initial_log_sale_sd <span class="ot">&lt;-</span> <span class="fl">1.0</span></span>
-<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>initial_log_sale_scale <span class="ot">&lt;-</span> initial_log_sale_sd <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="dv">2</span>)</span>
-<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>annual_drift <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>shock_shape <span class="ot">&lt;-</span> <span class="fl">0.55</span></span>
-<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>shock_scale <span class="ot">&lt;-</span> <span class="fl">0.06</span></span>
-<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Do not read from or write to the original board for actual data.</span></span>
-<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>, <span class="at">versioned =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;graph&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;latex&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Synthetic firm attributes and sales panel</span></span>
-<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>Firm IDs are sequential numbers prefixed with <span class="in">`SIM`</span>. Firms are born in every year from 1940 to 2020.</span>
-<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>Allocate 300,000 firms as evenly as possible across the 81 establishment years, so annual firm counts differ by at most one.</span>
-<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>Construct four-digit industry codes by selecting the first two digits from 01–99 and the last two from 00–99.</span>
-<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>Include synthetic industries subject to exclusion so that the industry exclusions in the analysis code can be applied without modification.</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Setup and generation parameters</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_light</span>())</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same random sequence when rendering again.</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="fu">RNGkind</span>(<span class="st">&quot;Mersenne-Twister&quot;</span>, <span class="st">&quot;Inversion&quot;</span>, <span class="st">&quot;Rejection&quot;</span>)</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="dv">20261019</span>L</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co"># 06_Girard.qmd requires positive growth rates through rank 60,000.</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Using too small a sample causes the final validation to stop execution.</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>n_firms <span class="ot">&lt;-</span> <span class="dv">300000</span>L</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>birth_years <span class="ot">&lt;-</span> <span class="dv">1940</span><span class="sc">:</span><span class="dv">2020</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>simulation_years <span class="ot">&lt;-</span> <span class="fu">min</span>(birth_years)<span class="sc">:</span><span class="fu">max</span>(birth_years)</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>years <span class="ot">&lt;-</span> <span class="dv">2005</span><span class="sc">:</span><span class="dv">2020</span> <span class="co"># Observation period saved for analysis</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for log sales at birth only; set separately from shock_shape / shock_scale for growth.</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>initial_log_sale_location <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">2e5</span>) <span class="co"># Location of log sales (median sales are 200 million yen)</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>initial_log_sale_sd <span class="ot">&lt;-</span> <span class="fl">1.0</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>initial_log_sale_scale <span class="ot">&lt;-</span> initial_log_sale_sd <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="dv">2</span>)</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>annual_drift <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>shock_shape <span class="ot">&lt;-</span> <span class="fl">0.55</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>shock_scale <span class="ot">&lt;-</span> <span class="fl">0.06</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co"># Do not read from or write to the original board for actual data.</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>, <span class="at">versioned =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;graph&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;latex&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Synthetic firm attributes and sales panel</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>Firms are born in every year from 1940 to 2020.</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>Construct four-digit industry codes by selecting the first two digits from 01–99 and the last two from 00–99.</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>Independently generate the natural logarithm of sales measured in thousands of yen at birth from the same Laplace distribution for all establishment years.</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>$$L_{i,B_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(2\times10^5),\qquad s_0=1/\sqrt{2}.$$</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>Starting in the following year, add a signed Weibull log growth rate once per year to log sales at birth.</span>
 <span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>Let $B_i$ denote firm $i$&#39;s establishment year. Independently generate the natural logarithm of sales at birth, measured in thousands of yen, from a common Laplace distribution regardless of establishment year.</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>$$g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.$$</span>
 <span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>$$L_{i,B_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(2\times10^5),\qquad s_0=1/\sqrt{2}.$$</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>$$L_{it}=L_{i,B_i}+\sum_{u=B_i+1}^{t}g_{iu},\qquad t\geq B_i,\qquad \mathrm{sale}_{it}=\exp(L_{it}).$$</span>
 <span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>Set the location $m_0$ using <span class="in">`initial_log_sale_location`</span> and the standard deviation of 1 using <span class="in">`initial_log_sale_sd`</span>.</span>
-<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>Set the Laplace scale to <span class="in">`initial_log_sale_scale`</span>, calculated as the standard deviation divided by $\sqrt{2}$.</span>
-<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>The density is $f(x)=\exp(-|x-m_0|/s_0)/(2s_0)$.</span>
-<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>Median sales at birth are 200 million yen.</span>
-<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>Generate initial log sales independently of annual growth rates.</span>
-<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>Do not add a growth shock to sales in the birth year; from the following year onward, add a signed Weibull log growth rate once per year.</span>
-<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>$$g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.$$</span>
-<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>$$L_{it}=L_{i,B_i}+\sum_{u=B_i+1}^{t}g_{iu},\qquad t\geq B_i,\qquad \mathrm{sale}_{it}=\exp(L_{it}).$$</span>
-<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>In the birth year, the empty sum is defined as zero.</span>
-<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>Here, $\mu=0$, $a=0.55$, and $b=0.06$. Initial log sales and growth shocks are independent, as are growth shocks across firms and years.</span>
-<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>Generate the growth process year by year from 1940 through 2020.</span>
-<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>Save observations for 2005–2020 in <span class="in">`sample_size_tb`</span> for use in analyses 02–11.</span>
-<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>For example, log sales in 2005 for a firm born in 1940 include the value at birth and 65 growth increments from 1941 to 2005.</span>
-<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign firms to every establishment year, then randomize the assignment to IDs.</span></span>
-<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>firm_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">sprintf</span>(<span class="st">&quot;SIM%07d&quot;</span>, <span class="fu">seq_len</span>(n_firms)),</span>
-<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>  <span class="at">birth_year =</span> <span class="fu">as.numeric</span>(<span class="fu">sample</span>(<span class="fu">rep</span>(birth_years, <span class="at">length.out =</span> n_firms))),</span>
-<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>  <span class="at">ind_class =</span> <span class="fu">sprintf</span>(</span>
-<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;%02d%02d&quot;</span>,</span>
-<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">99</span>, n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">99</span>, n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Use signed exponential draws to generate Laplace values at birth independently of growth.</span></span>
-<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>  <span class="at">birth_log_sale =</span> initial_log_sale_location <span class="sc">+</span> initial_log_sale_scale <span class="sc">*</span></span>
-<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="fu">rexp</span>(n_firms, <span class="at">rate =</span> <span class="dv">1</span>)</span>
-<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">birth_date =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%04d0101&quot;</span>, <span class="fu">as.integer</span>(birth_year)))</span>
-<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Firms have no sales before birth.</span></span>
-<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>log_sale <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, n_firms)</span>
-<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>n_growth_steps <span class="ot">&lt;-</span> <span class="fu">integer</span>(n_firms)</span>
-<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>annual_tables <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="st">&quot;list&quot;</span>, <span class="fu">length</span>(years))</span>
-<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (this_year <span class="cf">in</span> simulation_years) {</span>
-<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>  newborn <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">==</span> this_year)</span>
-<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>  log_sale[newborn] <span class="ot">&lt;-</span> firm_tb<span class="sc">$</span>birth_log_sale[newborn]</span>
-<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add one year of growth to existing firms each year from the year after birth through 2020.</span></span>
-<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>  continuing <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">&lt;</span> this_year)</span>
-<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(continuing) <span class="sc">&gt;</span> <span class="dv">0</span>L) {</span>
-<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>    shock <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="fu">length</span>(continuing), <span class="at">replace =</span> <span class="cn">TRUE</span>) <span class="sc">*</span></span>
-<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rweibull</span>(<span class="fu">length</span>(continuing), <span class="at">shape =</span> shock_shape, <span class="at">scale =</span> shock_scale)</span>
-<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>    log_sale[continuing] <span class="ot">&lt;-</span> log_sale[continuing] <span class="sc">+</span> annual_drift <span class="sc">+</span> shock</span>
-<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a>    n_growth_steps[continuing] <span class="ot">&lt;-</span> n_growth_steps[continuing] <span class="sc">+</span> <span class="dv">1</span>L</span>
-<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a>  active <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">&lt;=</span> this_year)</span>
-<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify that no growth was added in the birth year and exactly one increment was added each subsequent year.</span></span>
-<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(</span>
-<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(n_growth_steps[active] <span class="sc">==</span> this_year <span class="sc">-</span> firm_tb<span class="sc">$</span>birth_year[active]),</span>
-<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(log_sale[newborn] <span class="sc">==</span> firm_tb<span class="sc">$</span>birth_log_sale[newborn]),</span>
-<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(<span class="fu">is.finite</span>(log_sale[active])),</span>
-<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(<span class="fu">is.na</span>(log_sale[firm_tb<span class="sc">$</span>birth_year <span class="sc">&gt;</span> this_year]))</span>
-<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate growth histories before 2005 as well, but save only the years used in the analysis.</span></span>
-<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (this_year <span class="sc">%in%</span> years) {</span>
-<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a>    annual_tables[[<span class="fu">match</span>(this_year, years)]] <span class="ot">&lt;-</span> firm_tb[active, ] <span class="sc">|&gt;</span></span>
-<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a>      <span class="fu">transmute</span>(</span>
-<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a>        id,</span>
-<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a>        <span class="at">date =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%04d12&quot;</span>, this_year),</span>
-<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a>        <span class="at">month =</span> <span class="dv">12</span>,</span>
-<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a>        <span class="at">sale =</span> <span class="fu">exp</span>(log_sale[active]),</span>
-<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a>        <span class="at">year =</span> <span class="fu">as.character</span>(this_year),</span>
-<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a>        birth_date,</span>
-<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a>        ind_class,</span>
-<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a>        birth_year</span>
-<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb8-150"><a href="#cb8-150" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-151"><a href="#cb8-151" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(annual_tables)</span>
-<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(annual_tables, log_sale, n_growth_steps, firm_tb)</span>
-<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-154"><a href="#cb8-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-155"><a href="#cb8-155" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
-<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-157"><a href="#cb8-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-158"><a href="#cb8-158" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Growth</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>Here, $\mu=0$, $a=0.55$, and $b=0.06$.</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>Generate the growth process year by year from 1940 through 2020.</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>For example, log sales in 2005 for a firm born in 1940 include the value at birth and 65 growth increments from 1941 to 2005.</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign firms to every establishment year, then randomize the assignment to IDs.</span></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>firm_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">sprintf</span>(<span class="st">&quot;SIM%07d&quot;</span>, <span class="fu">seq_len</span>(n_firms)),</span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>  <span class="at">birth_year =</span> <span class="fu">as.numeric</span>(<span class="fu">sample</span>(<span class="fu">rep</span>(birth_years, <span class="at">length.out =</span> n_firms))),</span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>  <span class="at">ind_class =</span> <span class="fu">sprintf</span>(</span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;%02d%02d&quot;</span>,</span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">99</span>, n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">99</span>, n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Use signed exponential draws to generate Laplace values at birth independently of growth.</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>  <span class="at">birth_log_sale =</span> initial_log_sale_location <span class="sc">+</span> initial_log_sale_scale <span class="sc">*</span></span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), n_firms, <span class="at">replace =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="fu">rexp</span>(n_firms, <span class="at">rate =</span> <span class="dv">1</span>)</span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">birth_date =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%04d0101&quot;</span>, <span class="fu">as.integer</span>(birth_year)))</span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a><span class="co"># Firms have no sales before birth.</span></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>log_sale <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, n_firms)</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>n_growth_steps <span class="ot">&lt;-</span> <span class="fu">integer</span>(n_firms)</span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>annual_tables <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="st">&quot;list&quot;</span>, <span class="fu">length</span>(years))</span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (this_year <span class="cf">in</span> simulation_years) {</span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>  newborn <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">==</span> this_year)</span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>  log_sale[newborn] <span class="ot">&lt;-</span> firm_tb<span class="sc">$</span>birth_log_sale[newborn]</span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add one year of growth to existing firms each year from the year after birth through 2020.</span></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>  continuing <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">&lt;</span> this_year)</span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(continuing) <span class="sc">&gt;</span> <span class="dv">0</span>L) {</span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>    shock <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="fu">length</span>(continuing), <span class="at">replace =</span> <span class="cn">TRUE</span>) <span class="sc">*</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rweibull</span>(<span class="fu">length</span>(continuing), <span class="at">shape =</span> shock_shape, <span class="at">scale =</span> shock_scale)</span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>    log_sale[continuing] <span class="ot">&lt;-</span> log_sale[continuing] <span class="sc">+</span> annual_drift <span class="sc">+</span> shock</span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>    n_growth_steps[continuing] <span class="ot">&lt;-</span> n_growth_steps[continuing] <span class="sc">+</span> <span class="dv">1</span>L</span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a>  active <span class="ot">&lt;-</span> <span class="fu">which</span>(firm_tb<span class="sc">$</span>birth_year <span class="sc">&lt;=</span> this_year)</span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify that no growth was added in the birth year and exactly one increment was added each subsequent year.</span></span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(</span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(n_growth_steps[active] <span class="sc">==</span> this_year <span class="sc">-</span> firm_tb<span class="sc">$</span>birth_year[active]),</span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(log_sale[newborn] <span class="sc">==</span> firm_tb<span class="sc">$</span>birth_log_sale[newborn]),</span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(<span class="fu">is.finite</span>(log_sale[active])),</span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all</span>(<span class="fu">is.na</span>(log_sale[firm_tb<span class="sc">$</span>birth_year <span class="sc">&gt;</span> this_year]))</span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate growth histories before 2005 as well, but save only the years used in the analysis.</span></span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (this_year <span class="sc">%in%</span> years) {</span>
+<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a>    annual_tables[[<span class="fu">match</span>(this_year, years)]] <span class="ot">&lt;-</span> firm_tb[active, ] <span class="sc">|&gt;</span></span>
+<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a>      <span class="fu">transmute</span>(</span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a>        id,</span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a>        <span class="at">date =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%04d12&quot;</span>, this_year),</span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a>        <span class="at">month =</span> <span class="dv">12</span>,</span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a>        <span class="at">sale =</span> <span class="fu">exp</span>(log_sale[active]),</span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a>        <span class="at">year =</span> <span class="fu">as.character</span>(this_year),</span>
+<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a>        birth_date,</span>
+<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>        ind_class,</span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a>        birth_year</span>
+<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(annual_tables)</span>
+<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(annual_tables, log_sale, n_growth_steps, firm_tb)</span>
+<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Growth</span></span>
+<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a>Here, calculate $g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})$ for ten one-year periods relative to the preceding year and nine periods relative to 2010.</span>
+<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a>Growth is <span class="in">`NA`</span> for periods in which sales are unavailable because the firm had not yet been established.</span>
+<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a><span class="co"># Define ten annual periods and nine periods starting in 2010, in the original order.</span></span>
+<span id="cb8-154"><a href="#cb8-154" aria-hidden="true" tabindex="-1"></a>growth_pairs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb8-155"><a href="#cb8-155" aria-hidden="true" tabindex="-1"></a>  <span class="at">post =</span> <span class="fu">c</span>(<span class="dv">2020</span><span class="sc">:</span><span class="dv">2011</span>, <span class="dv">2012</span><span class="sc">:</span><span class="dv">2020</span>),</span>
+<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a>  <span class="at">pre =</span> <span class="fu">c</span>(<span class="dv">2019</span><span class="sc">:</span><span class="dv">2010</span>, <span class="fu">rep</span>(<span class="dv">2010</span>, <span class="dv">9</span>))</span>
+<span id="cb8-157"><a href="#cb8-157" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb8-158"><a href="#cb8-158" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">&quot;g_%02d_%02d&quot;</span>, post <span class="sc">%%</span> <span class="dv">100</span>, pre <span class="sc">%%</span> <span class="dv">100</span>))</span>
 <span id="cb8-159"><a href="#cb8-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a>Here, calculate $g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})$ for ten annual periods and nine periods starting in 2010.</span>
-<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a>Growth is <span class="in">`NA`</span> for periods in which sales are unavailable before establishment.</span>
-<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a><span class="co"># Define ten annual periods and nine periods starting in 2010, in the original order.</span></span>
-<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a>growth_pairs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a>  <span class="at">post =</span> <span class="fu">c</span>(<span class="dv">2020</span><span class="sc">:</span><span class="dv">2011</span>, <span class="dv">2012</span><span class="sc">:</span><span class="dv">2020</span>),</span>
-<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a>  <span class="at">pre =</span> <span class="fu">c</span>(<span class="dv">2019</span><span class="sc">:</span><span class="dv">2010</span>, <span class="fu">rep</span>(<span class="dv">2010</span>, <span class="dv">9</span>))</span>
-<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">&quot;g_%02d_%02d&quot;</span>, post <span class="sc">%%</span> <span class="dv">100</span>, pre <span class="sc">%%</span> <span class="dv">100</span>))</span>
-<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a>growth_wide <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
-<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> year, <span class="at">values_from =</span> sale)</span>
+<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a>growth_wide <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
+<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> year, <span class="at">values_from =</span> sale)</span>
+<span id="cb8-163"><a href="#cb8-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-164"><a href="#cb8-164" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(growth_pairs))) {</span>
+<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a>  growth_wide[[growth_pairs<span class="sc">$</span>label[i]]] <span class="ot">&lt;-</span></span>
+<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(growth_wide[[<span class="fu">as.character</span>(growth_pairs<span class="sc">$</span>post[i])]]) <span class="sc">-</span></span>
+<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(growth_wide[[<span class="fu">as.character</span>(growth_pairs<span class="sc">$</span>pre[i])]])</span>
+<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a>growth_tb <span class="ot">&lt;-</span> growth_wide <span class="sc">|&gt;</span></span>
+<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">&quot;20&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;g_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.nan</span>(growth), <span class="sc">!</span><span class="fu">is.infinite</span>(growth))</span>
+<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb8-176"><a href="#cb8-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(growth_pairs))) {</span>
-<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a>  growth_wide[[growth_pairs<span class="sc">$</span>label[i]]] <span class="ot">&lt;-</span></span>
-<span id="cb8-179"><a href="#cb8-179" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(growth_wide[[<span class="fu">as.character</span>(growth_pairs<span class="sc">$</span>post[i])]]) <span class="sc">-</span></span>
-<span id="cb8-180"><a href="#cb8-180" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(growth_wide[[<span class="fu">as.character</span>(growth_pairs<span class="sc">$</span>pre[i])]])</span>
-<span id="cb8-181"><a href="#cb8-181" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a>growth_tb <span class="ot">&lt;-</span> growth_wide <span class="sc">|&gt;</span></span>
-<span id="cb8-184"><a href="#cb8-184" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">&quot;20&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb8-185"><a href="#cb8-185" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;g_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;year&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;growth&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-186"><a href="#cb8-186" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.nan</span>(growth), <span class="sc">!</span><span class="fu">is.infinite</span>(growth))</span>
-<span id="cb8-187"><a href="#cb8-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-188"><a href="#cb8-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-189"><a href="#cb8-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-190"><a href="#cb8-190" aria-hidden="true" tabindex="-1"></a>Create <span class="in">`sample_growth_tb`</span> with firm attributes (establishment year and industry) and corresponding sales levels (beginning and end years).</span>
+<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a>Create <span class="in">`sample_growth_tb`</span> with firm attributes (establishment year and industry) and the corresponding sales levels in the beginning and end years.</span>
+<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-179"><a href="#cb8-179" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Collect each firm&#39;s <span class="in">`birth_year`</span> and <span class="in">`ind_class`</span> in <span class="in">`firm_attributes`</span> and join these attributes to the growth data  </span>
+<span id="cb8-180"><a href="#cb8-180" aria-hidden="true" tabindex="-1"></a>  Use the attributes from the firm&#39;s first appearance in <span class="in">`sample_size_tb`</span>, without restricting to 2010.</span>
+<span id="cb8-181"><a href="#cb8-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Add variables <span class="in">`pre_sale`</span> and <span class="in">`post_sale`</span>  </span>
+<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a>  For example, when year = g_13_10, post_year = 2013 and pre_year = 2010.  </span>
+<span id="cb8-184"><a href="#cb8-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-187"><a href="#cb8-187" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-188"><a href="#cb8-188" aria-hidden="true" tabindex="-1"></a>firm_attributes <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
+<span id="cb8-189"><a href="#cb8-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, birth_year, ind_class) <span class="sc">|&gt;</span></span>
+<span id="cb8-190"><a href="#cb8-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb8-191"><a href="#cb8-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-192"><a href="#cb8-192" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Collect and join each firm&#39;s <span class="in">`birth_year`</span> and <span class="in">`ind_class`</span> in <span class="in">`firm_attributes`</span>  </span>
-<span id="cb8-193"><a href="#cb8-193" aria-hidden="true" tabindex="-1"></a>  Use the attributes from the firm&#39;s first appearance in <span class="in">`sample_size_tb`</span>, without restricting to 2010.</span>
-<span id="cb8-194"><a href="#cb8-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-195"><a href="#cb8-195" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Add variables <span class="in">`pre_sale`</span> and <span class="in">`post_sale`</span>  </span>
-<span id="cb8-196"><a href="#cb8-196" aria-hidden="true" tabindex="-1"></a>  For example, when year = g_13_10, post_year = 2013 and pre_year = 2010.  </span>
-<span id="cb8-197"><a href="#cb8-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-200"><a href="#cb8-200" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-201"><a href="#cb8-201" aria-hidden="true" tabindex="-1"></a>firm_attributes <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
-<span id="cb8-202"><a href="#cb8-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, birth_year, ind_class) <span class="sc">|&gt;</span></span>
-<span id="cb8-203"><a href="#cb8-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-204"><a href="#cb8-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-205"><a href="#cb8-205" aria-hidden="true" tabindex="-1"></a>sales <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span> <span class="fu">select</span>(id, year, sale)</span>
-<span id="cb8-206"><a href="#cb8-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-207"><a href="#cb8-207" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> growth_tb <span class="sc">|&gt;</span></span>
-<span id="cb8-208"><a href="#cb8-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(firm_attributes, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-209"><a href="#cb8-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb8-210"><a href="#cb8-210" aria-hidden="true" tabindex="-1"></a>    <span class="at">pre_year =</span> <span class="fu">str_c</span>(<span class="st">&quot;20&quot;</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>, <span class="dv">7</span>)),</span>
-<span id="cb8-211"><a href="#cb8-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">post_year =</span> <span class="fu">str_c</span>(<span class="st">&quot;20&quot;</span>, <span class="fu">str_sub</span>(year, <span class="dv">3</span>, <span class="dv">4</span>))</span>
-<span id="cb8-212"><a href="#cb8-212" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb8-213"><a href="#cb8-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb8-214"><a href="#cb8-214" aria-hidden="true" tabindex="-1"></a>    sales <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">pre_sale =</span> sale),</span>
-<span id="cb8-215"><a href="#cb8-215" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;id&quot;</span>, <span class="st">&quot;pre_year&quot;</span> <span class="ot">=</span> <span class="st">&quot;year&quot;</span>)</span>
-<span id="cb8-216"><a href="#cb8-216" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb8-217"><a href="#cb8-217" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb8-218"><a href="#cb8-218" aria-hidden="true" tabindex="-1"></a>    sales <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">post_sale =</span> sale),</span>
-<span id="cb8-219"><a href="#cb8-219" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;id&quot;</span>, <span class="st">&quot;post_year&quot;</span> <span class="ot">=</span> <span class="st">&quot;year&quot;</span>)</span>
-<span id="cb8-220"><a href="#cb8-220" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb8-221"><a href="#cb8-221" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>pre_year, <span class="sc">-</span>post_year)</span>
-<span id="cb8-222"><a href="#cb8-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-223"><a href="#cb8-223" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the data after the validation below.</span></span>
-<span id="cb8-224"><a href="#cb8-224" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
-<span id="cb8-225"><a href="#cb8-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-226"><a href="#cb8-226" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb8-227"><a href="#cb8-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-230"><a href="#cb8-230" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb8-231"><a href="#cb8-231" aria-hidden="true" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_write</span>(sample_size_tb, <span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;qs2&quot;</span>, <span class="st">&quot;parquet&quot;</span>))</span>
-<span id="cb8-232"><a href="#cb8-232" aria-hidden="true" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_write</span>(sample_growth_tb, <span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;qs2&quot;</span>, <span class="st">&quot;parquet&quot;</span>))</span>
-<span id="cb8-233"><a href="#cb8-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-234"><a href="#cb8-234" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-192"><a href="#cb8-192" aria-hidden="true" tabindex="-1"></a>sales <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span> <span class="fu">select</span>(id, year, sale)</span>
+<span id="cb8-193"><a href="#cb8-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-194"><a href="#cb8-194" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> growth_tb <span class="sc">|&gt;</span></span>
+<span id="cb8-195"><a href="#cb8-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(firm_attributes, <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-196"><a href="#cb8-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-197"><a href="#cb8-197" aria-hidden="true" tabindex="-1"></a>    <span class="at">pre_year =</span> <span class="fu">str_c</span>(<span class="st">&quot;20&quot;</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>, <span class="dv">7</span>)),</span>
+<span id="cb8-198"><a href="#cb8-198" aria-hidden="true" tabindex="-1"></a>    <span class="at">post_year =</span> <span class="fu">str_c</span>(<span class="st">&quot;20&quot;</span>, <span class="fu">str_sub</span>(year, <span class="dv">3</span>, <span class="dv">4</span>))</span>
+<span id="cb8-199"><a href="#cb8-199" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-200"><a href="#cb8-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb8-201"><a href="#cb8-201" aria-hidden="true" tabindex="-1"></a>    sales <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">pre_sale =</span> sale),</span>
+<span id="cb8-202"><a href="#cb8-202" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;id&quot;</span>, <span class="st">&quot;pre_year&quot;</span> <span class="ot">=</span> <span class="st">&quot;year&quot;</span>)</span>
+<span id="cb8-203"><a href="#cb8-203" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-204"><a href="#cb8-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb8-205"><a href="#cb8-205" aria-hidden="true" tabindex="-1"></a>    sales <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">post_sale =</span> sale),</span>
+<span id="cb8-206"><a href="#cb8-206" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;id&quot;</span>, <span class="st">&quot;post_year&quot;</span> <span class="ot">=</span> <span class="st">&quot;year&quot;</span>)</span>
+<span id="cb8-207"><a href="#cb8-207" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-208"><a href="#cb8-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>pre_year, <span class="sc">-</span>post_year)</span>
+<span id="cb8-209"><a href="#cb8-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-210"><a href="#cb8-210" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the data after the validation below.</span></span>
+<span id="cb8-211"><a href="#cb8-211" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb8-212"><a href="#cb8-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-213"><a href="#cb8-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-214"><a href="#cb8-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-217"><a href="#cb8-217" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-218"><a href="#cb8-218" aria-hidden="true" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_write</span>(sample_size_tb, <span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;qs2&quot;</span>, <span class="st">&quot;parquet&quot;</span>))</span>
+<span id="cb8-219"><a href="#cb8-219" aria-hidden="true" tabindex="-1"></a>board <span class="sc">|&gt;</span> <span class="fu">pin_write</span>(sample_growth_tb, <span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;qs2&quot;</span>, <span class="st">&quot;parquet&quot;</span>))</span>
+<span id="cb8-220"><a href="#cb8-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-221"><a href="#cb8-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

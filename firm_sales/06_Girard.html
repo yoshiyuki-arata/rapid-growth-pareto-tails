@@ -3657,7 +3657,7 @@ font-weight: bold;
 </header>
 
 
-<p>Use <code>sample_growth_tb</code> to estimate tail parameters and extreme quantiles with Girard’s method. The sample consists of firm growth rates for 2019–20 satisfying beginning-of-period sales, firm age, and industry conditions. Assuming <span class="math inline">\(\tau = 0\)</span>, estimate <span class="math inline">\(\alpha\)</span> from the Hill estimator and use its reciprocal <span class="math inline">\(\theta\)</span> to estimate extreme quantiles and tail probabilities. After checking the shape with a linearity plot, estimate <span class="math inline">\(\tau\)</span> over a grid of candidate values.</p>
+<p>Use <code>sample_growth_tb</code> to estimate tail parameters and extreme quantiles with Girard’s method. The sample consists of firm growth rates for 2019–20 that meet the conditions on beginning-of-period sales, firm age, and industry.</p>
 <section id="estimation-assuming-tau-0" class="level2">
 <h2 class="anchored" data-anchor-id="estimation-assuming-tau-0">1 Estimation assuming <span class="math inline">\(\tau = 0\)</span></h2>
 <section id="function-definitions" class="level3">
@@ -3683,7 +3683,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <p><strong>Preparing to calculate the Hill estimator</strong></p>
 <p>Let <span class="math inline">\(X_{(1)}, X_{(2)}, \ldots, X_{(n)}\)</span> denote growth <code>growth</code> sorted in descending order. Calculate <code>hill_est</code> by dividing the cumulative sum by rank <span class="math inline">\(i\)</span>.</p>
 <p><span class="math display">\[H(i) = \frac{1}{i}\sum_{j=1}^{i}j\log\left(\frac{X_{(j)}}{X_{(j+1)}}\right) = \frac{1}{i}\sum_{j=1}^{i}\log\left(\frac{X_{(j)}}{X_{(i+1)}}\right).\]</span></p>
-<p>In row <span class="math inline">\(i\)</span>, <code>hill_est</code> is the mean log excess of the largest <span class="math inline">\(i\)</span> observations above the growth threshold at rank <span class="math inline">\(i+1\)</span>. Thus, when using growth at rank <span class="math inline">\(k_n\)</span> as the threshold, use <code>hill_est</code> from row <span class="math inline">\(k_n-1\)</span>, namely <span class="math inline">\(H(k_n-1)\)</span>.</p>
+<p>In row <span class="math inline">\(i\)</span>, <code>hill_est</code> is the mean log excess of the largest <span class="math inline">\(i\)</span> observations above the growth threshold at rank <span class="math inline">\(i+1\)</span>. When using growth at rank <span class="math inline">\(k_n\)</span> as the threshold, use <code>hill_est</code> from row <span class="math inline">\(k_n-1\)</span>, namely <span class="math inline">\(H(k_n-1)\)</span>.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year)</span>
@@ -3716,7 +3716,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <section id="estimating-alpha-theta-1-under-tau-0" class="level3">
 <h3 class="anchored" data-anchor-id="estimating-alpha-theta-1-under-tau-0">1.2 Estimating <span class="math inline">\(\alpha = \theta^{-1}\)</span> under <span class="math inline">\(\tau = 0\)</span></h3>
 <p><strong>Estimating <span class="math inline">\(\alpha\)</span> with the Hill estimator</strong></p>
-<p>Set the rank threshold to <span class="math inline">\(k_n=\operatorname{round}(0.05n)\)</span>. With growth at rank <span class="math inline">\(k_n\)</span>, <span class="math inline">\(X_{(k_n)}\)</span>, as the threshold, estimate <span class="math inline">\(\alpha=\theta^{-1}\)</span> using <code>hill_est</code> from row <span class="math inline">\(k_n-1\)</span> and <span class="math inline">\(\mu_0(t)\)</span> at <span class="math inline">\(t=\log(n/k_n)\)</span>. The Hill estimator averages the <span class="math inline">\(k_n-1\)</span> observations above the threshold and assumes <span class="math inline">\(k_n\geq2\)</span>. Use the threshold rank <span class="math inline">\(k_n\)</span> unchanged in the argument of <span class="math inline">\(\mu_0\)</span> and subsequent quantile estimation.</p>
+<p>Set the rank threshold to <span class="math inline">\(k_n=\operatorname{round}(0.05n)\)</span>. With growth at rank <span class="math inline">\(k_n\)</span>, <span class="math inline">\(X_{(k_n)}\)</span>, as the threshold, estimate <span class="math inline">\(\alpha=\theta^{-1}\)</span> using <code>hill_est</code> from row <span class="math inline">\(k_n-1\)</span> and <span class="math inline">\(\mu_0(t)\)</span> at <span class="math inline">\(t=\log(n/k_n)\)</span>. The Hill estimator averages the <span class="math inline">\(k_n-1\)</span> observations above the threshold and assumes <span class="math inline">\(k_n\geq2\)</span>.</p>
 <p><span class="math display">\[\widehat\alpha = \left\{\frac{H(k_n-1)}{\mu_0(\log(n/k_n))}\right\}^{-1}.\]</span></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>n_obs <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n_obs =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> <span class="fu">pull</span>(n_obs)</span>
@@ -3757,8 +3757,8 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <ul>
 <li><code>p_n</code>: rank-based empirical tail probability <span class="math inline">\(i/n\)</span>.</li>
 <li><code>tail_growth</code>: growth relative to the threshold, <span class="math inline">\(X_{(i)}/X_{(k_n)}\)</span>.</li>
-<li><code>prob_var</code>：<span class="math inline">\(\log(1/p_n)/\log(n/k_n)\)</span>。</li>
-<li><code>est_quantile</code>：<span class="math inline">\(\widehat{x}_{p_n}=X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat\theta}\)</span>。</li>
+<li><code>prob_var</code>: <span class="math inline">\(\log(1/p_n)/\log(n/k_n)\)</span>.</li>
+<li><code>est_quantile</code>: <span class="math inline">\(\widehat{x}_{p_n}=X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat\theta}\)</span>.</li>
 </ul>
 <p>Define <code>est_pn_f()</code> to calculate tail probabilities using the same threshold and estimated parameters.</p>
 <p><span class="math display">\[\widehat p(x)=\exp\left\{\log(k_n/n)\left(\frac{x}{X_{(k_n)}}\right)^{1/\widehat\theta}\right\}.\]</span></p>
@@ -3820,7 +3820,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 
 </div>
 <p><strong>Threshold-specific <span class="math inline">\(\tau\)</span> estimates and 95% bands</strong></p>
-<p>Estimate <span class="math inline">\(\tau\)</span> at each threshold <span class="math inline">\(k_n=10,20,\ldots,6000\)</span>. This threshold sequence differs from <span class="math inline">\(\operatorname{round}(0.05n)\)</span> used to estimate <span class="math inline">\(\alpha\)</span>. Calculate the standard error and 95% bands using the following formula.</p>
+<p>Estimate <span class="math inline">\(\tau\)</span> at each threshold <span class="math inline">\(k_n=10,20,\ldots,6000\)</span>. Calculate the standard error and 95% bands using the following formula.</p>
 <p><span class="math display">\[\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}\{\log\log(n/k_n)-\log\log(n/k&#39;_n)\}}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).\]</span></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the standard error (se) and lower and upper 95% confidence limits to tau_est_tb alongside tau_est.</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>tau_est_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">k_n =</span> <span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">6000</span>, <span class="at">by =</span> <span class="dv">10</span>)) <span class="sc">%&gt;%</span></span>
@@ -4332,240 +4332,237 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`sample_growth_tb`</span> to estimate tail parameters and extreme quantiles with Girard&#39;s method.</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>The sample consists of firm growth rates for 2019–20 satisfying beginning-of-period sales, firm age, and industry conditions.</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>Assuming $\tau = 0$, estimate $\alpha$ from the Hill estimator and use its reciprocal $\theta$ to estimate extreme quantiles and tail probabilities.</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>After checking the shape with a linearity plot, estimate $\tau$ over a grid of candidate values.</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>The sample consists of firm growth rates for 2019–20 that meet the conditions on beginning-of-period sales, firm age, and industry.</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Estimation assuming $\tau = 0$</span></span>
 <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Estimation assuming $\tau = 0$</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 Function definitions</span></span>
 <span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 Function definitions</span></span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>**Sample settings**</span>
 <span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>**Sample settings**</span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and calculate firm age <span class="in">`age`</span> as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>For 2019–20 growth (<span class="in">`g_20_19`</span>), select observations meeting the following conditions.</span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales <span class="in">`pre_sale`</span> of at least $4.0 \times 10^4$  </span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period firm age of at least five  </span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–61 or 68–92  </span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Finite growth <span class="in">`growth`</span>  </span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and calculate firm age <span class="in">`age`</span> as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>For 2019–20 growth (<span class="in">`g_20_19`</span>), select observations meeting the following conditions.</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales <span class="in">`pre_sale`</span> of at least $4.0 \times 10^4$  </span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period firm age of at least five  </span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–61 or 68–92  </span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Finite growth <span class="in">`growth`</span>  </span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>**Preparing to calculate the Hill estimator**</span>
 <span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>**Preparing to calculate the Hill estimator**</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>Let $X_{(1)}, X_{(2)}, \ldots, X_{(n)}$ denote growth <span class="in">`growth`</span> sorted in descending order. Calculate <span class="in">`hill_est`</span> by dividing the cumulative sum by rank $i$.</span>
 <span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>Let $X_{(1)}, X_{(2)}, \ldots, X_{(n)}$ denote growth <span class="in">`growth`</span> sorted in descending order. Calculate <span class="in">`hill_est`</span> by dividing the cumulative sum by rank $i$.</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>$$H(i) = \frac{1}{i}\sum_{j=1}^{i}j\log\left(\frac{X_{(j)}}{X_{(j+1)}}\right) = \frac{1}{i}\sum_{j=1}^{i}\log\left(\frac{X_{(j)}}{X_{(i+1)}}\right).$$</span>
 <span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>$$H(i) = \frac{1}{i}\sum_{j=1}^{i}j\log\left(\frac{X_{(j)}}{X_{(j+1)}}\right) = \frac{1}{i}\sum_{j=1}^{i}\log\left(\frac{X_{(j)}}{X_{(i+1)}}\right).$$</span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>In row $i$, <span class="in">`hill_est`</span> is the mean log excess of the largest $i$ observations above the growth threshold at rank $i+1$.</span>
-<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>Thus, when using growth at rank $k_n$ as the threshold, use <span class="in">`hill_est`</span> from row $k_n-1$, namely $H(k_n-1)$.</span>
-<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year)</span>
-<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span>  </span>
-<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>),</span>
-<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>         <span class="fu">is.finite</span>(growth),</span>
-<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>         pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>,</span>
-<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">5</span>, </span>
-<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(growth)) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(growth) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">i_var =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>(), <span class="at">n_i_var =</span> <span class="fu">n</span>()<span class="sc">/</span>i_var, <span class="at">lead =</span> <span class="fu">lead</span>(growth)) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hill_element =</span> i_var<span class="sc">*</span><span class="fu">log</span>(growth<span class="sc">/</span>lead), </span>
-<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a>         <span class="at">hill_est =</span> <span class="fu">cumsum</span>(hill_element)<span class="sc">/</span>i_var) </span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>In row $i$, <span class="in">`hill_est`</span> is the mean log excess of the largest $i$ observations above the growth threshold at rank $i+1$.</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>When using growth at rank $k_n$ as the threshold, use <span class="in">`hill_est`</span> from row $k_n-1$, namely $H(k_n-1)$.</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year, <span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year)</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span>  </span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>),</span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>         <span class="fu">is.finite</span>(growth),</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>         pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>,</span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">5</span>, </span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(growth)) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(growth) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">i_var =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>(), <span class="at">n_i_var =</span> <span class="fu">n</span>()<span class="sc">/</span>i_var, <span class="at">lead =</span> <span class="fu">lead</span>(growth)) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hill_element =</span> i_var<span class="sc">*</span><span class="fu">log</span>(growth<span class="sc">/</span>lead), </span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>         <span class="at">hill_est =</span> <span class="fu">cumsum</span>(hill_element)<span class="sc">/</span>i_var) </span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a>**Definition of the function $\mu_\tau$**</span>
 <span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>**Definition of the function $\mu_\tau$**</span>
-<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a>Evaluate the integral for $\tau \neq 0$ using <span class="in">`mu_f()`</span>, switching to <span class="in">`mu_f_tau_0()`</span> when $\tau = 0$.</span>
-<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a>Although the theoretical upper integration limit is infinity, the code performs numerical integration with an upper limit of 10.</span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>Evaluate the integral for $\tau \neq 0$ using <span class="in">`mu_f()`</span>, switching to <span class="in">`mu_f_tau_0()`</span> when $\tau = 0$.</span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a>Although the theoretical upper integration limit is infinity, the code performs numerical integration with an upper limit of 10.</span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a>$$\mu_\tau(t) = \int_0^\infty <span class="sc">\{</span>K_\tau(x+t)-K_\tau(t)<span class="sc">\}</span>e^{-x}\,dx, \qquad K_0(y)=\log y, \quad K_\tau(y)=\frac{y^\tau-1}{\tau}\ \ (\tau\neq0).$$</span>
 <span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a>$$\mu_\tau(t) = \int_0^\infty <span class="sc">\{</span>K_\tau(x+t)-K_\tau(t)<span class="sc">\}</span>e^{-x}\,dx, \qquad K_0(y)=\log y, \quad K_\tau(y)=\frac{y^\tau-1}{\tau}\ \ (\tau\neq0).$$</span>
-<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a>mu_f_tau_0 <span class="ot">&lt;-</span> \(t_x) <span class="fu">integrate</span>(\(x) (<span class="fu">log</span>(x <span class="sc">+</span> t_x) <span class="sc">-</span> <span class="fu">log</span>(t_x))<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>x), <span class="fl">0.0</span>, <span class="dv">10</span>)<span class="sc">$</span>value</span>
-<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a>mu_f <span class="ot">&lt;-</span> <span class="cf">function</span>(tau_x, t_x) {</span>
-<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (tau_x <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">mu_f_tau_0</span>(t_x))</span>
-<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">integrate</span>(\(x) ((x <span class="sc">+</span> t_x)<span class="sc">^</span>{tau_x} <span class="sc">-</span> t_x<span class="sc">^</span>{tau_x})<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>x)<span class="sc">/</span>tau_x, <span class="fl">0.0</span>, <span class="dv">10</span>)<span class="sc">$</span>value</span>
-<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a>mu_f_tau_0 <span class="ot">&lt;-</span> \(t_x) <span class="fu">integrate</span>(\(x) (<span class="fu">log</span>(x <span class="sc">+</span> t_x) <span class="sc">-</span> <span class="fu">log</span>(t_x))<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>x), <span class="fl">0.0</span>, <span class="dv">10</span>)<span class="sc">$</span>value</span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a>mu_f <span class="ot">&lt;-</span> <span class="cf">function</span>(tau_x, t_x) {</span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (tau_x <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">mu_f_tau_0</span>(t_x))</span>
+<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">integrate</span>(\(x) ((x <span class="sc">+</span> t_x)<span class="sc">^</span>{tau_x} <span class="sc">-</span> t_x<span class="sc">^</span>{tau_x})<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>x)<span class="sc">/</span>tau_x, <span class="fl">0.0</span>, <span class="dv">10</span>)<span class="sc">$</span>value</span>
+<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 Estimating $\alpha = \theta^{-1}$ under $\tau = 0$</span></span>
 <span id="cb11-100"><a href="#cb11-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 Estimating $\alpha = \theta^{-1}$ under $\tau = 0$</span></span>
+<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a>**Estimating $\alpha$ with the Hill estimator**</span>
 <span id="cb11-102"><a href="#cb11-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a>**Estimating $\alpha$ with the Hill estimator**</span>
-<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a>Set the rank threshold to $k_n=\operatorname{round}(0.05n)$.</span>
-<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a>With growth at rank $k_n$, $X_{(k_n)}$, as the threshold, estimate $\alpha=\theta^{-1}$ using <span class="in">`hill_est`</span> from row $k_n-1$ and $\mu_0(t)$ at $t=\log(n/k_n)$.</span>
-<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a>The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$. Use the threshold rank $k_n$ unchanged in the argument of $\mu_0$ and subsequent quantile estimation.</span>
+<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a>Set the rank threshold to $k_n=\operatorname{round}(0.05n)$.</span>
+<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a>With growth at rank $k_n$, $X_{(k_n)}$, as the threshold, estimate $\alpha=\theta^{-1}$ using <span class="in">`hill_est`</span> from row $k_n-1$ and $\mu_0(t)$ at $t=\log(n/k_n)$.</span>
+<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a>The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$.</span>
+<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a>$$\widehat\alpha = \left<span class="sc">\{</span>\frac{H(k_n-1)}{\mu_0(\log(n/k_n))}\right<span class="sc">\}</span>^{-1}.$$</span>
 <span id="cb11-108"><a href="#cb11-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-109"><a href="#cb11-109" aria-hidden="true" tabindex="-1"></a>$$\widehat\alpha = \left<span class="sc">\{</span>\frac{H(k_n-1)}{\mu_0(\log(n/k_n))}\right<span class="sc">\}</span>^{-1}.$$</span>
-<span id="cb11-110"><a href="#cb11-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a>n_obs <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n_obs =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> <span class="fu">pull</span>(n_obs)</span>
-<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a>k_n <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fl">0.05</span><span class="sc">*</span>n_obs) <span class="co">#k_n &lt;- 3*10^3</span></span>
-<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a>est_alpha <span class="ot">&lt;-</span> (sample_tb<span class="sc">$</span>hill_est[k_n <span class="sc">-</span> <span class="dv">1</span>]<span class="sc">/</span><span class="fu">mu_f_tau_0</span>(<span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n)))<span class="sc">^</span>{<span class="sc">-</span><span class="dv">1</span>}</span>
-<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a><span class="fu">str_c</span>(<span class="st">&quot;alpha is &quot;</span>, est_alpha)</span>
+<span id="cb11-111"><a href="#cb11-111" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-112"><a href="#cb11-112" aria-hidden="true" tabindex="-1"></a>n_obs <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n_obs =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> <span class="fu">pull</span>(n_obs)</span>
+<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a>k_n <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fl">0.05</span><span class="sc">*</span>n_obs) <span class="co">#k_n &lt;- 3*10^3</span></span>
+<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a>est_alpha <span class="ot">&lt;-</span> (sample_tb<span class="sc">$</span>hill_est[k_n <span class="sc">-</span> <span class="dv">1</span>]<span class="sc">/</span><span class="fu">mu_f_tau_0</span>(<span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n)))<span class="sc">^</span>{<span class="sc">-</span><span class="dv">1</span>}</span>
+<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a><span class="fu">str_c</span>(<span class="st">&quot;alpha is &quot;</span>, est_alpha)</span>
+<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-119"><a href="#cb11-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-120"><a href="#cb11-120" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-120"><a href="#cb11-120" aria-hidden="true" tabindex="-1"></a>**Checking linearity**</span>
 <span id="cb11-121"><a href="#cb11-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-122"><a href="#cb11-122" aria-hidden="true" tabindex="-1"></a>**Checking linearity**</span>
+<span id="cb11-122"><a href="#cb11-122" aria-hidden="true" tabindex="-1"></a>Using descending growth rates $X_{(i)}$, create a scatterplot with $\log\log(n/i)$ on the horizontal axis and $\log X_{(i)}$ on the vertical axis.</span>
 <span id="cb11-123"><a href="#cb11-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-124"><a href="#cb11-124" aria-hidden="true" tabindex="-1"></a>Using descending growth rates $X_{(i)}$, create a scatterplot with $\log\log(n/i)$ on the horizontal axis and $\log X_{(i)}$ on the vertical axis.</span>
-<span id="cb11-125"><a href="#cb11-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-129"><a href="#cb11-129" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="sc">|&gt;</span>  </span>
-<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">x_var =</span> <span class="fu">log</span>(<span class="fu">log</span>(n_i_var)), <span class="at">y_var =</span> <span class="fu">log</span>(growth)) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(i_var <span class="sc">&lt;</span> k_n) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(x_var, y_var)) <span class="sc">+</span> </span>
-<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> </span>
-<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">expression</span>(<span class="fu">log</span>(<span class="fu">log</span>(N <span class="sc">/</span> i))),</span>
-<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">expression</span>(<span class="fu">log</span> (X[N<span class="sc">-</span>i<span class="sc">+</span><span class="dv">1</span>]))</span>
-<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb11-142"><a href="#cb11-142" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Weibull_linear_relation.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-126"><a href="#cb11-126" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-129"><a href="#cb11-129" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="sc">|&gt;</span>  </span>
+<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">x_var =</span> <span class="fu">log</span>(<span class="fu">log</span>(n_i_var)), <span class="at">y_var =</span> <span class="fu">log</span>(growth)) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(i_var <span class="sc">&lt;</span> k_n) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(x_var, y_var)) <span class="sc">+</span> </span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> </span>
+<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">expression</span>(<span class="fu">log</span>(<span class="fu">log</span>(N <span class="sc">/</span> i))),</span>
+<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">expression</span>(<span class="fu">log</span> (X[N<span class="sc">-</span>i<span class="sc">+</span><span class="dv">1</span>]))</span>
+<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Weibull_linear_relation.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-142"><a href="#cb11-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-143"><a href="#cb11-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-144"><a href="#cb11-144" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-144"><a href="#cb11-144" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 Estimating extreme quantiles and tail probabilities</span></span>
 <span id="cb11-145"><a href="#cb11-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 Estimating extreme quantiles and tail probabilities</span></span>
+<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a>**Creating variables**</span>
 <span id="cb11-147"><a href="#cb11-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-148"><a href="#cb11-148" aria-hidden="true" tabindex="-1"></a>**Creating variables**</span>
-<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a>Set <span class="in">`growth_kn`</span> to growth at rank $k_n$ in descending order, $X_{(k_n)}$, and <span class="in">`est_theta`</span> to the reciprocal of <span class="in">`est_alpha`</span>.</span>
-<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a>Calculate the following columns and save the top $k_n$ observations in <span class="in">`est_quantile_tb`</span>.</span>
-<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`p_n`</span>: rank-based empirical tail probability $i/n$.</span>
-<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`tail_growth`</span>: growth relative to the threshold, $X_{(i)}/X_{(k_n)}$.</span>
-<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`prob_var`</span>：$\log(1/p_n)/\log(n/k_n)$。</span>
-<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`est_quantile`</span>：$\widehat{x}_{p_n}=X_{(k_n)}<span class="sc">\{</span>\log(1/p_n)/\log(n/k_n)<span class="sc">\}</span>^{\widehat\theta}$。</span>
+<span id="cb11-148"><a href="#cb11-148" aria-hidden="true" tabindex="-1"></a>Set <span class="in">`growth_kn`</span> to growth at rank $k_n$ in descending order, $X_{(k_n)}$, and <span class="in">`est_theta`</span> to the reciprocal of <span class="in">`est_alpha`</span>.</span>
+<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a>Calculate the following columns and save the top $k_n$ observations in <span class="in">`est_quantile_tb`</span>.</span>
+<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`p_n`</span>: rank-based empirical tail probability $i/n$.</span>
+<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`tail_growth`</span>: growth relative to the threshold, $X_{(i)}/X_{(k_n)}$.</span>
+<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`prob_var`</span>: $\log(1/p_n)/\log(n/k_n)$.</span>
+<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`est_quantile`</span>: $\widehat{x}_{p_n}=X_{(k_n)}<span class="sc">\{</span>\log(1/p_n)/\log(n/k_n)<span class="sc">\}</span>^{\widehat\theta}$.</span>
+<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`est_pn_f()`</span> to calculate tail probabilities using the same threshold and estimated parameters.</span>
 <span id="cb11-157"><a href="#cb11-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-158"><a href="#cb11-158" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`est_pn_f()`</span> to calculate tail probabilities using the same threshold and estimated parameters.</span>
+<span id="cb11-158"><a href="#cb11-158" aria-hidden="true" tabindex="-1"></a>$$\widehat p(x)=\exp\left<span class="sc">\{</span>\log(k_n/n)\left(\frac{x}{X_{(k_n)}}\right)^{1/\widehat\theta}\right<span class="sc">\}</span>.$$</span>
 <span id="cb11-159"><a href="#cb11-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-160"><a href="#cb11-160" aria-hidden="true" tabindex="-1"></a>$$\widehat p(x)=\exp\left<span class="sc">\{</span>\log(k_n/n)\left(\frac{x}{X_{(k_n)}}\right)^{1/\widehat\theta}\right<span class="sc">\}</span>.$$</span>
-<span id="cb11-161"><a href="#cb11-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a>growth_kn <span class="ot">&lt;-</span> sample_tb<span class="sc">$</span>growth[k_n]</span>
-<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a>est_theta <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>est_alpha</span>
-<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a>est_quantile_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> </span>
-<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_n =</span> <span class="dv">1</span><span class="sc">/</span>n_i_var, </span>
-<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>         <span class="at">tail_growth =</span> growth<span class="sc">/</span>growth_kn, </span>
-<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a>         <span class="at">prob_var =</span> <span class="fu">log</span>(<span class="dv">1</span><span class="sc">/</span>p_n)<span class="sc">/</span><span class="fu">log</span>(n_obs<span class="sc">/</span>k_n), </span>
-<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a>         <span class="at">est_quantile =</span> growth_kn<span class="sc">*</span>(<span class="fu">log</span>(<span class="dv">1</span><span class="sc">/</span>p_n)<span class="sc">/</span><span class="fu">log</span>(n_obs<span class="sc">/</span>k_n))<span class="sc">^</span>est_theta) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-173"><a href="#cb11-173" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(growth, tail_growth, p_n, prob_var, est_quantile) <span class="sc">|&gt;</span>  </span>
-<span id="cb11-174"><a href="#cb11-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span>k_n) </span>
+<span id="cb11-162"><a href="#cb11-162" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-163"><a href="#cb11-163" aria-hidden="true" tabindex="-1"></a>growth_kn <span class="ot">&lt;-</span> sample_tb<span class="sc">$</span>growth[k_n]</span>
+<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a>est_theta <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>est_alpha</span>
+<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a>est_quantile_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> </span>
+<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_n =</span> <span class="dv">1</span><span class="sc">/</span>n_i_var, </span>
+<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a>         <span class="at">tail_growth =</span> growth<span class="sc">/</span>growth_kn, </span>
+<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a>         <span class="at">prob_var =</span> <span class="fu">log</span>(<span class="dv">1</span><span class="sc">/</span>p_n)<span class="sc">/</span><span class="fu">log</span>(n_obs<span class="sc">/</span>k_n), </span>
+<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>         <span class="at">est_quantile =</span> growth_kn<span class="sc">*</span>(<span class="fu">log</span>(<span class="dv">1</span><span class="sc">/</span>p_n)<span class="sc">/</span><span class="fu">log</span>(n_obs<span class="sc">/</span>k_n))<span class="sc">^</span>est_theta) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(growth, tail_growth, p_n, prob_var, est_quantile) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span>k_n) </span>
+<span id="cb11-173"><a href="#cb11-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-174"><a href="#cb11-174" aria-hidden="true" tabindex="-1"></a>est_pn_f <span class="ot">&lt;-</span> \(x) <span class="fu">exp</span>(<span class="fu">log</span>(k_n<span class="sc">/</span>n_obs)<span class="sc">*</span>(x<span class="sc">/</span>growth_kn)<span class="sc">^</span>{<span class="dv">1</span><span class="sc">/</span>est_theta})</span>
 <span id="cb11-175"><a href="#cb11-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-176"><a href="#cb11-176" aria-hidden="true" tabindex="-1"></a>est_pn_f <span class="ot">&lt;-</span> \(x) <span class="fu">exp</span>(<span class="fu">log</span>(k_n<span class="sc">/</span>n_obs)<span class="sc">*</span>(x<span class="sc">/</span>growth_kn)<span class="sc">^</span>{<span class="dv">1</span><span class="sc">/</span>est_theta})</span>
+<span id="cb11-176"><a href="#cb11-176" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-177"><a href="#cb11-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-178"><a href="#cb11-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-178"><a href="#cb11-178" aria-hidden="true" tabindex="-1"></a>**Visualization**</span>
 <span id="cb11-179"><a href="#cb11-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-180"><a href="#cb11-180" aria-hidden="true" tabindex="-1"></a>**Visualization**</span>
-<span id="cb11-181"><a href="#cb11-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-182"><a href="#cb11-182" aria-hidden="true" tabindex="-1"></a>With observed growth on the horizontal axis and tail probability on the vertical axis, compare empirical tail probabilities <span class="in">`p_n`</span> for the top $k_n$ observations with the curve estimated by <span class="in">`est_pn_f()`</span>.</span>
-<span id="cb11-183"><a href="#cb11-183" aria-hidden="true" tabindex="-1"></a>Use a logarithmic vertical scale, displaying growth from 0 to 3 and tail probabilities from $10^{-5}$ to $10^{-1}$.</span>
-<span id="cb11-184"><a href="#cb11-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-187"><a href="#cb11-187" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-188"><a href="#cb11-188" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-189"><a href="#cb11-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-190"><a href="#cb11-190" aria-hidden="true" tabindex="-1"></a>est_quantile_tb <span class="sc">|&gt;</span>  </span>
-<span id="cb11-191"><a href="#cb11-191" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(growth, p_n)) <span class="sc">+</span> </span>
-<span id="cb11-192"><a href="#cb11-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">&quot;empirical&quot;</span>), <span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> </span>
-<span id="cb11-193"><a href="#cb11-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_function</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">&quot;estimate&quot;</span>), <span class="at">fun =</span> est_pn_f) <span class="sc">+</span> </span>
-<span id="cb11-194"><a href="#cb11-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">3</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="dv">5</span>}, <span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="dv">1</span>})) <span class="sc">+</span> </span>
-<span id="cb11-195"><a href="#cb11-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
-<span id="cb11-196"><a href="#cb11-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;empirical&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;estimate&quot;</span> <span class="ot">=</span> <span class="st">&quot;blue&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb11-197"><a href="#cb11-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb11-198"><a href="#cb11-198" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Growth Rate&quot;</span>,</span>
-<span id="cb11-199"><a href="#cb11-199" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Tail Probability&quot;</span></span>
-<span id="cb11-200"><a href="#cb11-200" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb11-201"><a href="#cb11-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb11-202"><a href="#cb11-202" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Weibull_est_th.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-180"><a href="#cb11-180" aria-hidden="true" tabindex="-1"></a>With observed growth on the horizontal axis and tail probability on the vertical axis, compare empirical tail probabilities <span class="in">`p_n`</span> for the top $k_n$ observations with the curve estimated by <span class="in">`est_pn_f()`</span>.</span>
+<span id="cb11-181"><a href="#cb11-181" aria-hidden="true" tabindex="-1"></a>Use a logarithmic vertical scale, displaying growth from 0 to 3 and tail probabilities from $10^{-5}$ to $10^{-1}$.</span>
+<span id="cb11-182"><a href="#cb11-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-185"><a href="#cb11-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-186"><a href="#cb11-186" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-187"><a href="#cb11-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-188"><a href="#cb11-188" aria-hidden="true" tabindex="-1"></a>est_quantile_tb <span class="sc">|&gt;</span>  </span>
+<span id="cb11-189"><a href="#cb11-189" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(growth, p_n)) <span class="sc">+</span> </span>
+<span id="cb11-190"><a href="#cb11-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">&quot;empirical&quot;</span>), <span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> </span>
+<span id="cb11-191"><a href="#cb11-191" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_function</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">&quot;estimate&quot;</span>), <span class="at">fun =</span> est_pn_f) <span class="sc">+</span> </span>
+<span id="cb11-192"><a href="#cb11-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">3</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="dv">5</span>}, <span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="dv">1</span>})) <span class="sc">+</span> </span>
+<span id="cb11-193"><a href="#cb11-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
+<span id="cb11-194"><a href="#cb11-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;empirical&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;estimate&quot;</span> <span class="ot">=</span> <span class="st">&quot;blue&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb11-195"><a href="#cb11-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-196"><a href="#cb11-196" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Growth Rate&quot;</span>,</span>
+<span id="cb11-197"><a href="#cb11-197" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Tail Probability&quot;</span></span>
+<span id="cb11-198"><a href="#cb11-198" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-199"><a href="#cb11-199" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb11-200"><a href="#cb11-200" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Weibull_est_th.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-201"><a href="#cb11-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-202"><a href="#cb11-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-203"><a href="#cb11-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-204"><a href="#cb11-204" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-204"><a href="#cb11-204" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Estimating $\tau$</span></span>
 <span id="cb11-205"><a href="#cb11-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-206"><a href="#cb11-206" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Estimating $\tau$</span></span>
+<span id="cb11-206"><a href="#cb11-206" aria-hidden="true" tabindex="-1"></a>**Definition of `tau_est_f()`**</span>
 <span id="cb11-207"><a href="#cb11-207" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-208"><a href="#cb11-208" aria-hidden="true" tabindex="-1"></a>**Definition of `tau_est_f()`**</span>
-<span id="cb11-209"><a href="#cb11-209" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-210"><a href="#cb11-210" aria-hidden="true" tabindex="-1"></a>For a given rank threshold $k_n$, set the second threshold to $k&#39;_n=10k_n$.</span>
-<span id="cb11-211"><a href="#cb11-211" aria-hidden="true" tabindex="-1"></a>Generate candidate values of $\tau$ from $-1$ to $2$ in increments of 0.002 (including $\tau=0$), and calculate the following two ratios for each candidate.</span>
+<span id="cb11-208"><a href="#cb11-208" aria-hidden="true" tabindex="-1"></a>For a given rank threshold $k_n$, set the second threshold to $k&#39;_n=10k_n$.</span>
+<span id="cb11-209"><a href="#cb11-209" aria-hidden="true" tabindex="-1"></a>Generate candidate values of $\tau$ from $-1$ to $2$ in increments of 0.002 (including $\tau=0$), and calculate the following two ratios for each candidate.</span>
+<span id="cb11-210"><a href="#cb11-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-211"><a href="#cb11-211" aria-hidden="true" tabindex="-1"></a>$$\frac{\mu_\tau(\log(n/k_n))}{\mu_\tau(\log(n/k&#39;_n))} \qquad\text{and}\qquad \frac{H(k_n-1)}{H(k&#39;_n-1)}.$$</span>
 <span id="cb11-212"><a href="#cb11-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-213"><a href="#cb11-213" aria-hidden="true" tabindex="-1"></a>$$\frac{\mu_\tau(\log(n/k_n))}{\mu_\tau(\log(n/k&#39;_n))} \qquad\text{and}\qquad \frac{H(k_n-1)}{H(k&#39;_n-1)}.$$</span>
-<span id="cb11-214"><a href="#cb11-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-215"><a href="#cb11-215" aria-hidden="true" tabindex="-1"></a>To align the Hill estimator thresholds with $X_{(k_n)}$ and $X_{(k&#39;_n)}$, reference <span class="in">`hill_est`</span> at the threshold rank minus one.</span>
-<span id="cb11-216"><a href="#cb11-216" aria-hidden="true" tabindex="-1"></a>Return the candidate that minimizes the absolute difference between the two ratios.</span>
-<span id="cb11-217"><a href="#cb11-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-220"><a href="#cb11-220" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-221"><a href="#cb11-221" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-222"><a href="#cb11-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-223"><a href="#cb11-223" aria-hidden="true" tabindex="-1"></a>tau_est_f <span class="ot">&lt;-</span> \(k_n_x){</span>
-<span id="cb11-224"><a href="#cb11-224" aria-hidden="true" tabindex="-1"></a>  k_n_2_x <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">*</span>k_n_x</span>
-<span id="cb11-225"><a href="#cb11-225" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Divide integers by 500 to create a grid from -1 to 2 that includes zero exactly.</span></span>
-<span id="cb11-226"><a href="#cb11-226" aria-hidden="true" tabindex="-1"></a>  tau_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">500</span>L, <span class="dv">1000</span>L) <span class="sc">/</span> <span class="dv">500</span></span>
-<span id="cb11-227"><a href="#cb11-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-228"><a href="#cb11-228" aria-hidden="true" tabindex="-1"></a>  mu_ratio <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(tau_seq, \(tau_x) <span class="fu">mu_f</span>(tau_x, <span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_x))<span class="sc">/</span><span class="fu">mu_f</span>(tau_x, <span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_2_x)))</span>
-<span id="cb11-229"><a href="#cb11-229" aria-hidden="true" tabindex="-1"></a>  Hill_ratio <span class="ot">&lt;-</span> sample_tb<span class="sc">$</span>hill_est[k_n_x <span class="sc">-</span> <span class="dv">1</span>]<span class="sc">/</span>sample_tb<span class="sc">$</span>hill_est[k_n_2_x <span class="sc">-</span> <span class="dv">1</span>]</span>
-<span id="cb11-230"><a href="#cb11-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-231"><a href="#cb11-231" aria-hidden="true" tabindex="-1"></a>  tau_seq[<span class="fu">which.min</span>(<span class="fu">abs</span>(mu_ratio <span class="sc">-</span> Hill_ratio))]    </span>
-<span id="cb11-232"><a href="#cb11-232" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-213"><a href="#cb11-213" aria-hidden="true" tabindex="-1"></a>To align the Hill estimator thresholds with $X_{(k_n)}$ and $X_{(k&#39;_n)}$, reference <span class="in">`hill_est`</span> at the threshold rank minus one.</span>
+<span id="cb11-214"><a href="#cb11-214" aria-hidden="true" tabindex="-1"></a>Return the candidate that minimizes the absolute difference between the two ratios.</span>
+<span id="cb11-215"><a href="#cb11-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-218"><a href="#cb11-218" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-219"><a href="#cb11-219" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-220"><a href="#cb11-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-221"><a href="#cb11-221" aria-hidden="true" tabindex="-1"></a>tau_est_f <span class="ot">&lt;-</span> \(k_n_x){</span>
+<span id="cb11-222"><a href="#cb11-222" aria-hidden="true" tabindex="-1"></a>  k_n_2_x <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">*</span>k_n_x</span>
+<span id="cb11-223"><a href="#cb11-223" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Divide integers by 500 to create a grid from -1 to 2 that includes zero exactly.</span></span>
+<span id="cb11-224"><a href="#cb11-224" aria-hidden="true" tabindex="-1"></a>  tau_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">500</span>L, <span class="dv">1000</span>L) <span class="sc">/</span> <span class="dv">500</span></span>
+<span id="cb11-225"><a href="#cb11-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-226"><a href="#cb11-226" aria-hidden="true" tabindex="-1"></a>  mu_ratio <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(tau_seq, \(tau_x) <span class="fu">mu_f</span>(tau_x, <span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_x))<span class="sc">/</span><span class="fu">mu_f</span>(tau_x, <span class="at">t_x =</span> <span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_2_x)))</span>
+<span id="cb11-227"><a href="#cb11-227" aria-hidden="true" tabindex="-1"></a>  Hill_ratio <span class="ot">&lt;-</span> sample_tb<span class="sc">$</span>hill_est[k_n_x <span class="sc">-</span> <span class="dv">1</span>]<span class="sc">/</span>sample_tb<span class="sc">$</span>hill_est[k_n_2_x <span class="sc">-</span> <span class="dv">1</span>]</span>
+<span id="cb11-228"><a href="#cb11-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-229"><a href="#cb11-229" aria-hidden="true" tabindex="-1"></a>  tau_seq[<span class="fu">which.min</span>(<span class="fu">abs</span>(mu_ratio <span class="sc">-</span> Hill_ratio))]    </span>
+<span id="cb11-230"><a href="#cb11-230" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-231"><a href="#cb11-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-232"><a href="#cb11-232" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-233"><a href="#cb11-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-234"><a href="#cb11-234" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-234"><a href="#cb11-234" aria-hidden="true" tabindex="-1"></a>**Threshold-specific $\tau$ estimates and 95% bands**</span>
 <span id="cb11-235"><a href="#cb11-235" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-236"><a href="#cb11-236" aria-hidden="true" tabindex="-1"></a>**Threshold-specific $\tau$ estimates and 95% bands**</span>
-<span id="cb11-237"><a href="#cb11-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-238"><a href="#cb11-238" aria-hidden="true" tabindex="-1"></a>Estimate $\tau$ at each threshold $k_n=10,20,\ldots,6000$.</span>
-<span id="cb11-239"><a href="#cb11-239" aria-hidden="true" tabindex="-1"></a>This threshold sequence differs from $\operatorname{round}(0.05n)$ used to estimate $\alpha$.</span>
-<span id="cb11-240"><a href="#cb11-240" aria-hidden="true" tabindex="-1"></a>Calculate the standard error and 95% bands using the following formula.</span>
-<span id="cb11-241"><a href="#cb11-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-242"><a href="#cb11-242" aria-hidden="true" tabindex="-1"></a>$$\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}<span class="sc">\{</span>\log\log(n/k_n)-\log\log(n/k&#39;_n)<span class="sc">\}</span>}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).$$</span>
-<span id="cb11-243"><a href="#cb11-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-246"><a href="#cb11-246" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-247"><a href="#cb11-247" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-248"><a href="#cb11-248" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-249"><a href="#cb11-249" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the standard error (se) and lower and upper 95% confidence limits to tau_est_tb alongside tau_est.</span></span>
-<span id="cb11-250"><a href="#cb11-250" aria-hidden="true" tabindex="-1"></a>tau_est_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">k_n =</span> <span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">6000</span>, <span class="at">by =</span> <span class="dv">10</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb11-251"><a href="#cb11-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb11-252"><a href="#cb11-252" aria-hidden="true" tabindex="-1"></a>    <span class="at">tau_est =</span> <span class="fu">map_dbl</span>(k_n, tau_est_f),</span>
-<span id="cb11-253"><a href="#cb11-253" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate k_n_2 (originally k_n_2_x = 10 * k_n_x).</span></span>
-<span id="cb11-254"><a href="#cb11-254" aria-hidden="true" tabindex="-1"></a>    <span class="at">k_n_2 =</span> <span class="dv">10</span> <span class="sc">*</span> k_n,</span>
-<span id="cb11-255"><a href="#cb11-255" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the specified standard error.</span></span>
-<span id="cb11-256"><a href="#cb11-256" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="fu">sqrt</span>(k_n) <span class="sc">*</span> (<span class="fu">log</span>(<span class="fu">log</span>(n_obs<span class="sc">/</span>k_n)) <span class="sc">-</span> <span class="fu">log</span>(<span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_2)))),</span>
-<span id="cb11-257"><a href="#cb11-257" aria-hidden="true" tabindex="-1"></a>    <span class="at">ci_lower =</span> tau_est <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se,</span>
-<span id="cb11-258"><a href="#cb11-258" aria-hidden="true" tabindex="-1"></a>    <span class="at">ci_upper =</span> tau_est <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se</span>
-<span id="cb11-259"><a href="#cb11-259" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb11-260"><a href="#cb11-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-261"><a href="#cb11-261" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot: add a confidence ribbon using geom_ribbon().</span></span>
-<span id="cb11-262"><a href="#cb11-262" aria-hidden="true" tabindex="-1"></a>tau_est_tb <span class="sc">%&gt;%</span></span>
-<span id="cb11-263"><a href="#cb11-263" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> k_n)) <span class="sc">+</span></span>
-<span id="cb11-264"><a href="#cb11-264" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> tau_est)) <span class="sc">+</span></span>
-<span id="cb11-265"><a href="#cb11-265" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> ci_lower, <span class="at">ymax =</span> ci_upper), <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
-<span id="cb11-266"><a href="#cb11-266" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">4000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span>.<span class="dv">5</span>, <span class="fl">1.5</span>)) <span class="sc">+</span> </span>
-<span id="cb11-267"><a href="#cb11-267" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb11-268"><a href="#cb11-268" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">expression</span>(k[N]),</span>
-<span id="cb11-269"><a href="#cb11-269" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">expression</span>(<span class="fu">hat</span>(tau))</span>
-<span id="cb11-270"><a href="#cb11-270" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb11-271"><a href="#cb11-271" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb11-272"><a href="#cb11-272" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Girard_est_tau.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb11-273"><a href="#cb11-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-274"><a href="#cb11-274" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-236"><a href="#cb11-236" aria-hidden="true" tabindex="-1"></a>Estimate $\tau$ at each threshold $k_n=10,20,\ldots,6000$.</span>
+<span id="cb11-237"><a href="#cb11-237" aria-hidden="true" tabindex="-1"></a>Calculate the standard error and 95% bands using the following formula.</span>
+<span id="cb11-238"><a href="#cb11-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-239"><a href="#cb11-239" aria-hidden="true" tabindex="-1"></a>$$\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}<span class="sc">\{</span>\log\log(n/k_n)-\log\log(n/k&#39;_n)<span class="sc">\}</span>}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).$$</span>
+<span id="cb11-240"><a href="#cb11-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-243"><a href="#cb11-243" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-244"><a href="#cb11-244" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-245"><a href="#cb11-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-246"><a href="#cb11-246" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the standard error (se) and lower and upper 95% confidence limits to tau_est_tb alongside tau_est.</span></span>
+<span id="cb11-247"><a href="#cb11-247" aria-hidden="true" tabindex="-1"></a>tau_est_tb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">k_n =</span> <span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">6000</span>, <span class="at">by =</span> <span class="dv">10</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-248"><a href="#cb11-248" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-249"><a href="#cb11-249" aria-hidden="true" tabindex="-1"></a>    <span class="at">tau_est =</span> <span class="fu">map_dbl</span>(k_n, tau_est_f),</span>
+<span id="cb11-250"><a href="#cb11-250" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate k_n_2 (originally k_n_2_x = 10 * k_n_x).</span></span>
+<span id="cb11-251"><a href="#cb11-251" aria-hidden="true" tabindex="-1"></a>    <span class="at">k_n_2 =</span> <span class="dv">10</span> <span class="sc">*</span> k_n,</span>
+<span id="cb11-252"><a href="#cb11-252" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the specified standard error.</span></span>
+<span id="cb11-253"><a href="#cb11-253" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="fu">sqrt</span>(k_n) <span class="sc">*</span> (<span class="fu">log</span>(<span class="fu">log</span>(n_obs<span class="sc">/</span>k_n)) <span class="sc">-</span> <span class="fu">log</span>(<span class="fu">log</span>(n_obs<span class="sc">/</span>k_n_2)))),</span>
+<span id="cb11-254"><a href="#cb11-254" aria-hidden="true" tabindex="-1"></a>    <span class="at">ci_lower =</span> tau_est <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se,</span>
+<span id="cb11-255"><a href="#cb11-255" aria-hidden="true" tabindex="-1"></a>    <span class="at">ci_upper =</span> tau_est <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se</span>
+<span id="cb11-256"><a href="#cb11-256" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-257"><a href="#cb11-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-258"><a href="#cb11-258" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot: add a confidence ribbon using geom_ribbon().</span></span>
+<span id="cb11-259"><a href="#cb11-259" aria-hidden="true" tabindex="-1"></a>tau_est_tb <span class="sc">%&gt;%</span></span>
+<span id="cb11-260"><a href="#cb11-260" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> k_n)) <span class="sc">+</span></span>
+<span id="cb11-261"><a href="#cb11-261" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> tau_est)) <span class="sc">+</span></span>
+<span id="cb11-262"><a href="#cb11-262" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> ci_lower, <span class="at">ymax =</span> ci_upper), <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb11-263"><a href="#cb11-263" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">4000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span>.<span class="dv">5</span>, <span class="fl">1.5</span>)) <span class="sc">+</span> </span>
+<span id="cb11-264"><a href="#cb11-264" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-265"><a href="#cb11-265" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">expression</span>(k[N]),</span>
+<span id="cb11-266"><a href="#cb11-266" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">expression</span>(<span class="fu">hat</span>(tau))</span>
+<span id="cb11-267"><a href="#cb11-267" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-268"><a href="#cb11-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb11-269"><a href="#cb11-269" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Girard_est_tau.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-270"><a href="#cb11-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-271"><a href="#cb11-271" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

@@ -18,9 +18,8 @@ execute:
 editor: source
 ---
 
-Use individual-year income data `sample_size_tb` to examine the age distribution, income distributions by year and age, and how closely log income follows a normal distribution.
-Use 2020 data for the age-specific analyses and the 2014–2020 data saved in 01 for annual comparisons.
-Finally, for individuals aged 26–60 in 2020, calculate the age-class composition of those whose income exceeds each threshold.
+Use `sample_size_tb` to examine the age distribution, income distributions by year and age, and how closely log income follows a normal distribution.
+For individuals aged 26–60 in 2020, calculate the age composition of those whose income exceeds a threshold.
 
 ## 1 Distributions of individual age and income
 
@@ -39,8 +38,7 @@ theme_set(theme_ipsum())
 
 **Loading data and creating age classes**
 
-Load income data `sample_size_tb` from `../income_board_replicate/` and retain observations with positive income `main_var`.
-Do not impose additional age, industry, or year restrictions when loading the data.
+Load income data `sample_size_tb` and select observations with positive income `main_var`.
 
 Calculate individual age `age` as observation year `year` minus the birth year in the first four characters of `birth_date`.
 Define `age_class` as `age_20` for ages 20 and under, `age_25` for ages 21–25, and subsequent five-year classes through `age_80` for ages 76–80.
@@ -73,7 +71,6 @@ age_class_labels <- c(
 **Age distribution**
 
 Plot a histogram with one-year bins for observations aged 20–100 in 2020.
-Apply this age restriction only when creating the figure. In the data generated in 01, observed ages in 2020 range from 20 to 70.
 
 ```{r}
 #| layout-ncol: 2
@@ -102,7 +99,6 @@ ggsave(filename = "age_dist_income.png", path = graph_dir)
 
 Compare income density curves by year using the positive-income observations selected when loading the data. Impose no additional age restrictions.
 Use base-10 logarithmic scales on both axes, with displayed income in yen ranging from $10^3$ to $10^{10}$ and density from $10^{-6}$ to $10^0$.
-Because `scale_x_log10()` transforms the horizontal axis before density estimation, the vertical axis shows the density of base-10 log income on a logarithmic scale.
 
 ```{r}
 #| layout-ncol: 2
@@ -157,14 +153,12 @@ ggsave(filename = "main_var_df_age_class_log.png", path = graph_dir)
 ## 2 Comparing log income with a normal distribution: Q-Q plots
 
 Select the seven age classes `age_30`, `age_35`, …, `age_60` (ages 26–60) from the 2020 data.
-For each class, take the natural logarithm of income in yen, subtract its median, and divide by the scaled median absolute deviation returned by `mad()` with its default settings.
-Do not standardize using the mean and standard deviation.
+For each class, take the natural logarithm of income in yen, subtract its median, and divide by the MAD.
 
 The standardized value is $z=(\log(Y)-\operatorname{median}(\log(Y)))/\operatorname{MAD}(\log(Y))$, where $Y$ is `main_var`.
-Here, MAD is the median absolute deviation from the median multiplied by 1.4826.
 
-Use `stat_qq()` to compare sample quantiles of standardized log income with theoretical quantiles of the standard normal distribution.
-Add a reference line with intercept zero and slope one; do not estimate a reference line using `stat_qq_line()`.
+Use Q-Q plots to compare sample quantiles of standardized log income with theoretical quantiles of the standard normal distribution.
+Add a reference line with intercept zero and slope one.
 
 ```{r}
 #| layout-ncol: 2
@@ -199,8 +193,7 @@ For individuals aged 26–60 in 2020, examine the age composition of those whose
 
 Set income thresholds `criteria` in yen to $10^{6.6}, 10^{6.8}, \ldots, 10^{10}$, giving 18 points spaced by 0.2 in base-10 logarithms.
 First restrict the data to 2020 and ages 26–60, then select observations with `main_var` strictly above each threshold.
-Create `frac2_tb` by calculating composition shares `n_ratio`, using the total number selected `n_total` as the denominator and the count in each age class as the numerator.
-Omit thresholds with no qualifying observations.
+Calculate composition shares `n_ratio`, using the total count `n_total` as the denominator and the count in each age class as the numerator.
 
 ```{r}
 
@@ -233,7 +226,6 @@ frac2_tb <- map_dfr(x_val, function(criteria) {
 **Plotting the shares**
 
 For thresholds with more than 1,000 qualifying individuals (`n_total`), plot age-class shares using points and lines.
-The denominator is the total number of individuals aged 26–60 above each threshold, rather than the total population of each age class.
 Show the income threshold in yen on a logarithmic horizontal axis and the composition share on the vertical axis, with a displayed range of 0–0.3.
 
 ```{r}

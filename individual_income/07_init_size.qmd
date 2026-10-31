@@ -20,8 +20,7 @@ editor: source
 
 Use `sample_size_tb` to compare log income distributions and mean excess functions across 2014–2020 for observations at age 25.
 Corresponding to sales at firm age five in the firm analysis, income at age 25 is treated as initial size in the income analysis.
-Initial income here refers to income at age 25 after five years of growth, rather than income at age 20 when generation begins in 01.
-The figures by year compare different birth cohorts that are age 25 in each observation year.
+Initial income is income at age 25 rather than at age 20, when data generation begins.
 
 ## 1 Data preparation
 
@@ -55,7 +54,7 @@ init_size_tb <- sample_size_tb |> filter(age == 25, main_var > 0)
 
 ## 2 Density estimation
 
-Using the 2014–2020 data saved in 01, compare income distributions at age 25 with density plots colored by year.
+Compare income distributions at age 25 across 2014–2020, using colors to distinguish years.
 Estimate the density of base-10 log income $\log_{10}(\mathrm{main\_var})$, displaying income amounts on a logarithmic horizontal scale and density on a logarithmic vertical scale.
 Display income in yen from $10^3$ to $10^9$ and density from $10^{-4}$ to $1$.
 

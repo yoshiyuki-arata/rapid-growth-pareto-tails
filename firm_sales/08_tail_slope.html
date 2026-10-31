@@ -3654,7 +3654,7 @@ font-weight: bold;
 </header>
 
 
-<p>Use <code>sample_growth_tb</code> and <code>sample_size_tb</code> to calculate the tail index <span class="math inline">\(\alpha\)</span>, the reciprocal of the Hill estimator. The analyses cover sales ratios over 2010–2020, sales at firm age five in 2020, and age-specific sales for firm ages 5–40 in 2020. These correspond to the income analyses of income ratios, income at age 25, and age-specific income. When the upper tail has the following form, define <span class="math inline">\(\alpha\)</span> as the reciprocal of the Hill estimator <span class="math inline">\(\gamma\)</span> (<span class="math inline">\(\xi\)</span>).</p>
+<p>Use <code>sample_growth_tb</code> and <code>sample_size_tb</code> to calculate the tail index <span class="math inline">\(\alpha\)</span>, the reciprocal of the Hill estimator. The analyses cover growth over 2010–2020, sales at firm age five in 2020, and sales by firm age from five through 40 in 2020. When the upper tail has the following form, define <span class="math inline">\(\alpha\)</span> as the reciprocal of the Hill estimator <span class="math inline">\(\gamma\)</span> (<span class="math inline">\(\xi\)</span>).</p>
 <p><span class="math display">\[\overline{F}(x) = C x^{-\alpha}, \quad x \geq u &gt; 0\]</span></p>
 <section id="data-preparation" class="level2">
 <h2 class="anchored" data-anchor-id="data-preparation">0 Data preparation</h2>
@@ -3666,7 +3666,7 @@ font-weight: bold;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Load growth and sales data and add firm age as the calendar year minus establishment year <code>birth_year</code>. For growth data, age is measured at the beginning of each period; for sales data, it is measured in the observation year.</p>
-<p>For the sales analyses, collect observations for 2020 with positive sales and industry codes whose first two digits are 01–61 or 68–92 in <code>sales_2020_tb</code>, applying age conditions separately in each analysis. Use sales in their saved units; do not convert to yen in this document.</p>
+<p>For the sales analyses, collect observations for 2020 with positive sales and industry codes whose first two digits are 01–61 or 68–92 in <code>sales_2020_tb</code>, applying age conditions separately in each analysis. Use sales in their saved units; do not convert to yen here.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year,<span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year) </span>
@@ -3728,7 +3728,6 @@ font-weight: bold;
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">alpha =</span> <span class="fu">hill_alpha</span>(sale))</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>k_n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sample_tb) <span class="sc">*</span> <span class="fl">0.05</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Display the specified <code>k_n</code> and the corresponding estimate of <span class="math inline">\(\alpha\)</span>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_hill_estimate</span>(res_hill_tb<span class="sc">$</span>alpha, k_n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
@@ -3740,7 +3739,7 @@ font-weight: bold;
 </section>
 <section id="sales-distributions-by-age-in-2020" class="level2">
 <h2 class="anchored" data-anchor-id="sales-distributions-by-age-in-2020">3 Sales distributions by age in 2020</h2>
-<p>Extract observations aged 5–40 from <code>sales_2020_tb</code>. For each age, calculate the tail index <span class="math inline">\(\alpha(i)\)</span> as the number of upper-order observations varies.</p>
+<p>Extract observations aged 5–40 from <code>sales_2020_tb</code>. For each age, calculate the tail index <span class="math inline">\(\alpha(i)\)</span> while varying the number of observations included from the upper tail.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="ot">&lt;-</span> sales_2020_tb <span class="sc">|&gt;</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(age), age <span class="sc">&gt;=</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">40</span>) <span class="sc">|&gt;</span></span>
@@ -3750,7 +3749,7 @@ font-weight: bold;
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">alpha =</span> <span class="fu">hill_alpha</span>(sale))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>With the number of upper-order observations <span class="math inline">\(i\)</span> on the horizontal axis, compare the estimated series for <span class="math inline">\(i&lt;2000\)</span>, colored by age. Format ages as two-digit strings for display in the legend. Set vertical scale limits of 0–3 using <code>ylim()</code>.</p>
+<p>With the number of observations from the upper tail <span class="math inline">\(i\)</span> on the horizontal axis, compare the sequences of estimates for <span class="math inline">\(i&lt;2000\)</span>, colored by age.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="sc">|&gt;</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">str_pad</span>(age, <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">as.character</span>()) <span class="sc">|&gt;</span> </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(i_var <span class="sc">&lt;</span> <span class="dv">2000</span>) <span class="sc">|&gt;</span> </span>
@@ -4251,55 +4250,55 @@ font-weight: bold;
 <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`sample_growth_tb`</span> and <span class="in">`sample_size_tb`</span> to calculate the tail index $\alpha$, the reciprocal of the Hill estimator.</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>The analyses cover sales ratios over 2010–2020, sales at firm age five in 2020, and age-specific sales for firm ages 5–40 in 2020.</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>These correspond to the income analyses of income ratios, income at age 25, and age-specific income.</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>When the upper tail has the following form, define $\alpha$ as the reciprocal of the Hill estimator $\gamma$ ($\xi$).</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>$$\overline{F}(x) = C x^{-\alpha}, \quad x \geq u &gt; 0$$</span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0 Data preparation</span></span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>Load growth and sales data and add firm age as the calendar year minus establishment year <span class="in">`birth_year`</span>.</span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>For growth data, age is measured at the beginning of each period; for sales data, it is measured in the observation year.</span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>For the sales analyses, collect observations for 2020 with positive sales and industry codes whose first two digits are 01–61 or 68–92 in <span class="in">`sales_2020_tb`</span>, applying age conditions separately in each analysis.</span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>Use sales in their saved units; do not convert to yen in this document.</span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year,<span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year) </span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(year) <span class="sc">-</span> birth_year)</span>
-<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>sales_2020_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>    year <span class="sc">==</span> <span class="st">&quot;2020&quot;</span>,</span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>    sale <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
-<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>, <span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)</span>
-<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>hill_alpha <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(ReIns<span class="sc">::</span><span class="fu">Hill</span>(x)<span class="sc">$</span>gamma, <span class="cn">NA</span>)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>print_hill_estimate <span class="ot">&lt;-</span> <span class="cf">function</span>(alpha, k_n) {</span>
-<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_c</span>(<span class="st">&quot;k_n is &quot;</span>, k_n, <span class="st">&quot;; alpha is &quot;</span>, <span class="fu">round</span>(alpha[k_n], <span class="at">digits =</span> <span class="dv">3</span>))</span>
-<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Long-term growth over 2010–2020</span></span>
-<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>For log growth over 2010–2020 (<span class="in">`g_20_10`</span>), select observations with beginning-of-period sales of at least $4.0\times10^4$, beginning-of-period age of at least five, and industry codes whose first two digits are 01–61 or 68–92.</span>
-<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>Beginning-of-period sales are measured in thousands of yen, so this lower bound corresponds to 40 million yen. Impose no upper age limit.</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>The analyses cover growth over 2010–2020, sales at firm age five in 2020, and sales by firm age from five through 40 in 2020.</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>When the upper tail has the following form, define $\alpha$ as the reciprocal of the Hill estimator $\gamma$ ($\xi$).</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>$$\overline{F}(x) = C x^{-\alpha}, \quad x \geq u &gt; 0$$</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0 Data preparation</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>Load growth and sales data and add firm age as the calendar year minus establishment year <span class="in">`birth_year`</span>.</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>For growth data, age is measured at the beginning of each period; for sales data, it is measured in the observation year.</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>For the sales analyses, collect observations for 2020 with positive sales and industry codes whose first two digits are 01–61 or 68–92 in <span class="in">`sales_2020_tb`</span>, applying age conditions separately in each analysis.</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>Use sales in their saved units; do not convert to yen here.</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(<span class="fu">str_c</span>(<span class="dv">20</span>, <span class="fu">str_sub</span>(year,<span class="dv">6</span>,<span class="dv">7</span>))) <span class="sc">-</span> birth_year) </span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(year) <span class="sc">-</span> birth_year)</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>sales_2020_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>    year <span class="sc">==</span> <span class="st">&quot;2020&quot;</span>,</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>    sale <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>, <span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>hill_alpha <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(ReIns<span class="sc">::</span><span class="fu">Hill</span>(x)<span class="sc">$</span>gamma, <span class="cn">NA</span>)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>print_hill_estimate <span class="ot">&lt;-</span> <span class="cf">function</span>(alpha, k_n) {</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_c</span>(<span class="st">&quot;k_n is &quot;</span>, k_n, <span class="st">&quot;; alpha is &quot;</span>, <span class="fu">round</span>(alpha[k_n], <span class="at">digits =</span> <span class="dv">3</span>))</span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Long-term growth over 2010–2020</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>For log growth over 2010–2020 (<span class="in">`g_20_10`</span>), select observations with beginning-of-period sales of at least $4.0\times10^4$, beginning-of-period age of at least five, and industry codes whose first two digits are 01–61 or 68–92.</span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>Beginning-of-period sales are measured in thousands of yen, so this lower bound corresponds to 40 million yen.</span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>Impose no upper age limit.</span>
 <span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a>Apply Hill estimation to exponentiated log growth $\exp(g_{20,10})$.</span>
 <span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a>Set the threshold to $k_n=0.001n$, where $n$ is the number of observations satisfying the sales, age, and industry conditions.</span>
@@ -4345,60 +4344,57 @@ font-weight: bold;
 <span id="cb11-124"><a href="#cb11-124" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-125"><a href="#cb11-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb11-126"><a href="#cb11-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a>Display the specified <span class="in">`k_n`</span> and the corresponding estimate of $\alpha$.</span>
-<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a><span class="fu">print_hill_estimate</span>(res_hill_tb<span class="sc">$</span>alpha, k_n)</span>
-<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Sales distributions by age in 2020</span></span>
-<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a>Extract observations aged 5–40 from <span class="in">`sales_2020_tb`</span>.</span>
-<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a>For each age, calculate the tail index $\alpha(i)$ as the number of upper-order observations varies.</span>
-<span id="cb11-142"><a href="#cb11-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-145"><a href="#cb11-145" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="ot">&lt;-</span> sales_2020_tb <span class="sc">|&gt;</span></span>
-<span id="cb11-147"><a href="#cb11-147" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(age), age <span class="sc">&gt;=</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">40</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-148"><a href="#cb11-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(sale)) <span class="sc">|&gt;</span> </span>
-<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age) <span class="sc">|&gt;</span> </span>
-<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">i_var =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>(), <span class="at">n_i_var =</span> <span class="fu">n</span>()<span class="sc">/</span>i_var)</span>
-<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">alpha =</span> <span class="fu">hill_alpha</span>(sale))</span>
-<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a>With the number of upper-order observations $i$ on the horizontal axis, compare the estimated series for $i&lt;2000$, colored by age.</span>
-<span id="cb11-157"><a href="#cb11-157" aria-hidden="true" tabindex="-1"></a>Format ages as two-digit strings for display in the legend.</span>
-<span id="cb11-158"><a href="#cb11-158" aria-hidden="true" tabindex="-1"></a>Set vertical scale limits of 0–3 using <span class="in">`ylim()`</span>.</span>
-<span id="cb11-159"><a href="#cb11-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-162"><a href="#cb11-162" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-163"><a href="#cb11-163" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="sc">|&gt;</span> </span>
-<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">str_pad</span>(age, <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">as.character</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(i_var <span class="sc">&lt;</span> <span class="dv">2000</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(i_var, alpha, <span class="at">color =</span> age)) <span class="sc">+</span> </span>
-<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">3.0</span>)) <span class="sc">+</span> </span>
-<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb11-173"><a href="#cb11-173" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Number of Top Order Statistics&quot;</span>,</span>
-<span id="cb11-174"><a href="#cb11-174" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Tail Exponent&quot;</span>, </span>
-<span id="cb11-175"><a href="#cb11-175" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>,</span>
-<span id="cb11-176"><a href="#cb11-176" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb11-177"><a href="#cb11-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
-<span id="cb11-178"><a href="#cb11-178" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Hill_est_firm_size_diff_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a><span class="fu">print_hill_estimate</span>(res_hill_tb<span class="sc">$</span>alpha, k_n)</span>
+<span id="cb11-134"><a href="#cb11-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-135"><a href="#cb11-135" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-136"><a href="#cb11-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-137"><a href="#cb11-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Sales distributions by age in 2020</span></span>
+<span id="cb11-138"><a href="#cb11-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-139"><a href="#cb11-139" aria-hidden="true" tabindex="-1"></a>Extract observations aged 5–40 from <span class="in">`sales_2020_tb`</span>.</span>
+<span id="cb11-140"><a href="#cb11-140" aria-hidden="true" tabindex="-1"></a>For each age, calculate the tail index $\alpha(i)$ while varying the number of observations included from the upper tail.</span>
+<span id="cb11-141"><a href="#cb11-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-144"><a href="#cb11-144" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-145"><a href="#cb11-145" aria-hidden="true" tabindex="-1"></a>sample_tb <span class="ot">&lt;-</span> sales_2020_tb <span class="sc">|&gt;</span></span>
+<span id="cb11-146"><a href="#cb11-146" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(age), age <span class="sc">&gt;=</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">40</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-147"><a href="#cb11-147" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(sale)) <span class="sc">|&gt;</span> </span>
+<span id="cb11-148"><a href="#cb11-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age) <span class="sc">|&gt;</span> </span>
+<span id="cb11-149"><a href="#cb11-149" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">i_var =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>(), <span class="at">n_i_var =</span> <span class="fu">n</span>()<span class="sc">/</span>i_var)</span>
+<span id="cb11-150"><a href="#cb11-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-151"><a href="#cb11-151" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="ot">&lt;-</span> sample_tb <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">alpha =</span> <span class="fu">hill_alpha</span>(sale))</span>
+<span id="cb11-152"><a href="#cb11-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-153"><a href="#cb11-153" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-154"><a href="#cb11-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-155"><a href="#cb11-155" aria-hidden="true" tabindex="-1"></a>With the number of observations from the upper tail $i$ on the horizontal axis, compare the sequences of estimates for $i&lt;2000$, colored by age.</span>
+<span id="cb11-156"><a href="#cb11-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-159"><a href="#cb11-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-160"><a href="#cb11-160" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb11-161"><a href="#cb11-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-162"><a href="#cb11-162" aria-hidden="true" tabindex="-1"></a>res_hill_tb <span class="sc">|&gt;</span> </span>
+<span id="cb11-163"><a href="#cb11-163" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">str_pad</span>(age, <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">as.character</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb11-164"><a href="#cb11-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(i_var <span class="sc">&lt;</span> <span class="dv">2000</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-165"><a href="#cb11-165" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb11-166"><a href="#cb11-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(i_var, alpha, <span class="at">color =</span> age)) <span class="sc">+</span> </span>
+<span id="cb11-167"><a href="#cb11-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb11-168"><a href="#cb11-168" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">3.0</span>)) <span class="sc">+</span> </span>
+<span id="cb11-169"><a href="#cb11-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-170"><a href="#cb11-170" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Number of Top Order Statistics&quot;</span>,</span>
+<span id="cb11-171"><a href="#cb11-171" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Tail Exponent&quot;</span>, </span>
+<span id="cb11-172"><a href="#cb11-172" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>,</span>
+<span id="cb11-173"><a href="#cb11-173" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-174"><a href="#cb11-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))  </span>
+<span id="cb11-175"><a href="#cb11-175" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;Hill_est_firm_size_diff_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb11-176"><a href="#cb11-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-177"><a href="#cb11-177" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-178"><a href="#cb11-178" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-179"><a href="#cb11-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-180"><a href="#cb11-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-180"><a href="#cb11-180" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-181"><a href="#cb11-181" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-182"><a href="#cb11-182" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-183"><a href="#cb11-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-184"><a href="#cb11-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-185"><a href="#cb11-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-186"><a href="#cb11-186" aria-hidden="true" tabindex="-1"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

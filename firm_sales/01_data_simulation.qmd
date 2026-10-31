@@ -19,12 +19,9 @@ editor: source
 ---
 
 
-Generate a synthetic firm panel for public release using only random numbers.
-Do not use the actual data used in the analysis.
-The distributions and parameters below are chosen for this computational example and do not guarantee replication of the empirical results or the validity of the model.
+Generate a synthetic firm panel.
 
-Save `sample_size_tb` and `sample_growth_tb`, with the same columns, types, and units as the actual data, in both `qs2` and `parquet` formats in `../Zipf_law_board_replicate_simulation/`. Saving in `parquet` format requires the R package `arrow`.
-The QMD files in 02–11 change only the input board path; their computational procedures are those used in the actual analysis.
+Save `sample_size_tb` and `sample_growth_tb`, with the same columns, types, and units as the actual data, in both `qs2` and `parquet` formats in `../Zipf_law_board_replicate_simulation/`.
 
 ## 1 Setup and generation parameters
 
@@ -60,31 +57,21 @@ dir.create("latex", showWarnings = FALSE)
 
 ## 2 Synthetic firm attributes and sales panel
 
-Firm IDs are sequential numbers prefixed with `SIM`. Firms are born in every year from 1940 to 2020.
-Allocate 300,000 firms as evenly as possible across the 81 establishment years, so annual firm counts differ by at most one.
+Firms are born in every year from 1940 to 2020.
 Construct four-digit industry codes by selecting the first two digits from 01–99 and the last two from 00–99.
-Include synthetic industries subject to exclusion so that the industry exclusions in the analysis code can be applied without modification.
-
-Let $B_i$ denote firm $i$'s establishment year. Independently generate the natural logarithm of sales at birth, measured in thousands of yen, from a common Laplace distribution regardless of establishment year.
+Independently generate the natural logarithm of sales measured in thousands of yen at birth from the same Laplace distribution for all establishment years.
 
 $$L_{i,B_i}\sim\operatorname{Laplace}(m_0,s_0),\qquad m_0=\log(2\times10^5),\qquad s_0=1/\sqrt{2}.$$
 
-Set the location $m_0$ using `initial_log_sale_location` and the standard deviation of 1 using `initial_log_sale_sd`.
-Set the Laplace scale to `initial_log_sale_scale`, calculated as the standard deviation divided by $\sqrt{2}$.
-The density is $f(x)=\exp(-|x-m_0|/s_0)/(2s_0)$.
-Median sales at birth are 200 million yen.
-Generate initial log sales independently of annual growth rates.
-Do not add a growth shock to sales in the birth year; from the following year onward, add a signed Weibull log growth rate once per year.
+Starting in the following year, add a signed Weibull log growth rate once per year to log sales at birth.
 
 $$g_{it}=\mu+S_{it}W_{it},\qquad W_{it}\sim\operatorname{Weibull}(a,b),\qquad P(S_{it}=1)=P(S_{it}=-1)=1/2.$$
 
 $$L_{it}=L_{i,B_i}+\sum_{u=B_i+1}^{t}g_{iu},\qquad t\geq B_i,\qquad \mathrm{sale}_{it}=\exp(L_{it}).$$
 
-In the birth year, the empty sum is defined as zero.
-Here, $\mu=0$, $a=0.55$, and $b=0.06$. Initial log sales and growth shocks are independent, as are growth shocks across firms and years.
+Here, $\mu=0$, $a=0.55$, and $b=0.06$.
 
 Generate the growth process year by year from 1940 through 2020.
-Save observations for 2005–2020 in `sample_size_tb` for use in analyses 02–11.
 For example, log sales in 2005 for a firm born in 1940 include the value at birth and 65 growth increments from 1941 to 2005.
 
 ```{r}
@@ -154,8 +141,8 @@ sample_size_tb |> slice_head(n = 10)
 
 ## 3 Growth
 
-Here, calculate $g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})$ for ten annual periods and nine periods starting in 2010.
-Growth is `NA` for periods in which sales are unavailable before establishment.
+Here, calculate $g_{i,t,s}=\log(\mathrm{sale}_{it})-\log(\mathrm{sale}_{is})$ for ten one-year periods relative to the preceding year and nine periods relative to 2010.
+Growth is `NA` for periods in which sales are unavailable because the firm had not yet been established.
 
 ```{r}
 
@@ -183,9 +170,9 @@ growth_tb <- growth_wide |>
 
 ```
 
-Create `sample_growth_tb` with firm attributes (establishment year and industry) and corresponding sales levels (beginning and end years).
+Create `sample_growth_tb` with firm attributes (establishment year and industry) and the corresponding sales levels in the beginning and end years.
 
-* Collect and join each firm's `birth_year` and `ind_class` in `firm_attributes`  
+* Collect each firm's `birth_year` and `ind_class` in `firm_attributes` and join these attributes to the growth data  
   Use the attributes from the firm's first appearance in `sample_size_tb`, without restricting to 2010.
 
 * Add variables `pre_sale` and `post_sale`  

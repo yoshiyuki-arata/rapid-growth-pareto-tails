@@ -18,13 +18,14 @@ execute:
 editor: source
 ---
 
-Examine how the distribution of a sum of independent and identically distributed random variables changes as the number of summands increases.
+Examine how the distribution of a sum of independent and identically distributed random variables changes with the number of variables being added.
 For Laplace variables, calculate the density of the sum analytically; for symmetric Weibull variables, estimate it by simulation.
 Also plot the conditional distribution of a ratio given a fixed sum of positive Weibull variables.
 
 ## 1 Convolution: Laplace and Weibull tails
 
-Let $\widetilde{S}_n=\sum_{k=1}^n X_k$ be the sum of independent and identically distributed random variables $X_1,\ldots,X_n$. Compare density changes under convolution for $n=1,\ldots,12$.
+Let $\widetilde{S}_n=\sum_{k=1}^n X_k$ be the sum of independent and identically distributed random variables $X_1,\ldots,X_n$.
+Compare density changes under convolution for $n=1,\ldots,12$.
 
 ```{r}
 library(tidyverse)
@@ -39,7 +40,6 @@ Its variance is two, and the density of the sum of $n$ independent variables can
 
 $$f_{\sum_{k=1}^n X_k}(x)=\frac{e^{-|x|}}{(n-1)!2^n} \sum_{j=0}^{n-1} \frac{(n-1+j)!}{(n-1-j)!j!} \frac{|x|^{n-1-j}}{2^j}, \quad x \in \mathbb{R}$$
 
-Define `my_func()` to calculate the density.
 
 ```{r}
 
@@ -59,8 +59,8 @@ my_func <- \(x, n) {
 
 ```
 
-Use `map()` to overlay density curves for $n=1,\ldots,12$, displaying them with a linear and a logarithmic vertical scale.
-In the logarithmic-scale figure, overlay a dot-dashed curve for the normal distribution $N(0,24)$, which has the same mean and variance as the sum of 12 variables.
+Overlay density curves for $n=1,\ldots,12$, displaying them with a linear and a logarithmic vertical scale.
+In the logarithmic-scale figure, overlay the normal distribution $N(0,24)$, which has the same mean and variance as the sum of 12 variables.
 
 ```{r}
 #| layout-ncol: 2
@@ -99,8 +99,7 @@ Its right tail is represented by the following survival function.
 
 $$\mathbb{P}(X_k>x)=\frac{1}{2}\exp(-x^\alpha), \quad x\geq0,\quad \alpha=0.7.$$
 
-`id` denotes the individual and `year` the number of periods.
-Use grouped operations by individual in `data.table` to calculate cumulative sums `sum_x` and compare their distributions across periods.
+Calculate cumulative sums and compare the distributions of the sums across periods.
 
 ```{r}
 
@@ -168,8 +167,7 @@ Then $0<z<1$, and the density can be expressed as follows using a normalizing co
 
 $$f(z) = C (z(1 - z))^{\alpha - 1} \exp (- d^\alpha (z^\alpha + (1 - z)^\alpha))$$
 
-Define the unnormalized function in `ratio_f()`.
-Fix the sum at $d=2$ and use `integrate()` to evaluate the integral over $0<z<1$ for each of $\alpha=0.7,1,2$.
+Fix the sum at $d=2$ and evaluate the integral over $0<z<1$ for each of $\alpha=0.7,1,2$.
 The constant $C$ is the reciprocal of each integral.
 
 ```{r}

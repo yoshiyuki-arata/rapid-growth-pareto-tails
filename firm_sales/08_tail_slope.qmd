@@ -20,8 +20,7 @@ editor: source
 
 
 Use `sample_growth_tb` and `sample_size_tb` to calculate the tail index $\alpha$, the reciprocal of the Hill estimator.
-The analyses cover sales ratios over 2010–2020, sales at firm age five in 2020, and age-specific sales for firm ages 5–40 in 2020.
-These correspond to the income analyses of income ratios, income at age 25, and age-specific income.
+The analyses cover growth over 2010–2020, sales at firm age five in 2020, and sales by firm age from five through 40 in 2020.
 When the upper tail has the following form, define $\alpha$ as the reciprocal of the Hill estimator $\gamma$ ($\xi$).
 
 $$\overline{F}(x) = C x^{-\alpha}, \quad x \geq u > 0$$
@@ -40,7 +39,7 @@ Load growth and sales data and add firm age as the calendar year minus establish
 For growth data, age is measured at the beginning of each period; for sales data, it is measured in the observation year.
 
 For the sales analyses, collect observations for 2020 with positive sales and industry codes whose first two digits are 01–61 or 68–92 in `sales_2020_tb`, applying age conditions separately in each analysis.
-Use sales in their saved units; do not convert to yen in this document.
+Use sales in their saved units; do not convert to yen here.
 
 ```{r}
 
@@ -69,7 +68,8 @@ print_hill_estimate <- function(alpha, k_n) {
 ## 1 Long-term growth over 2010–2020
 
 For log growth over 2010–2020 (`g_20_10`), select observations with beginning-of-period sales of at least $4.0\times10^4$, beginning-of-period age of at least five, and industry codes whose first two digits are 01–61 or 68–92.
-Beginning-of-period sales are measured in thousands of yen, so this lower bound corresponds to 40 million yen. Impose no upper age limit.
+Beginning-of-period sales are measured in thousands of yen, so this lower bound corresponds to 40 million yen.
+Impose no upper age limit.
 
 Apply Hill estimation to exponentiated log growth $\exp(g_{20,10})$.
 Set the threshold to $k_n=0.001n$, where $n$ is the number of observations satisfying the sales, age, and industry conditions.
@@ -117,7 +117,6 @@ k_n <- nrow(sample_tb) * 0.05
 
 ```
 
-Display the specified `k_n` and the corresponding estimate of $\alpha$.
 
 ```{r}
 #| layout-ncol: 2
@@ -129,7 +128,7 @@ print_hill_estimate(res_hill_tb$alpha, k_n)
 ## 3 Sales distributions by age in 2020
 
 Extract observations aged 5–40 from `sales_2020_tb`.
-For each age, calculate the tail index $\alpha(i)$ as the number of upper-order observations varies.
+For each age, calculate the tail index $\alpha(i)$ while varying the number of observations included from the upper tail.
 
 ```{r}
 
@@ -143,9 +142,7 @@ res_hill_tb <- sample_tb |> mutate(alpha = hill_alpha(sale))
 
 ```
 
-With the number of upper-order observations $i$ on the horizontal axis, compare the estimated series for $i<2000$, colored by age.
-Format ages as two-digit strings for display in the legend.
-Set vertical scale limits of 0–3 using `ylim()`.
+With the number of observations from the upper tail $i$ on the horizontal axis, compare the sequences of estimates for $i<2000$, colored by age.
 
 ```{r}
 #| layout-ncol: 2

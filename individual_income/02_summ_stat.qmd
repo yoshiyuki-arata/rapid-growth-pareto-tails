@@ -20,7 +20,6 @@ editor: source
 
 Load `sample_size_tb` and `sample_growth_tb` and calculate summary statistics for individual income and growth rates.
 Summarize the natural logarithm of income in yen by year, and the saved `growth` variable by period.
-The growth summaries include both annual growth rates and multiyear growth rates starting in 2014.
 
 ## 1 Individual income
 
@@ -34,11 +33,10 @@ library(pins)
 board <- board_folder("../income_board_replicate")
 ```
 
-Load income data `sample_size_tb` and growth data `sample_growth_tb` saved in `../income_board_replicate/`.
+Load income data `sample_size_tb` and growth data `sample_growth_tb`.
 Add beginning-of-period age `age` to `sample_growth_tb` as the beginning year extracted from the period label `year` minus the birth year in the first four characters of `birth_date`.
 Age is the difference between the calendar year and birth year, without adjustment for the individual's birthday.
 
-Check the number of income observations in each year before sample selection.
 
 ```{r}
 #| label: import-data
@@ -55,9 +53,8 @@ sample_size_tb |> group_by(year) |> summarise(n_obs = n())
 
 Use observations with positive income `main_var`.
 Summarize all saved years without age or industry restrictions.
-For the data generated in 01, the years are 2014–2020.
 
-Because `main_var` is already in yen, no unit conversion is needed; create natural log income as `log_income = log(main_var)`.
+Create natural log income from income in yen as `log_income = log(main_var)`.
 For each year, calculate the observation count and the mean, standard deviation, first quartile, median, and third quartile of natural log income.
 
 ```{r}
@@ -84,9 +81,6 @@ Select observations meeting the following conditions.
 * Beginning-of-period income `pre_income` of at least $4 \times 10^6$ yen (4 million yen)
 * Beginning-of-period age `age` between 25 and 60, inclusive
 
-Do not impose industry restrictions or restrict the sample to positive growth rates.
-Rows for which income or age conditions cannot be evaluated because of missing values are excluded by `filter()`.
-Missing and nonfinite growth rates were removed before saving the data in 01, so no additional finite-value filter is applied here.
 
 The summaries cover six annual periods (2014–15 through 2019–20) and five periods starting in 2014 (2014–16 through 2014–20).
 After sample selection, calculate the observation count, mean, standard deviation, first quartile, median, and third quartile of growth rates for each period.

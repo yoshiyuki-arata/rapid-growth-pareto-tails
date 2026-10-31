@@ -18,13 +18,12 @@ execute:
 editor: source
 ---
 
-
-This overview file describes how to run the firm sales and growth analysis using a synthetic firm panel.
-It provides links to the analysis code (QMD) and corresponding output (HTML).
-The simulated data are intended for running the analysis code; they do not reproduce the paper's empirical results.
+This overview file describes how to run the firm sales and growth analysis using simulated firm-level panel data. 
+It provides links to the analysis code (QMD) and corresponding output (HTML). 
+The simulation data are intended for running the analysis code and do not reproduce the figures or estimates in the paper.
 
 First, run [01_data_simulation.qmd](01_data_simulation.qmd) to save `sample_size_tb` and `sample_growth_tb` in `../Zipf_law_board_replicate_simulation/`.
-In 01, a fixed random seed is used to generate log sales at birth from a Laplace distribution and annual log growth rates from a signed Weibull distribution for 300,000 firms established in 1940–2020.
+In 01, log sales at birth are generated from a Laplace distribution and annual log growth rates from a signed Weibull distribution for 300,000 firms established in 1940–2020.
 Then run each analysis in 02–11.
 12 is an independent theoretical analysis that does not use the firm panel.
 Use the folder containing each QMD as its working directory during execution.
@@ -60,7 +59,7 @@ Use `../Zipf_law_board_replicate_simulation` as both the output directory for 01
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Relationships between sales, age, and growth</th></tr>
-<tr><td>11 Growth, age, and initial sales</td><td>Compare 2010–2011 growth by sales and age classes and plot mean excess functions (Figures 1 and 2 in the Appendix)</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
+<tr><td>11 Growth, age, and beginning-of-period sales</td><td>Compare 2010–2011 growth by sales and age classes and plot mean excess functions (Figures 1 and 2 in the Appendix)</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Theoretical distributions and simulations</th></tr>

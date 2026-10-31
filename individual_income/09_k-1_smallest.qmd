@@ -19,7 +19,7 @@ editor: source
 ---
 
 Use `sample_growth_tb` to compare distributions of minimum annual growth rates between individuals with high income growth over 2014–2020 (HGF) and all others (non-HGF).
-Use six-year log growth to classify high growth, and annual log growth rates to calculate the minimum.
+Use six-year log growth to identify high-growth individuals.
 
 ## 0 Data preparation
 
@@ -40,7 +40,6 @@ theme_set(theme_ipsum())
 **Data loading and sample selection**
 
 Load `sample_growth_tb` and extract six annual growth rates from 2014–15 through 2019–20 and growth over 2014–2020 (`g_20_14`).
-Reshape growth rates to wide format by ID and join 2014 income `pre_income` and age `age` (2014 minus birth year) from records for the reference period `g_15_14`.
 Select individuals meeting the following conditions.
 
 * Income in 2014 of at least $4\times10^6$ yen (4 million yen)
@@ -85,8 +84,8 @@ growth_wide_tb |>
 **Creating the minimum-growth table `compare_smallest_tb`**
 
 Classify individuals whose `g_20_14` is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator `hg`.
-The shared function `add_smallest()` converts the specified growth columns to a matrix, calculates each individual's minimum using `rowOrderStats(..., which = 1)`, and stores it in `smallest_1st`.
-Use the following periods for each group and combine the results.
+Use `add_smallest()` to calculate each individual's minimum growth rate and store it in `smallest_1st`.
+Use the following periods for each group.
 
 * non-HGF: five periods from 2014–15 through 2018–19
 * HGF: six periods from 2014–15 through 2019–20
@@ -143,9 +142,7 @@ ggsave(filename = "compare_smallest_growth_income.png", path = graph_dir)
 ```
 
 
-**Comparison of summary statistics**
 
-For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of individuals `n_obs`.
 
 ```{r}
 

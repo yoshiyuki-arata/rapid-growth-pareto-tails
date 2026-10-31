@@ -20,9 +20,8 @@ editor: source
 
 
 Examine dependence across periods in firms' sales growth rates.
-Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations over ten periods from 2010–11 through 2019–20.
-Also use growth in 2010–11 and 2011–12 to calculate a tail dependence measure and cumulative means of growth in the following period after transforming it to nonnegative values.
-Include zero growth in both analyses.
+Select firms using beginning-of-period sales, firm age, and industry conditions for 2010–11, and calculate Spearman rank correlations among the ten periods from 2010–11 through 2019–20.
+Also use growth rates in 2010–11 and 2011–12 to calculate a tail dependence measure and the cumulative mean of the following period's growth after transforming it to nonnegative values.
 
 ## 1 Rank correlations of growth rates
 
@@ -45,7 +44,7 @@ For 2010–11 growth records (`g_11_10`), save the `id` values of firms meeting 
 * Beginning-of-period firm age of at least five  
 * The first two digits of industry code `ind_class` are 01–61 or 68–92
 
-Use this set of firms for both rank correlations and tail analyses. Do not impose additional restrictions based on beginning-of-period sales, firm age, or industry in other periods.
+Use this set of firms for both rank correlations and tail analyses.
 
 Define `pobs()` to transform growth rates into rank-based pseudo-observations.
 Use average ranks for ties and divide by the length of the original vector plus one.
@@ -75,9 +74,8 @@ id_tb <- sample_growth_tb |>
 
 **Data for the two-period tail analysis**
 
-Reshape growth rates for the selected firms to wide format and extract 2011–12 (`g_12_11`) and 2010–11 (`g_11_10`).
-Retain only firms with finite growth rates in both periods in `normal_tb`.
-Exclude `NA`, `NaN`, and positive or negative infinity, but retain zero.
+Extract growth rates for 2011–12 (`g_12_11`) and 2010–11 (`g_11_10`), retaining only firms with finite growth rates in both periods in `normal_tb`.
+Exclude `NA`, `NaN`, and positive or negative infinity.
 Transform growth in each period to ranks separately using `pobs()`.
  
 ```{r}
@@ -93,8 +91,7 @@ normal_tb <- sample_growth_tb |>
 
 **Spearman rank correlations across ten periods**
 
-Reshape annual growth rates from 2010–11 through 2019–20 to wide format and calculate the Spearman rank correlation matrix for firms in `id_tb`.
-Include zero growth.
+Calculate the Spearman rank correlation matrix for firms in `id_tb`.
 At this stage, require a common sample with finite growth rates in all ten periods.
 
 ```{r}
@@ -118,7 +115,7 @@ spearman_mat_tb
 
 Let $N$ be the number of firms in `normal_tb` and $N_q$ the number whose pseudo-observations strictly exceed threshold $q$ in both periods.
 Calculate the tail dependence measure as $N_q/[N(1-q)]$.
-Vary $q$ from 0.8 to 0.9995 in increments of 0.0005 and save the measure at each threshold in `tail_tb`.
+Vary $q$ from 0.8 to 0.9995 in increments of 0.0005.
 
 ```{r}
 #| layout-ncol: 2
@@ -169,10 +166,7 @@ ggsave(filename = "cond_tail_expect_g_11_10_transformed.png", path = "graph")
 ## 3 LaTeX table output
 
 Save the rank correlation matrix `spearman_mat_tb` to `latex/spearman_mat.tex` in the same folder as this QMD.
-Leave correlation coefficients and row and column orders unchanged, formatting values to three decimal places only for output. Display missing values, including diagonal entries, as `--`.
-Convert period labels in row and column headings, for example from `g_11_10` to `2010--11`.
-Wrap period labels in `\mbox{}` to prevent line breaks and, as in `02_summ_stat.qmd`, use `tabularx` to fit the table to the text width. To reduce column spacing and display larger text, use a 9-point font and 0.5-point padding on each side of columns (`\tabcolsep`). Do not specify automatic resizing with `scale_down`.
-Use the same rules and alternating row shading as the LaTeX tables in `02_summ_stat.qmd`, specifying the `table` environment and centering in the paper itself. Load the `tabularx` package in the paper. If text overflows because of the text width or font, adjust the font size further.
+Display missing values as `--`, including those on the diagonal.
 
 ```{r}
 

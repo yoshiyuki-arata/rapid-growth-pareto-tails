@@ -3626,7 +3626,7 @@ font-weight: bold;
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#distributions-of-firm-age-and-sales-size" id="toc-distributions-of-firm-age-and-sales-size" class="nav-link active" data-scroll-target="#distributions-of-firm-age-and-sales-size">1 Distributions of firm age and sales size</a></li>
+  <li><a href="#distributions-of-firm-age-and-sales" id="toc-distributions-of-firm-age-and-sales" class="nav-link active" data-scroll-target="#distributions-of-firm-age-and-sales">1 Distributions of firm age and sales</a></li>
   <li><a href="#comparing-log-sales-with-a-normal-distribution-q-q-plots" id="toc-comparing-log-sales-with-a-normal-distribution-q-q-plots" class="nav-link" data-scroll-target="#comparing-log-sales-with-a-normal-distribution-q-q-plots">2 Comparing log sales with a normal distribution: Q-Q plots</a></li>
   <li><a href="#age-composition-by-sales-threshold" id="toc-age-composition-by-sales-threshold" class="nav-link" data-scroll-target="#age-composition-by-sales-threshold">3 Age composition by sales threshold</a></li>
   </ul>
@@ -3653,9 +3653,9 @@ font-weight: bold;
 </header>
 
 
-<p>Use firm-year sales data <code>sample_size_tb</code> to examine distributions of firm age and sales size, sales distributions by year, and how closely log sales follow a normal distribution. Use 2020 data for age-specific analyses and 2010–2020 data for annual comparisons. Finally, for firms aged 50 or younger whose sales exceed each threshold, calculate the composition by age class.</p>
-<section id="distributions-of-firm-age-and-sales-size" class="level2">
-<h2 class="anchored" data-anchor-id="distributions-of-firm-age-and-sales-size">1 Distributions of firm age and sales size</h2>
+<p>Use <code>sample_size_tb</code> to examine the distributions of firm age and sales, sales distributions by year, and how close log sales are to a normal distribution. Calculate the shares of each age class among firms aged 50 or younger whose sales exceed a specified threshold.</p>
+<section id="distributions-of-firm-age-and-sales" class="level2">
+<h2 class="anchored" data-anchor-id="distributions-of-firm-age-and-sales">1 Distributions of firm age and sales</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
@@ -3664,13 +3664,13 @@ font-weight: bold;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Loading data and creating age classes</strong></p>
-<p>Load firm-year sales data and calculate firm age <code>age</code> as observation year <code>year</code> minus establishment year <code>birth_year</code>. Use observations meeting the following conditions.</p>
+<p>Load the data and calculate firm age <code>age</code> as observation year <code>year</code> minus establishment year <code>birth_year</code>. Use observations meeting the following conditions.</p>
 <ul>
 <li>Positive sales <code>sale</code></li>
 <li>Observation year from 2010 through 2020</li>
-<li>The first two digits of industry code <code>ind_class</code> are 01–66 or 68–92</li>
+<li>The first two digits of industry code <code>ind_class</code> are 01–61 or 68–92</li>
 </ul>
-<p>Add <code>sale_yen</code>, calculated by multiplying <code>sale</code> in thousands of yen by 1000, to <code>sample_size_yen_tb</code> for plotting. Leave the original <code>sample_size_tb</code> and <code>sale</code> unchanged.</p>
+<p>Add sales in yen as <code>sale_yen</code> to the plotting dataset <code>sample_size_yen_tb</code>, calculated by multiplying <code>sale</code>, measured in thousands of yen, by 1000.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(year) <span class="sc">-</span> birth_year) <span class="sc">|&gt;</span> </span>
@@ -3682,7 +3682,7 @@ font-weight: bold;
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sample_size_yen_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sale_yen =</span> sale <span class="sc">*</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Create <code>size_20_tb</code> restricted to 2020 and use <code>cut()</code> to classify firm age into five-year intervals in <code>age_class</code>. The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to <code>age_95_over</code>. Assign firms with missing or negative ages to <code>age_other</code>.</p>
+<p>Create <code>size_20_tb</code> restricted to 2020 and classify firm age into five-year intervals in <code>age_class</code>. The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to <code>age_95_over</code>. Assign firms with missing or negative ages to <code>age_other</code>.</p>
 <p>Also create <code>size_20_yen_tb</code> with sales in yen and age classifications. Define <code>age_group</code> as minus for negative ages, young for ages 0–50, middle for ages above 50 through 70, old for ages above 70, and other otherwise.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span> </span>
@@ -3725,7 +3725,6 @@ font-weight: bold;
 <span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Display observation counts. The data also contain firms with negative ages.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span> <span class="fu">count</span>(age_group, <span class="at">name =</span> <span class="st">&quot;n_obs&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
@@ -3760,8 +3759,8 @@ font-weight: bold;
 </div>
 </div>
 </div>
-<p><strong>Sales size distributions by age</strong></p>
-<p>First plot the full 2020 sample, then compare the three groups young, middle, and old. For the three-group comparison, use only young, middle, and old, excluding minus and other. For the full-sample figure, impose no additional age exclusions.</p>
+<p><strong>Sales distributions by age</strong></p>
+<p>First plot the full 2020 sample, then compare the three groups young, middle, and old.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Shared density plot for data containing sales in yen as sale_yen.</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>plot_size_density <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">color_var =</span> <span class="cn">NULL</span>) {</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> sale_yen))</span>
@@ -3803,7 +3802,7 @@ font-weight: bold;
 </div>
 </div>
 </div>
-<p>Compare sales distributions across five-year <code>age_class</code> intervals. The figure for ages above 50 also includes firms older than 95. Use the shared function’s logarithmic axes, density estimation, and displayed vertical range for all figures.</p>
+<p>Compare sales distributions across five-year <code>age_class</code> intervals. Use the shared function’s logarithmic axes, density estimation, and displayed vertical range for all figures.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_class&quot;</span>) <span class="sc">+</span></span>
@@ -3848,7 +3847,7 @@ font-weight: bold;
 </section>
 <section id="comparing-log-sales-with-a-normal-distribution-q-q-plots" class="level2">
 <h2 class="anchored" data-anchor-id="comparing-log-sales-with-a-normal-distribution-q-q-plots">2 Comparing log sales with a normal distribution: Q-Q plots</h2>
-<p>Select age classes <code>age_10</code>, <code>age_20</code>, …, <code>age_90</code> from the 2020 data. For each class, take the natural logarithm of original sales in thousands of yen, subtract its median, and divide by the MAD (median absolute deviation). Do not use the mean and standard deviation for this standardization.</p>
+<p>Select age classes <code>age_10</code>, <code>age_20</code>, …, <code>age_90</code> from the 2020 data. For each class, take the natural logarithm of the original sales measured in thousands of yen, subtract the median of these log sales, and divide by their MAD (median absolute deviation).</p>
 <p>Use Q-Q plots to compare sample quantiles of standardized log sales with theoretical quantiles of the standard normal distribution. Add a reference line with intercept zero and slope one.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="sc">|&gt;</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">%in%</span> <span class="fu">str_c</span>(<span class="st">&quot;age_&quot;</span>, <span class="fu">str_pad</span>(<span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">90</span>, <span class="dv">10</span>), <span class="at">width =</span> <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>)), </span>
@@ -3880,7 +3879,7 @@ font-weight: bold;
 <section id="age-composition-by-sales-threshold" class="level2">
 <h2 class="anchored" data-anchor-id="age-composition-by-sales-threshold">3 Age composition by sales threshold</h2>
 <p>For firms aged 50 or younger in 2020, examine the age composition of firms whose sales exceed a threshold.</p>
-<p>Set sales thresholds in yen to <span class="math inline">\(10^9, 10^{9.2}, \ldots, 10^{14}\)</span>, giving 26 points spaced by 0.2 in base-10 logarithms. For each threshold, select observations with <code>sale_yen</code> strictly above that value and calculate composition shares <code>n_ratio</code>, using the total count <code>n_total</code> as the denominator and the count in each age class as the numerator.</p>
+<p>Set sales thresholds in yen to <span class="math inline">\(10^9, 10^{9.2}, \ldots, 10^{14}\)</span>, giving 26 points spaced by 0.2 in base-10 logarithms. For each threshold, select observations strictly above that value and calculate composition shares <code>n_ratio</code>, using the total count as the denominator and the count in each age class as the numerator.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>x_val <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span><span class="fu">seq</span>(<span class="fl">9.0</span>, <span class="dv">14</span>, <span class="fl">0.2</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -4409,315 +4408,308 @@ font-weight: bold;
 <span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>Use firm-year sales data <span class="in">`sample_size_tb`</span> to examine distributions of firm age and sales size, sales distributions by year, and how closely log sales follow a normal distribution.</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>Use 2020 data for age-specific analyses and 2010–2020 data for annual comparisons.</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>Finally, for firms aged 50 or younger whose sales exceed each threshold, calculate the composition by age class.</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Distributions of firm age and sales size</span></span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>**Loading data and creating age classes**</span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>Load firm-year sales data and calculate firm age <span class="in">`age`</span> as observation year <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>Use observations meeting the following conditions.</span>
-<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Positive sales <span class="in">`sale`</span></span>
-<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Observation year from 2010 through 2020</span>
-<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–66 or 68–92</span>
-<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>Add <span class="in">`sale_yen`</span>, calculated by multiplying <span class="in">`sale`</span> in thousands of yen by 1000, to <span class="in">`sample_size_yen_tb`</span> for plotting.</span>
-<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>Leave the original <span class="in">`sample_size_tb`</span> and <span class="in">`sale`</span> unchanged.</span>
-<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(year) <span class="sc">-</span> birth_year) <span class="sc">|&gt;</span> </span>
-<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sale <span class="sc">&gt;</span> <span class="dv">0</span>, </span>
-<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>         <span class="fu">as.numeric</span>(year) <span class="sc">&gt;=</span> <span class="dv">2010</span>, <span class="fu">as.numeric</span>(year) <span class="sc">&lt;=</span> <span class="dv">2020</span>, </span>
-<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>))   </span>
-<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Retain the original sale and add a yen-denominated column for plotting and composition calculations.</span></span>
-<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>sample_size_yen_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sale_yen =</span> sale <span class="sc">*</span> <span class="dv">1000</span>)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`sample_size_tb`</span> to examine the distributions of firm age and sales, sales distributions by year, and how close log sales are to a normal distribution.</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>Calculate the shares of each age class among firms aged 50 or younger whose sales exceed a specified threshold.</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Distributions of firm age and sales</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>**Loading data and creating age classes**</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>Load the data and calculate firm age <span class="in">`age`</span> as observation year <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>Use observations meeting the following conditions.</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Positive sales <span class="in">`sale`</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Observation year from 2010 through 2020</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of industry code <span class="in">`ind_class`</span> are 01–61 or 68–92</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>Add sales in yen as <span class="in">`sale_yen`</span> to the plotting dataset <span class="in">`sample_size_yen_tb`</span>, calculated by multiplying <span class="in">`sale`</span>, measured in thousands of yen, by 1000.</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">as.numeric</span>(year) <span class="sc">-</span> birth_year) <span class="sc">|&gt;</span> </span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sale <span class="sc">&gt;</span> <span class="dv">0</span>, </span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>         <span class="fu">as.numeric</span>(year) <span class="sc">&gt;=</span> <span class="dv">2010</span>, <span class="fu">as.numeric</span>(year) <span class="sc">&lt;=</span> <span class="dv">2020</span>, </span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>))   </span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Retain the original sale and add a yen-denominated column for plotting and composition calculations.</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>sample_size_yen_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sale_yen =</span> sale <span class="sc">*</span> <span class="dv">1000</span>)</span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>Create <span class="in">`size_20_tb`</span> restricted to 2020 and use <span class="in">`cut()`</span> to classify firm age into five-year intervals in <span class="in">`age_class`</span>.</span>
-<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a>The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to <span class="in">`age_95_over`</span>.</span>
-<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>Assign firms with missing or negative ages to <span class="in">`age_other`</span>.</span>
-<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a>Also create <span class="in">`size_20_yen_tb`</span> with sales in yen and age classifications.</span>
-<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`age_group`</span> as minus for negative ages, young for ages 0–50, middle for ages above 50 through 70, old for ages above 70, and other otherwise.</span>
-<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span> </span>
-<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;2020&quot;</span>) <span class="sc">|&gt;</span>  </span>
-<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_class =</span> <span class="fu">cut</span>(</span>
-<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>      age,</span>
-<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> <span class="fu">c</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">95</span>, <span class="at">by =</span> <span class="dv">5</span>), <span class="cn">Inf</span>),  <span class="co"># 0–5, ..., 91–95, 96+</span></span>
-<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>      <span class="at">right =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
-<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_c</span>(<span class="st">&quot;age_&quot;</span>, <span class="fu">str_pad</span>(<span class="fu">seq</span>(<span class="dv">5</span>, <span class="dv">95</span>, <span class="at">by =</span> <span class="dv">5</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>)),</span>
-<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;age_95_over&quot;</span></span>
-<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a>      <span class="at">include.lowest =</span> <span class="cn">TRUE</span></span>
-<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_class =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_class) <span class="sc">|</span> age <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="st">&quot;age_other&quot;</span>, age_class)</span>
-<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a>age_class_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_05&quot;</span> <span class="ot">=</span> <span class="st">&quot;0–5&quot;</span>,   <span class="st">&quot;age_10&quot;</span> <span class="ot">=</span> <span class="st">&quot;6–10&quot;</span>,  <span class="st">&quot;age_15&quot;</span> <span class="ot">=</span> <span class="st">&quot;11–15&quot;</span>, <span class="st">&quot;age_20&quot;</span> <span class="ot">=</span> <span class="st">&quot;16–20&quot;</span>,</span>
-<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_25&quot;</span> <span class="ot">=</span> <span class="st">&quot;21–25&quot;</span>, <span class="st">&quot;age_30&quot;</span> <span class="ot">=</span> <span class="st">&quot;26–30&quot;</span>, <span class="st">&quot;age_35&quot;</span> <span class="ot">=</span> <span class="st">&quot;31–35&quot;</span>, <span class="st">&quot;age_40&quot;</span> <span class="ot">=</span> <span class="st">&quot;36–40&quot;</span>,</span>
-<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_45&quot;</span> <span class="ot">=</span> <span class="st">&quot;41–45&quot;</span>, <span class="st">&quot;age_50&quot;</span> <span class="ot">=</span> <span class="st">&quot;46–50&quot;</span>, <span class="st">&quot;age_55&quot;</span> <span class="ot">=</span> <span class="st">&quot;51–55&quot;</span>, <span class="st">&quot;age_60&quot;</span> <span class="ot">=</span> <span class="st">&quot;56–60&quot;</span>,</span>
-<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_65&quot;</span> <span class="ot">=</span> <span class="st">&quot;61–65&quot;</span>, <span class="st">&quot;age_70&quot;</span> <span class="ot">=</span> <span class="st">&quot;66–70&quot;</span>, <span class="st">&quot;age_75&quot;</span> <span class="ot">=</span> <span class="st">&quot;71–75&quot;</span>, <span class="st">&quot;age_80&quot;</span> <span class="ot">=</span> <span class="st">&quot;76–80&quot;</span>,</span>
-<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_85&quot;</span> <span class="ot">=</span> <span class="st">&quot;81–85&quot;</span>, <span class="st">&quot;age_90&quot;</span> <span class="ot">=</span> <span class="st">&quot;86–90&quot;</span>, <span class="st">&quot;age_95&quot;</span> <span class="ot">=</span> <span class="st">&quot;91–95&quot;</span>, <span class="st">&quot;age_95_over&quot;</span> <span class="ot">=</span> <span class="st">&quot;96+&quot;</span></span>
-<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="ot">&lt;-</span> size_20_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">sale_yen =</span> sale <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">case_when</span>(</span>
-<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;minus&quot;</span>, </span>
-<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a>      <span class="dv">0</span> <span class="sc">&lt;=</span> age <span class="sc">&amp;</span> age <span class="sc">&lt;=</span> <span class="dv">50</span> <span class="sc">~</span> <span class="st">&quot;young&quot;</span>,</span>
-<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&gt;</span> <span class="dv">50</span> <span class="sc">&amp;</span> age <span class="sc">&lt;=</span> <span class="dv">70</span> <span class="sc">~</span> <span class="st">&quot;middle&quot;</span>,</span>
-<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&gt;</span> <span class="dv">70</span> <span class="sc">~</span> <span class="st">&quot;old&quot;</span>,</span>
-<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;other&quot;</span></span>
-<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">factor</span>(</span>
-<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a>      age_group,</span>
-<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;minus&quot;</span>, <span class="st">&quot;young&quot;</span>, <span class="st">&quot;middle&quot;</span>, <span class="st">&quot;old&quot;</span>, <span class="st">&quot;other&quot;</span>)</span>
-<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-113"><a href="#cb12-113" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>Create <span class="in">`size_20_tb`</span> restricted to 2020 and classify firm age into five-year intervals in <span class="in">`age_class`</span>.</span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>The first class covers ages 0–5, followed by 6–10, 11–15, …, 91–95. Assign firms older than 95 to <span class="in">`age_95_over`</span>.</span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>Assign firms with missing or negative ages to <span class="in">`age_other`</span>.</span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>Also create <span class="in">`size_20_yen_tb`</span> with sales in yen and age classifications.</span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a>Define <span class="in">`age_group`</span> as minus for negative ages, young for ages 0–50, middle for ages above 50 through 70, old for ages above 70, and other otherwise.</span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="ot">&lt;-</span> sample_size_tb <span class="sc">|&gt;</span> </span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;2020&quot;</span>) <span class="sc">|&gt;</span>  </span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_class =</span> <span class="fu">cut</span>(</span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a>      age,</span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> <span class="fu">c</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">95</span>, <span class="at">by =</span> <span class="dv">5</span>), <span class="cn">Inf</span>),  <span class="co"># 0–5, ..., 91–95, 96+</span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>      <span class="at">right =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_c</span>(<span class="st">&quot;age_&quot;</span>, <span class="fu">str_pad</span>(<span class="fu">seq</span>(<span class="dv">5</span>, <span class="dv">95</span>, <span class="at">by =</span> <span class="dv">5</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>)),</span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;age_95_over&quot;</span></span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a>      <span class="at">include.lowest =</span> <span class="cn">TRUE</span></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_class =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_class) <span class="sc">|</span> age <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="st">&quot;age_other&quot;</span>, age_class)</span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a>age_class_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_05&quot;</span> <span class="ot">=</span> <span class="st">&quot;0–5&quot;</span>,   <span class="st">&quot;age_10&quot;</span> <span class="ot">=</span> <span class="st">&quot;6–10&quot;</span>,  <span class="st">&quot;age_15&quot;</span> <span class="ot">=</span> <span class="st">&quot;11–15&quot;</span>, <span class="st">&quot;age_20&quot;</span> <span class="ot">=</span> <span class="st">&quot;16–20&quot;</span>,</span>
+<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_25&quot;</span> <span class="ot">=</span> <span class="st">&quot;21–25&quot;</span>, <span class="st">&quot;age_30&quot;</span> <span class="ot">=</span> <span class="st">&quot;26–30&quot;</span>, <span class="st">&quot;age_35&quot;</span> <span class="ot">=</span> <span class="st">&quot;31–35&quot;</span>, <span class="st">&quot;age_40&quot;</span> <span class="ot">=</span> <span class="st">&quot;36–40&quot;</span>,</span>
+<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_45&quot;</span> <span class="ot">=</span> <span class="st">&quot;41–45&quot;</span>, <span class="st">&quot;age_50&quot;</span> <span class="ot">=</span> <span class="st">&quot;46–50&quot;</span>, <span class="st">&quot;age_55&quot;</span> <span class="ot">=</span> <span class="st">&quot;51–55&quot;</span>, <span class="st">&quot;age_60&quot;</span> <span class="ot">=</span> <span class="st">&quot;56–60&quot;</span>,</span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_65&quot;</span> <span class="ot">=</span> <span class="st">&quot;61–65&quot;</span>, <span class="st">&quot;age_70&quot;</span> <span class="ot">=</span> <span class="st">&quot;66–70&quot;</span>, <span class="st">&quot;age_75&quot;</span> <span class="ot">=</span> <span class="st">&quot;71–75&quot;</span>, <span class="st">&quot;age_80&quot;</span> <span class="ot">=</span> <span class="st">&quot;76–80&quot;</span>,</span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;age_85&quot;</span> <span class="ot">=</span> <span class="st">&quot;81–85&quot;</span>, <span class="st">&quot;age_90&quot;</span> <span class="ot">=</span> <span class="st">&quot;86–90&quot;</span>, <span class="st">&quot;age_95&quot;</span> <span class="ot">=</span> <span class="st">&quot;91–95&quot;</span>, <span class="st">&quot;age_95_over&quot;</span> <span class="ot">=</span> <span class="st">&quot;96+&quot;</span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="ot">&lt;-</span> size_20_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">sale_yen =</span> sale <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">case_when</span>(</span>
+<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;minus&quot;</span>, </span>
+<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a>      <span class="dv">0</span> <span class="sc">&lt;=</span> age <span class="sc">&amp;</span> age <span class="sc">&lt;=</span> <span class="dv">50</span> <span class="sc">~</span> <span class="st">&quot;young&quot;</span>,</span>
+<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&gt;</span> <span class="dv">50</span> <span class="sc">&amp;</span> age <span class="sc">&lt;=</span> <span class="dv">70</span> <span class="sc">~</span> <span class="st">&quot;middle&quot;</span>,</span>
+<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">&gt;</span> <span class="dv">70</span> <span class="sc">~</span> <span class="st">&quot;old&quot;</span>,</span>
+<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;other&quot;</span></span>
+<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">factor</span>(</span>
+<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a>      age_group,</span>
+<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;minus&quot;</span>, <span class="st">&quot;young&quot;</span>, <span class="st">&quot;middle&quot;</span>, <span class="st">&quot;old&quot;</span>, <span class="st">&quot;other&quot;</span>)</span>
+<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-113"><a href="#cb12-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb12-114"><a href="#cb12-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-115"><a href="#cb12-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-116"><a href="#cb12-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-117"><a href="#cb12-117" aria-hidden="true" tabindex="-1"></a>Display observation counts. The data also contain firms with negative ages.</span>
-<span id="cb12-118"><a href="#cb12-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-121"><a href="#cb12-121" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-122"><a href="#cb12-122" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-123"><a href="#cb12-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-124"><a href="#cb12-124" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span> <span class="fu">count</span>(age_group, <span class="at">name =</span> <span class="st">&quot;n_obs&quot;</span>)</span>
-<span id="cb12-125"><a href="#cb12-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-126"><a href="#cb12-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-127"><a href="#cb12-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-128"><a href="#cb12-128" aria-hidden="true" tabindex="-1"></a>Plot a histogram with one-year bins for observations with firm ages from 0 to 120.</span>
-<span id="cb12-129"><a href="#cb12-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-132"><a href="#cb12-132" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-133"><a href="#cb12-133" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-134"><a href="#cb12-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-135"><a href="#cb12-135" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="sc">|&gt;</span> </span>
-<span id="cb12-136"><a href="#cb12-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>, </span>
-<span id="cb12-137"><a href="#cb12-137" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">0</span>, age <span class="sc">&lt;=</span> <span class="dv">120</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-138"><a href="#cb12-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age)) <span class="sc">+</span></span>
-<span id="cb12-139"><a href="#cb12-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">&quot;#2C3E50&quot;</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb12-140"><a href="#cb12-140" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb12-141"><a href="#cb12-141" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Firm Age (Years)&quot;</span>,</span>
-<span id="cb12-142"><a href="#cb12-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Firms&quot;</span></span>
-<span id="cb12-143"><a href="#cb12-143" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb12-144"><a href="#cb12-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb12-145"><a href="#cb12-145" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb12-146"><a href="#cb12-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>)</span>
-<span id="cb12-147"><a href="#cb12-147" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb12-148"><a href="#cb12-148" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;age_dist.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-149"><a href="#cb12-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-150"><a href="#cb12-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-151"><a href="#cb12-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-152"><a href="#cb12-152" aria-hidden="true" tabindex="-1"></a>**Sales size distributions by age**</span>
-<span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-154"><a href="#cb12-154" aria-hidden="true" tabindex="-1"></a>First plot the full 2020 sample, then compare the three groups young, middle, and old.</span>
-<span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a>For the three-group comparison, use only young, middle, and old, excluding minus and other.</span>
-<span id="cb12-156"><a href="#cb12-156" aria-hidden="true" tabindex="-1"></a>For the full-sample figure, impose no additional age exclusions.</span>
+<span id="cb12-115"><a href="#cb12-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-118"><a href="#cb12-118" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-119"><a href="#cb12-119" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-120"><a href="#cb12-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-121"><a href="#cb12-121" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span> <span class="fu">count</span>(age_group, <span class="at">name =</span> <span class="st">&quot;n_obs&quot;</span>)</span>
+<span id="cb12-122"><a href="#cb12-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-123"><a href="#cb12-123" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-124"><a href="#cb12-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-125"><a href="#cb12-125" aria-hidden="true" tabindex="-1"></a>Plot a histogram with one-year bins for observations with firm ages from 0 to 120.</span>
+<span id="cb12-126"><a href="#cb12-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-129"><a href="#cb12-129" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-130"><a href="#cb12-130" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-131"><a href="#cb12-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-132"><a href="#cb12-132" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="sc">|&gt;</span> </span>
+<span id="cb12-133"><a href="#cb12-133" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>, </span>
+<span id="cb12-134"><a href="#cb12-134" aria-hidden="true" tabindex="-1"></a>         age <span class="sc">&gt;=</span> <span class="dv">0</span>, age <span class="sc">&lt;=</span> <span class="dv">120</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb12-135"><a href="#cb12-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age)) <span class="sc">+</span></span>
+<span id="cb12-136"><a href="#cb12-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">&quot;#2C3E50&quot;</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb12-137"><a href="#cb12-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb12-138"><a href="#cb12-138" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Firm Age (Years)&quot;</span>,</span>
+<span id="cb12-139"><a href="#cb12-139" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Firms&quot;</span></span>
+<span id="cb12-140"><a href="#cb12-140" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-141"><a href="#cb12-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb12-142"><a href="#cb12-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb12-143"><a href="#cb12-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>)</span>
+<span id="cb12-144"><a href="#cb12-144" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-145"><a href="#cb12-145" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;age_dist.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-146"><a href="#cb12-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-147"><a href="#cb12-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-148"><a href="#cb12-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-149"><a href="#cb12-149" aria-hidden="true" tabindex="-1"></a>**Sales distributions by age**</span>
+<span id="cb12-150"><a href="#cb12-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-151"><a href="#cb12-151" aria-hidden="true" tabindex="-1"></a>First plot the full 2020 sample, then compare the three groups young, middle, and old.</span>
+<span id="cb12-152"><a href="#cb12-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-156"><a href="#cb12-156" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
 <span id="cb12-157"><a href="#cb12-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-160"><a href="#cb12-160" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-161"><a href="#cb12-161" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-162"><a href="#cb12-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-163"><a href="#cb12-163" aria-hidden="true" tabindex="-1"></a><span class="co"># Shared density plot for data containing sales in yen as sale_yen.</span></span>
-<span id="cb12-164"><a href="#cb12-164" aria-hidden="true" tabindex="-1"></a>plot_size_density <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">color_var =</span> <span class="cn">NULL</span>) {</span>
-<span id="cb12-165"><a href="#cb12-165" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> sale_yen))</span>
-<span id="cb12-166"><a href="#cb12-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-167"><a href="#cb12-167" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(color_var)) {</span>
-<span id="cb12-168"><a href="#cb12-168" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">color =</span> .data[[color_var]])</span>
-<span id="cb12-169"><a href="#cb12-169" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb12-170"><a href="#cb12-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-171"><a href="#cb12-171" aria-hidden="true" tabindex="-1"></a>  p <span class="sc">+</span></span>
-<span id="cb12-172"><a href="#cb12-172" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
-<span id="cb12-173"><a href="#cb12-173" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
-<span id="cb12-174"><a href="#cb12-174" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
-<span id="cb12-175"><a href="#cb12-175" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^-</span><span class="dv">4</span>, <span class="dv">10</span><span class="sc">^</span><span class="fl">0.1</span>)) <span class="sc">+</span></span>
-<span id="cb12-176"><a href="#cb12-176" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
-<span id="cb12-177"><a href="#cb12-177" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Sales (log scale)&quot;</span>,</span>
-<span id="cb12-178"><a href="#cb12-178" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Density (log scale)&quot;</span></span>
-<span id="cb12-179"><a href="#cb12-179" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb12-180"><a href="#cb12-180" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
-<span id="cb12-181"><a href="#cb12-181" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-182"><a href="#cb12-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-183"><a href="#cb12-183" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_size_density</span>(size_20_yen_tb)</span>
-<span id="cb12-184"><a href="#cb12-184" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_agg.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-185"><a href="#cb12-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-186"><a href="#cb12-186" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-187"><a href="#cb12-187" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;young&quot;</span>, <span class="st">&quot;middle&quot;</span>, <span class="st">&quot;old&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb12-188"><a href="#cb12-188" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_group&quot;</span>) <span class="sc">+</span></span>
-<span id="cb12-189"><a href="#cb12-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(</span>
-<span id="cb12-190"><a href="#cb12-190" aria-hidden="true" tabindex="-1"></a>    <span class="at">young =</span> <span class="st">&quot;Young (≤50)&quot;</span>, <span class="at">middle =</span> <span class="st">&quot;Middle (51–70)&quot;</span>, <span class="at">old =</span> <span class="st">&quot;Old (&gt;70)&quot;</span></span>
-<span id="cb12-191"><a href="#cb12-191" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
-<span id="cb12-192"><a href="#cb12-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
-<span id="cb12-193"><a href="#cb12-193" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_three_age_group.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-158"><a href="#cb12-158" aria-hidden="true" tabindex="-1"></a><span class="co"># Shared density plot for data containing sales in yen as sale_yen.</span></span>
+<span id="cb12-159"><a href="#cb12-159" aria-hidden="true" tabindex="-1"></a>plot_size_density <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">color_var =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb12-160"><a href="#cb12-160" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> sale_yen))</span>
+<span id="cb12-161"><a href="#cb12-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-162"><a href="#cb12-162" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(color_var)) {</span>
+<span id="cb12-163"><a href="#cb12-163" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">color =</span> .data[[color_var]])</span>
+<span id="cb12-164"><a href="#cb12-164" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-165"><a href="#cb12-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-166"><a href="#cb12-166" aria-hidden="true" tabindex="-1"></a>  p <span class="sc">+</span></span>
+<span id="cb12-167"><a href="#cb12-167" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb12-168"><a href="#cb12-168" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
+<span id="cb12-169"><a href="#cb12-169" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb12-170"><a href="#cb12-170" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^-</span><span class="dv">4</span>, <span class="dv">10</span><span class="sc">^</span><span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb12-171"><a href="#cb12-171" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb12-172"><a href="#cb12-172" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Sales (log scale)&quot;</span>,</span>
+<span id="cb12-173"><a href="#cb12-173" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Density (log scale)&quot;</span></span>
+<span id="cb12-174"><a href="#cb12-174" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb12-175"><a href="#cb12-175" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
+<span id="cb12-176"><a href="#cb12-176" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-177"><a href="#cb12-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-178"><a href="#cb12-178" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_size_density</span>(size_20_yen_tb)</span>
+<span id="cb12-179"><a href="#cb12-179" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_agg.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-180"><a href="#cb12-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-181"><a href="#cb12-181" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-182"><a href="#cb12-182" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;young&quot;</span>, <span class="st">&quot;middle&quot;</span>, <span class="st">&quot;old&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-183"><a href="#cb12-183" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_group&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-184"><a href="#cb12-184" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb12-185"><a href="#cb12-185" aria-hidden="true" tabindex="-1"></a>    <span class="at">young =</span> <span class="st">&quot;Young (≤50)&quot;</span>, <span class="at">middle =</span> <span class="st">&quot;Middle (51–70)&quot;</span>, <span class="at">old =</span> <span class="st">&quot;Old (&gt;70)&quot;</span></span>
+<span id="cb12-186"><a href="#cb12-186" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb12-187"><a href="#cb12-187" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
+<span id="cb12-188"><a href="#cb12-188" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_three_age_group.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-189"><a href="#cb12-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-190"><a href="#cb12-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-191"><a href="#cb12-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-192"><a href="#cb12-192" aria-hidden="true" tabindex="-1"></a>Compare sales distributions across five-year <span class="in">`age_class`</span> intervals.</span>
+<span id="cb12-193"><a href="#cb12-193" aria-hidden="true" tabindex="-1"></a>Use the shared function&#39;s logarithmic axes, density estimation, and displayed vertical range for all figures.</span>
 <span id="cb12-194"><a href="#cb12-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-195"><a href="#cb12-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-196"><a href="#cb12-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-197"><a href="#cb12-197" aria-hidden="true" tabindex="-1"></a>Compare sales distributions across five-year <span class="in">`age_class`</span> intervals.</span>
-<span id="cb12-198"><a href="#cb12-198" aria-hidden="true" tabindex="-1"></a>The figure for ages above 50 also includes firms older than 95.</span>
-<span id="cb12-199"><a href="#cb12-199" aria-hidden="true" tabindex="-1"></a>Use the shared function&#39;s logarithmic axes, density estimation, and displayed vertical range for all figures.</span>
-<span id="cb12-200"><a href="#cb12-200" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-203"><a href="#cb12-203" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-204"><a href="#cb12-204" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-205"><a href="#cb12-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-206"><a href="#cb12-206" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-207"><a href="#cb12-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-208"><a href="#cb12-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_class&quot;</span>) <span class="sc">+</span></span>
-<span id="cb12-209"><a href="#cb12-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>, <span class="at">labels =</span> age_class_labels) <span class="sc">+</span></span>
-<span id="cb12-210"><a href="#cb12-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
-<span id="cb12-211"><a href="#cb12-211" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_young.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-212"><a href="#cb12-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-213"><a href="#cb12-213" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-214"><a href="#cb12-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-215"><a href="#cb12-215" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_class&quot;</span>) <span class="sc">+</span></span>
-<span id="cb12-216"><a href="#cb12-216" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>, <span class="at">labels =</span> age_class_labels) <span class="sc">+</span></span>
-<span id="cb12-217"><a href="#cb12-217" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
-<span id="cb12-218"><a href="#cb12-218" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_old.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-219"><a href="#cb12-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-220"><a href="#cb12-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-221"><a href="#cb12-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-222"><a href="#cb12-222" aria-hidden="true" tabindex="-1"></a>**Annual comparison of sales distributions**</span>
-<span id="cb12-223"><a href="#cb12-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-224"><a href="#cb12-224" aria-hidden="true" tabindex="-1"></a>Using the 2010–2020 data selected when loading, compare density curves for sales in yen, colored by year.</span>
-<span id="cb12-225"><a href="#cb12-225" aria-hidden="true" tabindex="-1"></a>Impose no additional age restrictions and use the shared function&#39;s logarithmic axes and display ranges.</span>
-<span id="cb12-226"><a href="#cb12-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-229"><a href="#cb12-229" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-230"><a href="#cb12-230" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-231"><a href="#cb12-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-232"><a href="#cb12-232" aria-hidden="true" tabindex="-1"></a><span class="co"># The 2010–2020 restriction was already applied when loading the data.</span></span>
-<span id="cb12-233"><a href="#cb12-233" aria-hidden="true" tabindex="-1"></a>sample_size_yen_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-234"><a href="#cb12-234" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;year&quot;</span>) <span class="sc">+</span></span>
-<span id="cb12-235"><a href="#cb12-235" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb12-236"><a href="#cb12-236" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb12-237"><a href="#cb12-237" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
-<span id="cb12-238"><a href="#cb12-238" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb12-239"><a href="#cb12-239" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Year&quot;</span>)</span>
-<span id="cb12-240"><a href="#cb12-240" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_agg_diff_year.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-241"><a href="#cb12-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-242"><a href="#cb12-242" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-243"><a href="#cb12-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-244"><a href="#cb12-244" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Comparing log sales with a normal distribution: Q-Q plots</span></span>
+<span id="cb12-197"><a href="#cb12-197" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-198"><a href="#cb12-198" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-199"><a href="#cb12-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-200"><a href="#cb12-200" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-201"><a href="#cb12-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">5</span>, age <span class="sc">&lt;=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-202"><a href="#cb12-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_class&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-203"><a href="#cb12-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>, <span class="at">labels =</span> age_class_labels) <span class="sc">+</span></span>
+<span id="cb12-204"><a href="#cb12-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
+<span id="cb12-205"><a href="#cb12-205" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_young.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-206"><a href="#cb12-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-207"><a href="#cb12-207" aria-hidden="true" tabindex="-1"></a>size_20_yen_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-208"><a href="#cb12-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-209"><a href="#cb12-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;age_class&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-210"><a href="#cb12-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">&quot;C&quot;</span>, <span class="at">labels =</span> age_class_labels) <span class="sc">+</span></span>
+<span id="cb12-211"><a href="#cb12-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span>)</span>
+<span id="cb12-212"><a href="#cb12-212" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_old.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-213"><a href="#cb12-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-214"><a href="#cb12-214" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-215"><a href="#cb12-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-216"><a href="#cb12-216" aria-hidden="true" tabindex="-1"></a>**Annual comparison of sales distributions**</span>
+<span id="cb12-217"><a href="#cb12-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-218"><a href="#cb12-218" aria-hidden="true" tabindex="-1"></a>Using the 2010–2020 data selected when loading, compare density curves for sales in yen, colored by year.</span>
+<span id="cb12-219"><a href="#cb12-219" aria-hidden="true" tabindex="-1"></a>Impose no additional age restrictions and use the shared function&#39;s logarithmic axes and display ranges.</span>
+<span id="cb12-220"><a href="#cb12-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-223"><a href="#cb12-223" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-224"><a href="#cb12-224" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-225"><a href="#cb12-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-226"><a href="#cb12-226" aria-hidden="true" tabindex="-1"></a><span class="co"># The 2010–2020 restriction was already applied when loading the data.</span></span>
+<span id="cb12-227"><a href="#cb12-227" aria-hidden="true" tabindex="-1"></a>sample_size_yen_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-228"><a href="#cb12-228" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_size_density</span>(<span class="st">&quot;year&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-229"><a href="#cb12-229" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb12-230"><a href="#cb12-230" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb12-231"><a href="#cb12-231" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
+<span id="cb12-232"><a href="#cb12-232" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-233"><a href="#cb12-233" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&quot;Year&quot;</span>)</span>
+<span id="cb12-234"><a href="#cb12-234" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_df_agg_diff_year.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-235"><a href="#cb12-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-236"><a href="#cb12-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-237"><a href="#cb12-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-238"><a href="#cb12-238" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Comparing log sales with a normal distribution: Q-Q plots</span></span>
+<span id="cb12-239"><a href="#cb12-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-240"><a href="#cb12-240" aria-hidden="true" tabindex="-1"></a>Select age classes <span class="in">`age_10`</span>, <span class="in">`age_20`</span>, …, <span class="in">`age_90`</span> from the 2020 data.</span>
+<span id="cb12-241"><a href="#cb12-241" aria-hidden="true" tabindex="-1"></a>For each class, take the natural logarithm of the original sales measured in thousands of yen, subtract the median of these log sales, and divide by their MAD (median absolute deviation).</span>
+<span id="cb12-242"><a href="#cb12-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-243"><a href="#cb12-243" aria-hidden="true" tabindex="-1"></a>Use Q-Q plots to compare sample quantiles of standardized log sales with theoretical quantiles of the standard normal distribution.</span>
+<span id="cb12-244"><a href="#cb12-244" aria-hidden="true" tabindex="-1"></a>Add a reference line with intercept zero and slope one.</span>
 <span id="cb12-245"><a href="#cb12-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-246"><a href="#cb12-246" aria-hidden="true" tabindex="-1"></a>Select age classes <span class="in">`age_10`</span>, <span class="in">`age_20`</span>, …, <span class="in">`age_90`</span> from the 2020 data.</span>
-<span id="cb12-247"><a href="#cb12-247" aria-hidden="true" tabindex="-1"></a>For each class, take the natural logarithm of original sales in thousands of yen, subtract its median, and divide by the MAD (median absolute deviation).</span>
-<span id="cb12-248"><a href="#cb12-248" aria-hidden="true" tabindex="-1"></a>Do not use the mean and standard deviation for this standardization.</span>
-<span id="cb12-249"><a href="#cb12-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-250"><a href="#cb12-250" aria-hidden="true" tabindex="-1"></a>Use Q-Q plots to compare sample quantiles of standardized log sales with theoretical quantiles of the standard normal distribution.</span>
-<span id="cb12-251"><a href="#cb12-251" aria-hidden="true" tabindex="-1"></a>Add a reference line with intercept zero and slope one.</span>
-<span id="cb12-252"><a href="#cb12-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-255"><a href="#cb12-255" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-256"><a href="#cb12-256" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-257"><a href="#cb12-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-258"><a href="#cb12-258" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="sc">|&gt;</span> </span>
-<span id="cb12-259"><a href="#cb12-259" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">%in%</span> <span class="fu">str_c</span>(<span class="st">&quot;age_&quot;</span>, <span class="fu">str_pad</span>(<span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">90</span>, <span class="dv">10</span>), <span class="at">width =</span> <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>)), </span>
-<span id="cb12-260"><a href="#cb12-260" aria-hidden="true" tabindex="-1"></a>         sale <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-261"><a href="#cb12-261" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age_class) <span class="sc">|&gt;</span> </span>
-<span id="cb12-262"><a href="#cb12-262" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_sale =</span> <span class="fu">log</span>(sale), </span>
-<span id="cb12-263"><a href="#cb12-263" aria-hidden="true" tabindex="-1"></a>         <span class="at">log_sale_normalized =</span> (log_sale <span class="sc">-</span> <span class="fu">median</span>(log_sale))<span class="sc">/</span><span class="fu">mad</span>(log_sale) ) <span class="sc">|&gt;</span> </span>
-<span id="cb12-264"><a href="#cb12-264" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">sample =</span> log_sale_normalized, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
-<span id="cb12-265"><a href="#cb12-265" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>(<span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> <span class="co">#stat_qq_line() + </span></span>
-<span id="cb12-266"><a href="#cb12-266" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb12-267"><a href="#cb12-267" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb12-268"><a href="#cb12-268" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels) <span class="sc">+</span> </span>
-<span id="cb12-269"><a href="#cb12-269" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color=</span><span class="st">&quot;black&quot;</span>) <span class="sc">+</span> </span>
-<span id="cb12-270"><a href="#cb12-270" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb12-271"><a href="#cb12-271" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Theoretical Quantiles&quot;</span>,</span>
-<span id="cb12-272"><a href="#cb12-272" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Normalized log(Sales)&quot;</span>,</span>
-<span id="cb12-273"><a href="#cb12-273" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span></span>
-<span id="cb12-274"><a href="#cb12-274" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb12-275"><a href="#cb12-275" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
-<span id="cb12-276"><a href="#cb12-276" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_qqplot_by_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
-<span id="cb12-277"><a href="#cb12-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-278"><a href="#cb12-278" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-248"><a href="#cb12-248" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-249"><a href="#cb12-249" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-250"><a href="#cb12-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-251"><a href="#cb12-251" aria-hidden="true" tabindex="-1"></a>size_20_tb <span class="sc">|&gt;</span> </span>
+<span id="cb12-252"><a href="#cb12-252" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">%in%</span> <span class="fu">str_c</span>(<span class="st">&quot;age_&quot;</span>, <span class="fu">str_pad</span>(<span class="fu">seq</span>(<span class="dv">10</span>, <span class="dv">90</span>, <span class="dv">10</span>), <span class="at">width =</span> <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">&quot;0&quot;</span>)), </span>
+<span id="cb12-253"><a href="#cb12-253" aria-hidden="true" tabindex="-1"></a>         sale <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb12-254"><a href="#cb12-254" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age_class) <span class="sc">|&gt;</span> </span>
+<span id="cb12-255"><a href="#cb12-255" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_sale =</span> <span class="fu">log</span>(sale), </span>
+<span id="cb12-256"><a href="#cb12-256" aria-hidden="true" tabindex="-1"></a>         <span class="at">log_sale_normalized =</span> (log_sale <span class="sc">-</span> <span class="fu">median</span>(log_sale))<span class="sc">/</span><span class="fu">mad</span>(log_sale) ) <span class="sc">|&gt;</span> </span>
+<span id="cb12-257"><a href="#cb12-257" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">sample =</span> log_sale_normalized, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
+<span id="cb12-258"><a href="#cb12-258" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>(<span class="at">size =</span> <span class="fl">0.7</span>) <span class="sc">+</span> <span class="co">#stat_qq_line() + </span></span>
+<span id="cb12-259"><a href="#cb12-259" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb12-260"><a href="#cb12-260" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb12-261"><a href="#cb12-261" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels) <span class="sc">+</span> </span>
+<span id="cb12-262"><a href="#cb12-262" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color=</span><span class="st">&quot;black&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb12-263"><a href="#cb12-263" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb12-264"><a href="#cb12-264" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Theoretical Quantiles&quot;</span>,</span>
+<span id="cb12-265"><a href="#cb12-265" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Normalized log(Sales)&quot;</span>,</span>
+<span id="cb12-266"><a href="#cb12-266" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span></span>
+<span id="cb12-267"><a href="#cb12-267" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-268"><a href="#cb12-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
+<span id="cb12-269"><a href="#cb12-269" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;size_qqplot_by_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-270"><a href="#cb12-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-271"><a href="#cb12-271" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-272"><a href="#cb12-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-273"><a href="#cb12-273" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Age composition by sales threshold</span></span>
+<span id="cb12-274"><a href="#cb12-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-275"><a href="#cb12-275" aria-hidden="true" tabindex="-1"></a>For firms aged 50 or younger in 2020, examine the age composition of firms whose sales exceed a threshold.</span>
+<span id="cb12-276"><a href="#cb12-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-277"><a href="#cb12-277" aria-hidden="true" tabindex="-1"></a>Set sales thresholds in yen to $10^9, 10^{9.2}, \ldots, 10^{14}$, giving 26 points spaced by 0.2 in base-10 logarithms.</span>
+<span id="cb12-278"><a href="#cb12-278" aria-hidden="true" tabindex="-1"></a>For each threshold, select observations strictly above that value and calculate composition shares <span class="in">`n_ratio`</span>, using the total count as the denominator and the count in each age class as the numerator.</span>
 <span id="cb12-279"><a href="#cb12-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-280"><a href="#cb12-280" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Age composition by sales threshold</span></span>
-<span id="cb12-281"><a href="#cb12-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-282"><a href="#cb12-282" aria-hidden="true" tabindex="-1"></a>For firms aged 50 or younger in 2020, examine the age composition of firms whose sales exceed a threshold.</span>
-<span id="cb12-283"><a href="#cb12-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-284"><a href="#cb12-284" aria-hidden="true" tabindex="-1"></a>Set sales thresholds in yen to $10^9, 10^{9.2}, \ldots, 10^{14}$, giving 26 points spaced by 0.2 in base-10 logarithms.</span>
-<span id="cb12-285"><a href="#cb12-285" aria-hidden="true" tabindex="-1"></a>For each threshold, select observations with <span class="in">`sale_yen`</span> strictly above that value and calculate composition shares <span class="in">`n_ratio`</span>, using the total count <span class="in">`n_total`</span> as the denominator and the count in each age class as the numerator.</span>
-<span id="cb12-286"><a href="#cb12-286" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-289"><a href="#cb12-289" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-290"><a href="#cb12-290" aria-hidden="true" tabindex="-1"></a>x_val <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span><span class="fu">seq</span>(<span class="fl">9.0</span>, <span class="dv">14</span>, <span class="fl">0.2</span>)</span>
-<span id="cb12-291"><a href="#cb12-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-292"><a href="#cb12-292" aria-hidden="true" tabindex="-1"></a>compute_frac_tb <span class="ot">&lt;-</span> <span class="cf">function</span>(df, thresholds) {</span>
-<span id="cb12-293"><a href="#cb12-293" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(thresholds, <span class="cf">function</span>(threshold) {</span>
-<span id="cb12-294"><a href="#cb12-294" aria-hidden="true" tabindex="-1"></a>    sub_tb <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">filter</span>(sale_yen <span class="sc">&gt;</span> threshold)</span>
-<span id="cb12-295"><a href="#cb12-295" aria-hidden="true" tabindex="-1"></a>    n_total <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sub_tb)</span>
-<span id="cb12-296"><a href="#cb12-296" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (n_total <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb12-282"><a href="#cb12-282" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-283"><a href="#cb12-283" aria-hidden="true" tabindex="-1"></a>x_val <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span><span class="fu">seq</span>(<span class="fl">9.0</span>, <span class="dv">14</span>, <span class="fl">0.2</span>)</span>
+<span id="cb12-284"><a href="#cb12-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-285"><a href="#cb12-285" aria-hidden="true" tabindex="-1"></a>compute_frac_tb <span class="ot">&lt;-</span> <span class="cf">function</span>(df, thresholds) {</span>
+<span id="cb12-286"><a href="#cb12-286" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(thresholds, <span class="cf">function</span>(threshold) {</span>
+<span id="cb12-287"><a href="#cb12-287" aria-hidden="true" tabindex="-1"></a>    sub_tb <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">filter</span>(sale_yen <span class="sc">&gt;</span> threshold)</span>
+<span id="cb12-288"><a href="#cb12-288" aria-hidden="true" tabindex="-1"></a>    n_total <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sub_tb)</span>
+<span id="cb12-289"><a href="#cb12-289" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (n_total <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb12-290"><a href="#cb12-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-291"><a href="#cb12-291" aria-hidden="true" tabindex="-1"></a>    sub_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-292"><a href="#cb12-292" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(age_class) <span class="sc">|&gt;</span></span>
+<span id="cb12-293"><a href="#cb12-293" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarise</span>(<span class="at">n_ratio =</span> <span class="fu">n</span>() <span class="sc">/</span> n_total, <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-294"><a href="#cb12-294" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">criteria =</span> threshold, <span class="at">n_total =</span> n_total)</span>
+<span id="cb12-295"><a href="#cb12-295" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb12-296"><a href="#cb12-296" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb12-297"><a href="#cb12-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-298"><a href="#cb12-298" aria-hidden="true" tabindex="-1"></a>    sub_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-299"><a href="#cb12-299" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(age_class) <span class="sc">|&gt;</span></span>
-<span id="cb12-300"><a href="#cb12-300" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarise</span>(<span class="at">n_ratio =</span> <span class="fu">n</span>() <span class="sc">/</span> n_total, <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-301"><a href="#cb12-301" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">criteria =</span> threshold, <span class="at">n_total =</span> n_total)</span>
-<span id="cb12-302"><a href="#cb12-302" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb12-303"><a href="#cb12-303" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-298"><a href="#cb12-298" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the age restriction first. Exclude age_other when plotting.</span></span>
+<span id="cb12-299"><a href="#cb12-299" aria-hidden="true" tabindex="-1"></a>frac2_tb <span class="ot">&lt;-</span> size_20_yen_tb <span class="sc">|&gt;</span></span>
+<span id="cb12-300"><a href="#cb12-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&lt;=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-301"><a href="#cb12-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">compute_frac_tb</span>(<span class="at">thresholds =</span> x_val)</span>
+<span id="cb12-302"><a href="#cb12-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-303"><a href="#cb12-303" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb12-304"><a href="#cb12-304" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-305"><a href="#cb12-305" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the age restriction first. Exclude age_other when plotting.</span></span>
-<span id="cb12-306"><a href="#cb12-306" aria-hidden="true" tabindex="-1"></a>frac2_tb <span class="ot">&lt;-</span> size_20_yen_tb <span class="sc">|&gt;</span></span>
-<span id="cb12-307"><a href="#cb12-307" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age <span class="sc">&lt;=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-308"><a href="#cb12-308" aria-hidden="true" tabindex="-1"></a>  <span class="fu">compute_frac_tb</span>(<span class="at">thresholds =</span> x_val)</span>
-<span id="cb12-309"><a href="#cb12-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-310"><a href="#cb12-310" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-311"><a href="#cb12-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-312"><a href="#cb12-312" aria-hidden="true" tabindex="-1"></a>For thresholds with more than 200 qualifying firms, plot age-class shares using points and lines.</span>
-<span id="cb12-313"><a href="#cb12-313" aria-hidden="true" tabindex="-1"></a>Firms with unknown ages do not satisfy <span class="in">`age &lt;= 50`</span> and are therefore excluded from the calculations.</span>
-<span id="cb12-314"><a href="#cb12-314" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-317"><a href="#cb12-317" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-318"><a href="#cb12-318" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb12-319"><a href="#cb12-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-320"><a href="#cb12-320" aria-hidden="true" tabindex="-1"></a>frac_tb_plot_f <span class="ot">&lt;-</span> \(x){x <span class="sc">|&gt;</span> </span>
-<span id="cb12-321"><a href="#cb12-321" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(criteria, n_ratio, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
-<span id="cb12-322"><a href="#cb12-322" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb12-323"><a href="#cb12-323" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
-<span id="cb12-324"><a href="#cb12-324" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb12-325"><a href="#cb12-325" aria-hidden="true" tabindex="-1"></a>      <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb12-326"><a href="#cb12-326" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> age_class_labels) <span class="sc">+</span> </span>
-<span id="cb12-327"><a href="#cb12-327" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
-<span id="cb12-328"><a href="#cb12-328" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
-<span id="cb12-329"><a href="#cb12-329" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Sales (log scale)&quot;</span>,</span>
-<span id="cb12-330"><a href="#cb12-330" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Proportion&quot;</span>,</span>
-<span id="cb12-331"><a href="#cb12-331" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span></span>
-<span id="cb12-332"><a href="#cb12-332" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb12-333"><a href="#cb12-333" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
-<span id="cb12-334"><a href="#cb12-334" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-335"><a href="#cb12-335" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-336"><a href="#cb12-336" aria-hidden="true" tabindex="-1"></a>frac2_tb <span class="sc">|&gt;</span> </span>
-<span id="cb12-337"><a href="#cb12-337" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_total <span class="sc">&gt;</span> <span class="dv">200</span>, </span>
-<span id="cb12-338"><a href="#cb12-338" aria-hidden="true" tabindex="-1"></a>         age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-339"><a href="#cb12-339" aria-hidden="true" tabindex="-1"></a>  <span class="fu">frac_tb_plot_f</span>() <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">25</span>))</span>
-<span id="cb12-340"><a href="#cb12-340" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;frac2_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-305"><a href="#cb12-305" aria-hidden="true" tabindex="-1"></a>For thresholds with more than 200 qualifying firms, plot age-class shares using points and lines.</span>
+<span id="cb12-306"><a href="#cb12-306" aria-hidden="true" tabindex="-1"></a>Firms with unknown ages do not satisfy <span class="in">`age &lt;= 50`</span> and are therefore excluded from the calculations.</span>
+<span id="cb12-307"><a href="#cb12-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-310"><a href="#cb12-310" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-311"><a href="#cb12-311" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb12-312"><a href="#cb12-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-313"><a href="#cb12-313" aria-hidden="true" tabindex="-1"></a>frac_tb_plot_f <span class="ot">&lt;-</span> \(x){x <span class="sc">|&gt;</span> </span>
+<span id="cb12-314"><a href="#cb12-314" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(criteria, n_ratio, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
+<span id="cb12-315"><a href="#cb12-315" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb12-316"><a href="#cb12-316" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb12-317"><a href="#cb12-317" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb12-318"><a href="#cb12-318" aria-hidden="true" tabindex="-1"></a>      <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb12-319"><a href="#cb12-319" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> age_class_labels) <span class="sc">+</span> </span>
+<span id="cb12-320"><a href="#cb12-320" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
+<span id="cb12-321"><a href="#cb12-321" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb12-322"><a href="#cb12-322" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Sales (log scale)&quot;</span>,</span>
+<span id="cb12-323"><a href="#cb12-323" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Proportion&quot;</span>,</span>
+<span id="cb12-324"><a href="#cb12-324" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;Age Group&quot;</span></span>
+<span id="cb12-325"><a href="#cb12-325" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb12-326"><a href="#cb12-326" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
+<span id="cb12-327"><a href="#cb12-327" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-328"><a href="#cb12-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-329"><a href="#cb12-329" aria-hidden="true" tabindex="-1"></a>frac2_tb <span class="sc">|&gt;</span> </span>
+<span id="cb12-330"><a href="#cb12-330" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_total <span class="sc">&gt;</span> <span class="dv">200</span>, </span>
+<span id="cb12-331"><a href="#cb12-331" aria-hidden="true" tabindex="-1"></a>         age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb12-332"><a href="#cb12-332" aria-hidden="true" tabindex="-1"></a>  <span class="fu">frac_tb_plot_f</span>() <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">25</span>))</span>
+<span id="cb12-333"><a href="#cb12-333" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;frac2_age.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb12-334"><a href="#cb12-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-335"><a href="#cb12-335" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-336"><a href="#cb12-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-337"><a href="#cb12-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-338"><a href="#cb12-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-339"><a href="#cb12-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-340"><a href="#cb12-340" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-341"><a href="#cb12-341" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-342"><a href="#cb12-342" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-342"><a href="#cb12-342" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-343"><a href="#cb12-343" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-344"><a href="#cb12-344" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-345"><a href="#cb12-345" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-346"><a href="#cb12-346" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-347"><a href="#cb12-347" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-348"><a href="#cb12-348" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-349"><a href="#cb12-349" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-350"><a href="#cb12-350" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-351"><a href="#cb12-351" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-352"><a href="#cb12-352" aria-hidden="true" tabindex="-1"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

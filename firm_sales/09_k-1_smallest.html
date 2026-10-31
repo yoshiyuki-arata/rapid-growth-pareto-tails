@@ -3652,7 +3652,7 @@ font-weight: bold;
 </header>
 
 
-<p>Use <code>sample_growth_tb</code> to compare distributions of minimum annual growth rates between firms with high growth over 2010–2020 (HGF) and all others (non-HGF). Use ten-year growth to classify high growth, and annual growth rates to calculate the minimum. The groups use different numbers of periods to calculate the minimum: nine for non-HGF and ten for HGF.</p>
+<p>Use <code>sample_growth_tb</code> to compare distributions of minimum annual growth rates between firms with high growth over 2010–2020 (HGF) and all others (non-HGF). Use ten-year growth to identify high-growth firms.</p>
 <section id="data-preparation" class="level2">
 <h2 class="anchored" data-anchor-id="data-preparation">0 Data preparation</h2>
 <div class="cell">
@@ -3709,9 +3709,9 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 </div>
 </div>
 </div>
-<p><strong>Creating the minimum-growth table <code>compare_smallest_tb</code></strong></p>
+<p><strong>Creating <code>compare_smallest_tb</code> to store minimum growth rates</strong></p>
 <p>Classify firms whose <code>g_20_10</code> is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator <code>hg</code>.</p>
-<p>The shared function <code>add_smallest()</code> converts the specified growth columns to a matrix, calculates each firm’s minimum using <code>rowOrderStats(..., which = 1)</code>, and stores it in <code>smallest_1st</code>. Use the following periods for each group.</p>
+<p>The function <code>add_smallest()</code> converts the specified growth columns to a matrix, calculates each firm’s minimum using <code>rowOrderStats(..., which = 1)</code>, and stores it in <code>smallest_1st</code>. Use the following periods for each group.</p>
 <ul>
 <li>non-HGF: nine periods from 2010–11 through 2018–19 (<code>g_19_18:g_11_10</code>)</li>
 <li>HGF: ten periods from 2010–11 through 2019–20 (<code>g_20_19:g_11_10</code>)</li>
@@ -3739,7 +3739,7 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Visual comparison of distributions</strong></p>
-<p>Compare densities of minimum growth <code>smallest_1st</code> between HGF and non-HGF. Estimate densities using each group’s values without additional restrictions on the absolute value of minimum growth. Restrict only the displayed horizontal range to −1.5–1.5.</p>
+<p>Compare densities of minimum growth <code>smallest_1st</code> between HGF and non-HGF. Restrict only the displayed horizontal range to −1.5–1.5.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span> </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(smallest_1st, <span class="at">color =</span> hg)) <span class="sc">+</span> </span>
@@ -3758,8 +3758,6 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 </div>
 </div>
 </div>
-<p><strong>Comparison of summary statistics</strong></p>
-<p>For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of firms <code>n_obs</code>.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hg) <span class="sc">|&gt;</span> </span>
@@ -4251,146 +4249,142 @@ With sales measured in thousands of yen, this corresponds to at least 40 million
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`sample_growth_tb`</span> to compare distributions of minimum annual growth rates between firms with high growth over 2010–2020 (HGF) and all others (non-HGF).</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>Use ten-year growth to classify high growth, and annual growth rates to calculate the minimum.</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>The groups use different numbers of periods to calculate the minimum: nine for non-HGF and ten for HGF.</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0 Data preparation</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and extract ten annual growth rates from 2010–11 through 2019–20 and growth over 2010–2020 (<span class="in">`g_20_10`</span>).</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>Select firms meeting the following conditions.</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales in 2010 of at least $4.0\times10^4$  </span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Establishment year of 2005 or earlier</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  This corresponds to firm age of at least five, measured as 2010 minus the establishment year.</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of the reference-period industry code are 01–61 or 68–92</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>Do not impose additional restrictions based on sales, age, or industry in other periods.</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(matrixStats)</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>, <span class="st">&quot;g_19_18&quot;</span>, <span class="st">&quot;g_18_17&quot;</span>, <span class="st">&quot;g_17_16&quot;</span>, <span class="st">&quot;g_16_15&quot;</span>, </span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_15_14&quot;</span>, <span class="st">&quot;g_14_13&quot;</span>, <span class="st">&quot;g_13_12&quot;</span>, <span class="st">&quot;g_12_11&quot;</span>, <span class="st">&quot;g_11_10&quot;</span>, </span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_20_10&quot;</span>))</span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>growth_wide_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> year, <span class="at">values_from =</span> growth) <span class="sc">|&gt;</span> </span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_growth_tb <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;g_11_10&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(id, pre_sale, birth_year, ind_class), <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span>{<span class="dv">4</span>}, </span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>         birth_year <span class="sc">&lt;=</span> <span class="dv">2005</span>,</span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>pre_sale, <span class="sc">-</span>birth_year, <span class="sc">-</span>ind_class)</span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Comparing minimum growth rates</span></span>
-<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>**Checking upper percentiles**</span>
-<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>Using <span class="in">`growth_wide_tb`</span> after sample selection and removal of missing values, inspect the 90th, 95th, 97th, and 99th percentiles of ten-year growth <span class="in">`g_20_10`</span>.</span>
-<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>Use the 97th percentile of this full sample for the subsequent high-growth classification.</span>
-<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>growth_wide_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">q_90 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.90</span>, <span class="at">na.rm =</span> T),</span>
-<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_95 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.95</span>, <span class="at">na.rm =</span> T), </span>
-<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_97 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.97</span>, <span class="at">na.rm =</span> T),</span>
-<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_99 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.99</span>, <span class="at">na.rm =</span> T))</span>
-<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a>**Creating the minimum-growth table `compare_smallest_tb`**</span>
-<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a>Classify firms whose <span class="in">`g_20_10`</span> is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator <span class="in">`hg`</span>.</span>
-<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a>The shared function <span class="in">`add_smallest()`</span> converts the specified growth columns to a matrix, calculates each firm&#39;s minimum using <span class="in">`rowOrderStats(..., which = 1)`</span>, and stores it in <span class="in">`smallest_1st`</span>.</span>
-<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a>Use the following periods for each group.</span>
-<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>non-HGF: nine periods from 2010–11 through 2018–19 (<span class="in">`g_19_18:g_11_10`</span>)</span>
-<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>HGF: ten periods from 2010–11 through 2019–20 (<span class="in">`g_20_19:g_11_10`</span>)</span>
-<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>temp_tb <span class="ot">&lt;-</span> growth_wide_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hg =</span> <span class="fu">if_else</span>(g_20_10 <span class="sc">&gt;</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.97</span>, <span class="at">na.rm =</span> T), <span class="st">&quot;HGF&quot;</span>, <span class="st">&quot;non-HGF&quot;</span>))  </span>
-<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>add_smallest <span class="ot">&lt;-</span> <span class="cf">function</span>(df, growth_cols) {</span>
-<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>  growth_matrix <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
-<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">all_of</span>(growth_cols)) <span class="sc">|&gt;</span></span>
-<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.matrix</span>()</span>
-<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">smallest_1st =</span> <span class="fu">rowOrderStats</span>(growth_matrix, <span class="at">which =</span> <span class="dv">1</span>))</span>
-<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="ot">&lt;-</span> </span>
-<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
-<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>    temp_tb <span class="sc">|&gt;</span> </span>
-<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(hg <span class="sc">==</span> <span class="st">&quot;non-HGF&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add_smallest</span>(<span class="fu">names</span>(<span class="fu">select</span>(temp_tb, g_19_18<span class="sc">:</span>g_11_10))),</span>
-<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>    temp_tb <span class="sc">|&gt;</span> </span>
-<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(hg <span class="sc">==</span> <span class="st">&quot;HGF&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add_smallest</span>(<span class="fu">names</span>(<span class="fu">select</span>(temp_tb, g_20_19<span class="sc">:</span>g_11_10)))</span>
-<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a>**Visual comparison of distributions**</span>
-<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>Compare densities of minimum growth <span class="in">`smallest_1st`</span> between HGF and non-HGF.</span>
-<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a>Estimate densities using each group&#39;s values without additional restrictions on the absolute value of minimum growth.</span>
-<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a>Restrict only the displayed horizontal range to −1.5–1.5.</span>
-<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span> </span>
-<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(smallest_1st, <span class="at">color =</span> hg)) <span class="sc">+</span> </span>
-<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.5</span>,<span class="fl">1.5</span>)) <span class="sc">+</span> </span>
-<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Smallest Growth Rate&quot;</span>,</span>
-<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>, </span>
-<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Group&quot;</span></span>
-<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
-<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;compare_smallest_growth.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>Use ten-year growth to identify high-growth firms.</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0 Data preparation</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pins)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_ipsum</span>(<span class="at">base_size =</span> <span class="dv">12</span>, <span class="at">axis_title_size =</span> <span class="dv">13</span>))</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_growth_tb`</span> and extract ten annual growth rates from 2010–11 through 2019–20 and growth over 2010–2020 (<span class="in">`g_20_10`</span>).</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>Select firms meeting the following conditions.</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales in 2010 of at least $4.0\times10^4$  </span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>  With sales measured in thousands of yen, this corresponds to at least 40 million yen.</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Establishment year of 2005 or earlier</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  This corresponds to firm age of at least five, measured as 2010 minus the establishment year.</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The first two digits of the reference-period industry code are 01–61 or 68–92</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>Do not impose additional restrictions based on sales, age, or industry in other periods.</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(matrixStats)</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>sample_growth_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_growth_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;g_20_19&quot;</span>, <span class="st">&quot;g_19_18&quot;</span>, <span class="st">&quot;g_18_17&quot;</span>, <span class="st">&quot;g_17_16&quot;</span>, <span class="st">&quot;g_16_15&quot;</span>, </span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_15_14&quot;</span>, <span class="st">&quot;g_14_13&quot;</span>, <span class="st">&quot;g_13_12&quot;</span>, <span class="st">&quot;g_12_11&quot;</span>, <span class="st">&quot;g_11_10&quot;</span>, </span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;g_20_10&quot;</span>))</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>growth_wide_tb <span class="ot">&lt;-</span> sample_growth_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> id, <span class="at">names_from =</span> year, <span class="at">values_from =</span> growth) <span class="sc">|&gt;</span> </span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_growth_tb <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">==</span> <span class="st">&quot;g_11_10&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(id, pre_sale, birth_year, ind_class), <span class="at">by =</span> <span class="st">&quot;id&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pre_sale <span class="sc">&gt;=</span> <span class="fl">4.0</span><span class="sc">*</span><span class="dv">10</span><span class="sc">^</span>{<span class="dv">4</span>}, </span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>         birth_year <span class="sc">&lt;=</span> <span class="dv">2005</span>,</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_sub</span>(ind_class, <span class="dv">1</span>,<span class="dv">2</span>) <span class="sc">%in%</span> <span class="fu">str_pad</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">61</span>, <span class="dv">68</span><span class="sc">:</span><span class="dv">92</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>pre_sale, <span class="sc">-</span>birth_year, <span class="sc">-</span>ind_class)</span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Comparing minimum growth rates</span></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>**Checking upper percentiles**</span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>Using <span class="in">`growth_wide_tb`</span> after sample selection and removal of missing values, inspect the 90th, 95th, 97th, and 99th percentiles of ten-year growth <span class="in">`g_20_10`</span>.</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>Use the 97th percentile of this full sample for the subsequent high-growth classification.</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>growth_wide_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">q_90 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.90</span>, <span class="at">na.rm =</span> T),</span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_95 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.95</span>, <span class="at">na.rm =</span> T), </span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_97 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.97</span>, <span class="at">na.rm =</span> T),</span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>            <span class="at">q_99 =</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.99</span>, <span class="at">na.rm =</span> T))</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>**Creating `compare_smallest_tb` to store minimum growth rates**</span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a>Classify firms whose <span class="in">`g_20_10`</span> is strictly above the 97th percentile as HGF and all others as non-HGF, adding the indicator <span class="in">`hg`</span>.</span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>The function <span class="in">`add_smallest()`</span> converts the specified growth columns to a matrix, calculates each firm&#39;s minimum using <span class="in">`rowOrderStats(..., which = 1)`</span>, and stores it in <span class="in">`smallest_1st`</span>.</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a>Use the following periods for each group.</span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>non-HGF: nine periods from 2010–11 through 2018–19 (<span class="in">`g_19_18:g_11_10`</span>)</span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>HGF: ten periods from 2010–11 through 2019–20 (<span class="in">`g_20_19:g_11_10`</span>)</span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>temp_tb <span class="ot">&lt;-</span> growth_wide_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hg =</span> <span class="fu">if_else</span>(g_20_10 <span class="sc">&gt;</span> <span class="fu">quantile</span>(g_20_10, <span class="fl">0.97</span>, <span class="at">na.rm =</span> T), <span class="st">&quot;HGF&quot;</span>, <span class="st">&quot;non-HGF&quot;</span>))  </span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a>add_smallest <span class="ot">&lt;-</span> <span class="cf">function</span>(df, growth_cols) {</span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>  growth_matrix <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">all_of</span>(growth_cols)) <span class="sc">|&gt;</span></span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.matrix</span>()</span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">smallest_1st =</span> <span class="fu">rowOrderStats</span>(growth_matrix, <span class="at">which =</span> <span class="dv">1</span>))</span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="ot">&lt;-</span> </span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>    temp_tb <span class="sc">|&gt;</span> </span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(hg <span class="sc">==</span> <span class="st">&quot;non-HGF&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add_smallest</span>(<span class="fu">names</span>(<span class="fu">select</span>(temp_tb, g_19_18<span class="sc">:</span>g_11_10))),</span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>    temp_tb <span class="sc">|&gt;</span> </span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(hg <span class="sc">==</span> <span class="st">&quot;HGF&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add_smallest</span>(<span class="fu">names</span>(<span class="fu">select</span>(temp_tb, g_20_19<span class="sc">:</span>g_11_10)))</span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>**Visual comparison of distributions**</span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a>Compare densities of minimum growth <span class="in">`smallest_1st`</span> between HGF and non-HGF.</span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>Restrict only the displayed horizontal range to −1.5–1.5.</span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span> </span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(smallest_1st, <span class="at">color =</span> hg)) <span class="sc">+</span> </span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.5</span>,<span class="fl">1.5</span>)) <span class="sc">+</span> </span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Smallest Growth Rate&quot;</span>,</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>, </span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Group&quot;</span></span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>))</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;compare_smallest_growth.png&quot;</span>, <span class="at">path =</span> <span class="st">&quot;graph&quot;</span>)</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>**Comparison of summary statistics**</span>
-<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>For HGF and non-HGF separately, calculate the median and mean of minimum growth and the number of firms <span class="in">`n_obs`</span>.</span>
-<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hg) <span class="sc">|&gt;</span> </span>
-<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">median</span>(smallest_1st), <span class="fu">mean</span>(smallest_1st), <span class="at">n_obs =</span> <span class="fu">n</span>())</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>compare_smallest_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hg) <span class="sc">|&gt;</span> </span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">median</span>(smallest_1st), <span class="fu">mean</span>(smallest_1st), <span class="at">n_obs =</span> <span class="fu">n</span>())</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

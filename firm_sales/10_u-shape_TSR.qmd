@@ -20,7 +20,7 @@ editor: source
 
 
 Use `sample_growth_tb` to examine the ratio of log growth in the first year to log growth over the full two years for firms whose 2010–2012 log growth exceeds a threshold.
-Examine whether the ratio exhibits a U-shape concentrated near zero and one, as predicted by subexponentiality.
+In relation to the predictions of subexponentiality, examine whether the ratio exhibits a U-shape, with concentrations near zero and one.
 
 ## 1 Data preparation and ratio construction
 
@@ -58,7 +58,7 @@ ratio_tb <- sample_growth_tb |>
 
 ## 2 Ratio distributions by threshold
 
-Set 18 threshold values $u$ from 0.1 to 1.8 in increments of 0.1.
+Set threshold values $u$ from 0.1 to 1.8 in increments of 0.1.
 For each threshold, select firms whose two-year growth satisfies $g_{12,10}>u$ and create a histogram after excluding observations with ratios exactly equal to zero or one.
 Restrict the horizontal axis to −0.3–1.3 using `xlim()`.
 

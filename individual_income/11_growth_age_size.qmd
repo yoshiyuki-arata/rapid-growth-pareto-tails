@@ -39,17 +39,15 @@ theme_set(theme_ipsum())
 
 **Sample selection and class construction**
 
-Load growth data and extract the six periods whose labels indicate a beginning year of 2014. Calculate beginning-of-period age as 2014 minus the birth year in the first four characters of `birth_date`.
-Classify beginning-of-period income and age as follows, then extract the period analyzed here, 2014–2015 (`g_15_14`).
+Extract the six periods starting in 2014 from the growth data and calculate beginning-of-period age as 2014 minus the birth year in the first four characters of `birth_date`.
+Classify beginning-of-period income and age as follows, and extract 2014–2015 (`g_15_14`).
 
 * Income: classify positive beginning-of-period income `pre_income` in yen using boundaries $10^5,10^{5.5},\ldots,10^9$  
   Each class excludes its lower bound and includes its upper bound. Assign observations above $10^9$ to `size_9_over` and missing or nonpositive values to `size_other`.
 * Age: classify ages into 0–20, 21–25, subsequent five-year intervals through 76–80, and 81 or older  
   Assign missing or negative values to `age_other`.
 
-Remove rows with missing class labels, but retain `size_other` and `age_other` at this stage.
-Do not impose conditions requiring income of at least 4 million yen, age 25–60, or a particular industry.
-Store the 2014–2015 data in `growth_2014_tb`. Only for `density_tb`, used in density plots, exclude zero growth and growth with an absolute value of at least 3.5.
+Store the 2014–2015 data in `growth_2014_tb`. For the density-plot data `density_tb`, exclude zero growth and growth with an absolute value of at least 3.5.
 
 ```{r}
 
@@ -176,13 +174,13 @@ ggsave(filename = "growth_df_age_income.png", path = graph_dir)
 
 ## 3 Mean excess functions with income and age restrictions
 
-From `growth_2014_tb`, select observations with beginning-of-period income strictly above $10^{6.5}$ yen, outside `size_9_over`, and beginning-of-period age between 26 and 60, inclusive.
+From `growth_2014_tb`, select observations with beginning-of-period income of at least $10^{6.5}$ yen, outside `size_9_over`, and beginning-of-period age between 26 and 60, inclusive.
 Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the following expression.
 
 $$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$
 
-Plot the growth threshold on the horizontal axis and `m_excess` on the vertical axis, using colors to distinguish income classes.
-Include growth rates outside the displayed range in the calculations, restricting only the plotted horizontal range to 0.1–4 and vertical range to 0–1.
+Use colors to distinguish income classes.
+Include growth rates outside the displayed range in the calculations, and display a horizontal range of 0.1–4 and a vertical range of 0–1.
 
 ```{r}
 #| layout-ncol: 2

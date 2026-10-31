@@ -20,9 +20,7 @@ editor: source
 
 
 Use `sample_growth_tb` to estimate tail parameters and extreme quantiles with Girard's method.
-The sample consists of firm growth rates for 2019–20 satisfying beginning-of-period sales, firm age, and industry conditions.
-Assuming $\tau = 0$, estimate $\alpha$ from the Hill estimator and use its reciprocal $\theta$ to estimate extreme quantiles and tail probabilities.
-After checking the shape with a linearity plot, estimate $\tau$ over a grid of candidate values.
+The sample consists of firm growth rates for 2019–20 that meet the conditions on beginning-of-period sales, firm age, and industry.
 
 ## 1 Estimation assuming $\tau = 0$
 
@@ -54,7 +52,7 @@ Let $X_{(1)}, X_{(2)}, \ldots, X_{(n)}$ denote growth `growth` sorted in descend
 $$H(i) = \frac{1}{i}\sum_{j=1}^{i}j\log\left(\frac{X_{(j)}}{X_{(j+1)}}\right) = \frac{1}{i}\sum_{j=1}^{i}\log\left(\frac{X_{(j)}}{X_{(i+1)}}\right).$$
 
 In row $i$, `hill_est` is the mean log excess of the largest $i$ observations above the growth threshold at rank $i+1$.
-Thus, when using growth at rank $k_n$ as the threshold, use `hill_est` from row $k_n-1$, namely $H(k_n-1)$.
+When using growth at rank $k_n$ as the threshold, use `hill_est` from row $k_n-1$, namely $H(k_n-1)$.
 
 ```{r}
 
@@ -100,7 +98,7 @@ mu_f <- function(tau_x, t_x) {
 
 Set the rank threshold to $k_n=\operatorname{round}(0.05n)$.
 With growth at rank $k_n$, $X_{(k_n)}$, as the threshold, estimate $\alpha=\theta^{-1}$ using `hill_est` from row $k_n-1$ and $\mu_0(t)$ at $t=\log(n/k_n)$.
-The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$. Use the threshold rank $k_n$ unchanged in the argument of $\mu_0$ and subsequent quantile estimation.
+The Hill estimator averages the $k_n-1$ observations above the threshold and assumes $k_n\geq2$.
 
 $$\widehat\alpha = \left\{\frac{H(k_n-1)}{\mu_0(\log(n/k_n))}\right\}^{-1}.$$
 
@@ -145,8 +143,8 @@ Calculate the following columns and save the top $k_n$ observations in `est_quan
 
 * `p_n`: rank-based empirical tail probability $i/n$.
 * `tail_growth`: growth relative to the threshold, $X_{(i)}/X_{(k_n)}$.
-* `prob_var`：$\log(1/p_n)/\log(n/k_n)$。
-* `est_quantile`：$\widehat{x}_{p_n}=X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat\theta}$。
+* `prob_var`: $\log(1/p_n)/\log(n/k_n)$.
+* `est_quantile`: $\widehat{x}_{p_n}=X_{(k_n)}\{\log(1/p_n)/\log(n/k_n)\}^{\widehat\theta}$.
 
 Define `est_pn_f()` to calculate tail probabilities using the same threshold and estimated parameters.
 
@@ -224,7 +222,6 @@ tau_est_f <- \(k_n_x){
 **Threshold-specific $\tau$ estimates and 95% bands**
 
 Estimate $\tau$ at each threshold $k_n=10,20,\ldots,6000$.
-This threshold sequence differs from $\operatorname{round}(0.05n)$ used to estimate $\alpha$.
 Calculate the standard error and 95% bands using the following formula.
 
 $$\mathrm{se}(k_n)=\frac{1}{\sqrt{k_n}\{\log\log(n/k_n)-\log\log(n/k'_n)\}}, \qquad \mathrm{CI}(k_n)=\widehat\tau(k_n)\pm1.96\,\mathrm{se}(k_n).$$

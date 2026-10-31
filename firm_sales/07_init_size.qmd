@@ -19,10 +19,9 @@ editor: source
 ---
 
 
-Use `sample_size_tb` to compare log sales distributions and mean excess functions across 2010–2020 for observations at firm age five.
+Use `sample_size_tb` to compare annual log sales distributions and mean excess functions for 2010–2020 among observations at firm age five.
 Corresponding to income at age 25 in the income analysis, sales at firm age five are treated as initial size in the firm analysis.
 Initial size here refers to sales at firm age five rather than sales at establishment.
-The figures by year compare different groups of firms that are five years old in each observation year.
 
 ## 1 Data preparation
 
@@ -62,8 +61,6 @@ As with annual log income distributions in the income analysis, compare log sale
 Display sales in yen from $10^4$ to $10^{12}$ and density from $10^{-3.5}$ to $10^{0.1}$.
 
 The first figure uses 2010 only and estimates density from observations with sales below $10^{13}$ after conversion to yen.
-This upper bound corresponds to sales below $10^{10}$ in the original units of thousands of yen.
-The next figure compares 2010–2020, colored by year.
 
 ```{r}
 #| layout-ncol: 2

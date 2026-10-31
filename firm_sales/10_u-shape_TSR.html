@@ -3652,7 +3652,7 @@ font-weight: bold;
 </header>
 
 
-<p>Use <code>sample_growth_tb</code> to examine the ratio of log growth in the first year to log growth over the full two years for firms whose 2010–2012 log growth exceeds a threshold. Examine whether the ratio exhibits a U-shape concentrated near zero and one, as predicted by subexponentiality.</p>
+<p>Use <code>sample_growth_tb</code> to examine the ratio of log growth in the first year to log growth over the full two years for firms whose 2010–2012 log growth exceeds a threshold. In relation to the predictions of subexponentiality, examine whether the ratio exhibits a U-shape, with concentrations near zero and one.</p>
 <section id="data-preparation-and-ratio-construction" class="level2">
 <h2 class="anchored" data-anchor-id="data-preparation-and-ratio-construction">1 Data preparation and ratio construction</h2>
 <div class="cell">
@@ -3680,7 +3680,7 @@ font-weight: bold;
 </section>
 <section id="ratio-distributions-by-threshold" class="level2">
 <h2 class="anchored" data-anchor-id="ratio-distributions-by-threshold">2 Ratio distributions by threshold</h2>
-<p>Set 18 threshold values <span class="math inline">\(u\)</span> from 0.1 to 1.8 in increments of 0.1. For each threshold, select firms whose two-year growth satisfies <span class="math inline">\(g_{12,10}&gt;u\)</span> and create a histogram after excluding observations with ratios exactly equal to zero or one. Restrict the horizontal axis to −0.3–1.3 using <code>xlim()</code>.</p>
+<p>Set threshold values <span class="math inline">\(u\)</span> from 0.1 to 1.8 in increments of 0.1. For each threshold, select firms whose two-year growth satisfies <span class="math inline">\(g_{12,10}&gt;u\)</span> and create a histogram after excluding observations with ratios exactly equal to zero or one. Restrict the horizontal axis to −0.3–1.3 using <code>xlim()</code>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x_values <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.1</span>, <span class="fl">1.8</span>, <span class="at">by =</span> <span class="fl">0.1</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>plot_tb <span class="ot">&lt;-</span> ratio_tb <span class="sc">|&gt;</span></span>
@@ -4246,7 +4246,7 @@ font-weight: bold;
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`sample_growth_tb`</span> to examine the ratio of log growth in the first year to log growth over the full two years for firms whose 2010–2012 log growth exceeds a threshold.</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>Examine whether the ratio exhibits a U-shape concentrated near zero and one, as predicted by subexponentiality.</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>In relation to the predictions of subexponentiality, examine whether the ratio exhibits a U-shape, with concentrations near zero and one.</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Data preparation and ratio construction</span></span>
 <span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -4283,7 +4283,7 @@ font-weight: bold;
 <span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Ratio distributions by threshold</span></span>
 <span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>Set 18 threshold values $u$ from 0.1 to 1.8 in increments of 0.1.</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>Set threshold values $u$ from 0.1 to 1.8 in increments of 0.1.</span>
 <span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>For each threshold, select firms whose two-year growth satisfies $g_{12,10}&gt;u$ and create a histogram after excluding observations with ratios exactly equal to zero or one.</span>
 <span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>Restrict the horizontal axis to −0.3–1.3 using <span class="in">`xlim()`</span>.</span>
 <span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>

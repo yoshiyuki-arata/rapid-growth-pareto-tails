@@ -3653,7 +3653,7 @@ font-weight: bold;
 </header>
 
 
-<p>Load <code>sample_size_tb</code> and <code>sample_growth_tb</code> and calculate summary statistics for firm sales and growth rates. Summarize the natural logarithm of sales converted to yen by year, and summarize the saved <code>growth</code> variable by annual period.</p>
+<p>Load <code>sample_size_tb</code> and <code>sample_growth_tb</code> and calculate summary statistics for firm sales and growth rates. For firm sales, summarize the natural logarithm of sales after conversion to yen by year; for growth rates, summarize the saved <code>growth</code> variable by one-year period.</p>
 <section id="firm-sales" class="level2">
 <h2 class="anchored" data-anchor-id="firm-sales">1 Firm sales</h2>
 <p><strong>Setup and data loading</strong></p>
@@ -3664,7 +3664,7 @@ font-weight: bold;
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_light</span>())</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>board <span class="ot">&lt;-</span> <span class="fu">board_folder</span>(<span class="st">&quot;../Zipf_law_board_replicate_simulation&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Load sales data <code>sample_size_tb</code> without modification. Add beginning-of-period firm age <code>age</code> to <code>sample_growth_tb</code> as the beginning year extracted from period label <code>year</code> minus establishment year <code>birth_year</code>. Age is the difference between calendar years, without adjustment for the month or day of establishment.</p>
+<p>Load sales data <code>sample_size_tb</code> without modification. Add firm age <code>age</code> at the beginning of each period to <code>sample_growth_tb</code>, calculated as the beginning year extracted from period label <code>year</code> minus establishment year <code>birth_year</code>. Age is the difference between calendar years, without adjustment for the month or day of establishment.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sample_size_tb <span class="ot">&lt;-</span> board <span class="sc">|&gt;</span> <span class="fu">pin_read</span>(<span class="st">&quot;sample_size_tb&quot;</span>, <span class="at">type =</span> <span class="st">&quot;qs2&quot;</span>) </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -3701,7 +3701,7 @@ font-weight: bold;
 </section>
 <section id="growth-rates" class="level2">
 <h2 class="anchored" data-anchor-id="growth-rates">2 Growth rates</h2>
-<p>Extract the end and beginning years from period label <code>year</code> and retain annual growth rates only, where the difference between the years is one. Select observations meeting the following conditions.</p>
+<p>Retain only one-year growth rates. Select observations meeting the following conditions.</p>
 <ul>
 <li>Beginning-of-period sales <code>pre_sale</code> of at least <span class="math inline">\(4.0 \times 10^4\)</span><br>
 With sales measured in thousands of yen, this corresponds to at least 40 million yen.</li>
@@ -3742,7 +3742,7 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 </section>
 <section id="latex-table-output" class="level2">
 <h2 class="anchored" data-anchor-id="latex-table-output">3 LaTeX table output</h2>
-<p>Format the summaries in LaTeX using the shared function <code>write_summary_tex()</code>. Leave the summary values unchanged; format counts as integers and other statistics to three decimal places only when producing output. Display missing values as <code>--</code>.</p>
+<p>Format the summaries in LaTeX using the shared function <code>write_summary_tex()</code>. Display missing values as <code>--</code>.</p>
 <p>Use the column headings Year, N, Mean, Std. Dev., 1st Quartile, Median, and 3rd Quartile in both tables.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave summary values unchanged and adjust displayed precision only for table output.</span></span>
@@ -3800,7 +3800,6 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 <span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>For the growth table, convert period labels such as <code>g_11_10</code> to <code>2010--11</code> to display the period dash in LaTeX.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_summary_tex</span>(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  summ_stat_size_tb,</span>
@@ -4296,7 +4295,7 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>Load <span class="in">`sample_size_tb`</span> and <span class="in">`sample_growth_tb`</span> and calculate summary statistics for firm sales and growth rates.</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>Summarize the natural logarithm of sales converted to yen by year, and summarize the saved <span class="in">`growth`</span> variable by annual period.</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>For firm sales, summarize the natural logarithm of sales after conversion to yen by year; for growth rates, summarize the saved <span class="in">`growth`</span> variable by one-year period.</span>
 <span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1 Firm sales</span></span>
 <span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -4312,7 +4311,7 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 <span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>Load sales data <span class="in">`sample_size_tb`</span> without modification.</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>Add beginning-of-period firm age <span class="in">`age`</span> to <span class="in">`sample_growth_tb`</span> as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>Add firm age <span class="in">`age`</span> at the beginning of each period to <span class="in">`sample_growth_tb`</span>, calculated as the beginning year extracted from period label <span class="in">`year`</span> minus establishment year <span class="in">`birth_year`</span>.</span>
 <span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>Age is the difference between calendar years, without adjustment for the month or day of establishment.</span>
 <span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
@@ -4352,7 +4351,7 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 <span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2 Growth rates </span></span>
 <span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>Extract the end and beginning years from period label <span class="in">`year`</span> and retain annual growth rates only, where the difference between the years is one.</span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>Retain only one-year growth rates.</span>
 <span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>Select observations meeting the following conditions.</span>
 <span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Beginning-of-period sales <span class="in">`pre_sale`</span> of at least $4.0 \times 10^4$  </span>
@@ -4390,92 +4389,90 @@ Exclude <code>NA</code>, <code>NaN</code>, and positive or negative infinity.</l
 <span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 LaTeX table output</span></span>
 <span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>Format the summaries in LaTeX using the shared function <span class="in">`write_summary_tex()`</span>.</span>
-<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a>Leave the summary values unchanged; format counts as integers and other statistics to three decimal places only when producing output.</span>
-<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>Display missing values as <span class="in">`--`</span>.</span>
-<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a>Use the column headings Year, N, Mean, Std. Dev., 1st Quartile, Median, and 3rd Quartile in both tables.</span>
-<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave summary values unchanged and adjust displayed precision only for table output.</span></span>
-<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>write_summary_tex <span class="ot">&lt;-</span> <span class="cf">function</span>(data, file) {</span>
-<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(data)[</span>
-<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>    , <span class="fu">c</span>(<span class="st">&quot;year&quot;</span>, <span class="st">&quot;count&quot;</span>, <span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;q1&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;q3&quot;</span>)</span>
-<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>  ]</span>
-<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.character</span>(x<span class="sc">$</span>year)</span>
-<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>count <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(x<span class="sc">$</span>count), <span class="st">&quot;--&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%.0f&quot;</span>, x<span class="sc">$</span>count))</span>
-<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (column <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;q1&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;q3&quot;</span>)) {</span>
-<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>    x[[column]] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(x[[column]]), <span class="st">&quot;--&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>, x[[column]])</span>
-<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fix the saved table format to LaTeX, including when rendering HTML.</span></span>
-<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>  table_tex <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span></span>
-<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kbl</span>(</span>
-<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>      <span class="at">format =</span> <span class="st">&quot;latex&quot;</span>,</span>
-<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>      <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>      <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>      <span class="at">escape =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>      <span class="at">align =</span> <span class="fu">c</span>(<span class="st">&quot;l&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;r&quot;</span>, <span class="dv">6</span>)),</span>
-<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(</span>
-<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Year&quot;</span>, <span class="st">&quot;N&quot;</span>, <span class="st">&quot;Mean&quot;</span>, <span class="st">&quot;Std. Dev.&quot;</span>,</span>
-<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;1st Quartile&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;3rd Quartile&quot;</span></span>
-<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>      <span class="at">linesep =</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>(</span>
-<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>      <span class="at">latex_options =</span> <span class="st">&quot;striped&quot;</span>,</span>
-<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a>      <span class="at">stripe_color =</span> <span class="st">&quot;gray!10&quot;</span>,</span>
-<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>      <span class="at">stripe_index =</span> <span class="fu">which</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(x)) <span class="sc">%%</span> <span class="dv">2</span>L <span class="sc">==</span> <span class="dv">1</span>L),</span>
-<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>      <span class="at">full_width =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Specify the table environment and centering in the paper itself.</span></span>
-<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="st">&quot;left&quot;</span>,</span>
-<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>      <span class="at">font_size =</span> <span class="dv">10</span></span>
-<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeLines</span>(</span>
-<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(</span>
-<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">begingroup&quot;</span>,</span>
-<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">renewcommand{</span><span class="sc">\\</span><span class="st">arraystretch}{1.12}&quot;</span>,</span>
-<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">aboverulesep}{0.5ex}&quot;</span>,</span>
-<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">belowrulesep}{0.5ex}&quot;</span>,</span>
-<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">heavyrulewidth}{0.8pt}&quot;</span>,</span>
-<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">lightrulewidth}{0.4pt}&quot;</span>,</span>
-<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.character</span>(table_tex),</span>
-<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">endgroup&quot;</span></span>
-<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>    <span class="at">con =</span> file,</span>
-<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>    <span class="at">useBytes =</span> <span class="cn">TRUE</span></span>
-<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a>Display missing values as <span class="in">`--`</span>.</span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>Use the column headings Year, N, Mean, Std. Dev., 1st Quartile, Median, and 3rd Quartile in both tables.</span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave summary values unchanged and adjust displayed precision only for table output.</span></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a>write_summary_tex <span class="ot">&lt;-</span> <span class="cf">function</span>(data, file) {</span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(data)[</span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a>    , <span class="fu">c</span>(<span class="st">&quot;year&quot;</span>, <span class="st">&quot;count&quot;</span>, <span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;q1&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;q3&quot;</span>)</span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.character</span>(x<span class="sc">$</span>year)</span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>count <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(x<span class="sc">$</span>count), <span class="st">&quot;--&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%.0f&quot;</span>, x<span class="sc">$</span>count))</span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (column <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;q1&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;q3&quot;</span>)) {</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>    x[[column]] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>      <span class="fu">is.na</span>(x[[column]]), <span class="st">&quot;--&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>, x[[column]])</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fix the saved table format to LaTeX, including when rendering HTML.</span></span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>  table_tex <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span></span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kbl</span>(</span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>      <span class="at">format =</span> <span class="st">&quot;latex&quot;</span>,</span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>      <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>      <span class="at">row.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>      <span class="at">escape =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>      <span class="at">align =</span> <span class="fu">c</span>(<span class="st">&quot;l&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;r&quot;</span>, <span class="dv">6</span>)),</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Year&quot;</span>, <span class="st">&quot;N&quot;</span>, <span class="st">&quot;Mean&quot;</span>, <span class="st">&quot;Std. Dev.&quot;</span>,</span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;1st Quartile&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;3rd Quartile&quot;</span></span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>      <span class="at">linesep =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>(</span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>      <span class="at">latex_options =</span> <span class="st">&quot;striped&quot;</span>,</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>      <span class="at">stripe_color =</span> <span class="st">&quot;gray!10&quot;</span>,</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a>      <span class="at">stripe_index =</span> <span class="fu">which</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(x)) <span class="sc">%%</span> <span class="dv">2</span>L <span class="sc">==</span> <span class="dv">1</span>L),</span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>      <span class="at">full_width =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Specify the table environment and centering in the paper itself.</span></span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="st">&quot;left&quot;</span>,</span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a>      <span class="at">font_size =</span> <span class="dv">10</span></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeLines</span>(</span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(</span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">begingroup&quot;</span>,</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">renewcommand{</span><span class="sc">\\</span><span class="st">arraystretch}{1.12}&quot;</span>,</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">aboverulesep}{0.5ex}&quot;</span>,</span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">belowrulesep}{0.5ex}&quot;</span>,</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">heavyrulewidth}{0.8pt}&quot;</span>,</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">setlength{</span><span class="sc">\\</span><span class="st">lightrulewidth}{0.4pt}&quot;</span>,</span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.character</span>(table_tex),</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;</span><span class="sc">\\</span><span class="st">endgroup&quot;</span></span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>    <span class="at">con =</span> file,</span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>    <span class="at">useBytes =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>For the growth table, convert period labels such as <span class="in">`g_11_10`</span> to <span class="in">`2010--11`</span> to display the period dash in LaTeX.</span>
-<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a><span class="fu">write_summary_tex</span>(</span>
-<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>  summ_stat_size_tb,</span>
-<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;summ_stat_size.tex&quot;</span>)</span>
-<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>growth_for_tex <span class="ot">&lt;-</span> summ_stat_growth_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>    <span class="at">year =</span> <span class="fu">str_replace</span>(year, <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span>)</span>
-<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a><span class="fu">write_summary_tex</span>(</span>
-<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>  growth_for_tex,</span>
-<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;summ_stat_growth.tex&quot;</span>)</span>
-<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a><span class="fu">write_summary_tex</span>(</span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>  summ_stat_size_tb,</span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;summ_stat_size.tex&quot;</span>)</span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>growth_for_tex <span class="ot">&lt;-</span> summ_stat_growth_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>    <span class="at">year =</span> <span class="fu">str_replace</span>(year, <span class="st">&quot;^g_(</span><span class="sc">\\</span><span class="st">d{2})_(</span><span class="sc">\\</span><span class="st">d{2})$&quot;</span>, <span class="st">&quot;20</span><span class="sc">\\</span><span class="st">2--</span><span class="sc">\\</span><span class="st">1&quot;</span>)</span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a><span class="fu">write_summary_tex</span>(</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>  growth_for_tex,</span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="st">&quot;latex&quot;</span>, <span class="st">&quot;summ_stat_growth.tex&quot;</span>)</span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
