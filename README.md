@@ -10,7 +10,7 @@ Overviews of each analysis, along with links to the corresponding computational 
 
 ## Requirements
 
-R (version 4.1 or later), RStudio, Quarto, and the following R packages are required.
+R (version 4.1 or later), Quarto, and the following R packages are required.
 
 ```r
 install.packages(c(
