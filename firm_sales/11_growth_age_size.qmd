@@ -45,7 +45,7 @@ For periods starting in 2010, select observations with industry codes `ind_class
 Classify beginning-of-period sales and age as follows.
 
 * Sales: classify positive beginning-of-period sales `pre_sale`, measured in thousands of yen, using boundaries $10^3,10^{3.5},\ldots,10^8$
-* Age: classify ages into 0–5, 6–10, subsequent five-year intervals through 71–75, and 76 or older  
+* Age: classify beginning-of-period ages into 0–4, 5–9, subsequent five-year intervals through 70–74, and 75 or older  
   Assign missing or negative ages to `age_other`.
 
 
@@ -69,9 +69,9 @@ size_depend_tb <- sample_growth_tb |>
       is.na(age) | age < 0, "age_other",
       cut(
         age,
-        breaks = c(0, 5, seq(10, 75, by = 5), Inf),
-        labels = c("age_05", str_c("age_", seq(10, 75, by = 5)), "age_75_over"),
-        right = T, include.lowest = T) |> as.character())) |> 
+        breaks = c(seq(0, 75, by = 5), Inf),
+        labels = c(str_c("age_", str_pad(seq(0, 70, by = 5), 2, pad = "0")), "age_75_plus"),
+        right = FALSE, include.lowest = TRUE) |> as.character())) |> 
   filter(!is.na(growth), !is.na(size_class), !is.na(age_class))
 
 growth_2010_tb <- size_depend_tb |>
@@ -88,11 +88,11 @@ Display the sales-class boundaries in yen by using labels equal to 1000 times th
 ```{r}
 
 age_class_labels <- c(
-  "age_05" = "0–5",   "age_10" = "6–10",  "age_15" = "11–15", "age_20" = "16–20",
-  "age_25" = "21–25", "age_30" = "26–30", "age_35" = "31–35", "age_40" = "36–40",
-  "age_45" = "41–45", "age_50" = "46–50", "age_55" = "51–55", "age_60" = "56–60",
-  "age_65" = "61–65", "age_70" = "66–70", "age_75" = "71–75", 
-  "age_75_over" = "76+"
+  "age_00" = "0–4",   "age_05" = "5–9",   "age_10" = "10–14", "age_15" = "15–19",
+  "age_20" = "20–24", "age_25" = "25–29", "age_30" = "30–34", "age_35" = "35–39",
+  "age_40" = "40–44", "age_45" = "45–49", "age_50" = "50–54", "age_55" = "55–59",
+  "age_60" = "60–64", "age_65" = "65–69", "age_70" = "70–74",
+  "age_75_plus" = "75+"
 )
 
 size_class_labels <- c(
@@ -146,7 +146,7 @@ ggsave(filename = "growth_df_size.png", path = "graph")
 **Densities by age class**
 
 Exclude `age_other` from the common density sample `density_tb` and compare growth densities by age class.
-Include `age_05` (ages 0–5) and impose no additional sales-class restrictions.
+Include `age_00` (ages 0–4) and impose no additional sales-class restrictions.
 Use the same scales and display ranges as in the sales-class figure.
 
 ```{r}
@@ -172,7 +172,7 @@ ggsave(filename = "growth_df_age.png", path = "graph")
 
 ## 3 Mean excess functions with sales and age restrictions
 
-From `growth_2010_tb`, select observations with beginning-of-period sales of at least $10^{4.5}$ in thousands of yen, excluding `age_other` and `age_05`.
+From `growth_2010_tb`, select observations with beginning-of-period sales of at least $10^{4.5}$ in thousands of yen and beginning-of-period age of at least 5 years (excluding `age_other` and `age_00`, the ages 0–4 class).
 Do not apply the density-plot restrictions excluding zero growth and requiring an absolute value below 3.5.
 
 Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the mean excess function as follows.
@@ -187,7 +187,7 @@ Display a horizontal range of 0.1–4 and a vertical range of 0–1.
 
 growth_2010_tb |>
   filter(pre_sale >= 10^{4.5}, 
-         age_class != "age_other", age_class != "age_05") |> 
+         age_class != "age_other", age_class != "age_00") |> 
   arrange(desc(growth)) |> 
   group_by(size_class) |> 
   mutate(m_excess = lag(cummean(growth)) - growth) |> 

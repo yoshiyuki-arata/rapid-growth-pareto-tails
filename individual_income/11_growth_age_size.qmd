@@ -44,7 +44,7 @@ Classify beginning-of-period income and age as follows, and extract 2014–2015 
 
 * Income: classify positive beginning-of-period income `pre_income` in yen using boundaries $10^5,10^{5.5},\ldots,10^9$  
   Each class excludes its lower bound and includes its upper bound. Assign observations above $10^9$ to `size_9_over` and missing or nonpositive values to `size_other`.
-* Age: classify ages into 0–20, 21–25, subsequent five-year intervals through 76–80, and 81 or older  
+* Age: classify beginning-of-period ages into 0–19, 20–24, 25–29, subsequent five-year intervals through 75–79, and 80 or older  
   Assign missing or negative values to `age_other`.
 
 Store the 2014–2015 data in `growth_2014_tb`. For the density-plot data `density_tb`, exclude zero growth and growth with an absolute value of at least 3.5.
@@ -69,8 +69,8 @@ size_depend_tb <- sample_growth_tb |>
       cut(
         age,
         breaks = c(0, seq(20, 80, by = 5), Inf),
-        labels = c("age_20_below", str_c("age_", seq(25, 80, by = 5)), "age_80_over"),
-        right = T, include.lowest = T) |> as.character())) |> 
+        labels = c("age_20_below", str_c("age_", seq(20, 75, by = 5)), "age_80_plus"),
+        right = FALSE, include.lowest = TRUE) |> as.character())) |> 
   filter(!is.na(growth), !is.na(size_class), !is.na(age_class))
 
 growth_2014_tb <- size_depend_tb |>
@@ -85,20 +85,20 @@ density_tb <- growth_2014_tb |>
 #| layout-ncol: 2
 
 age_class_labels <- c(
-  "age_20_below" = "0–20",
-  "age_25"       = "21–25",
-  "age_30"       = "26–30",  # 26–30 rather than 25–29
-  "age_35"       = "31–35",
-  "age_40"       = "36–40",
-  "age_45"       = "41–45",
-  "age_50"       = "46–50",
-  "age_55"       = "51–55",
-  "age_60"       = "56–60",
-  "age_65"       = "61–65",
-  "age_70"       = "66–70",
-  "age_75"       = "71–75",
-  "age_80"       = "76–80",
-  "age_80_over"  = "81+",
+  "age_20_below" = "0–19",
+  "age_20"       = "20–24",
+  "age_25"       = "25–29",
+  "age_30"       = "30–34",
+  "age_35"       = "35–39",
+  "age_40"       = "40–44",
+  "age_45"       = "45–49",
+  "age_50"       = "50–54",
+  "age_55"       = "55–59",
+  "age_60"       = "60–64",
+  "age_65"       = "65–69",
+  "age_70"       = "70–74",
+  "age_75"       = "75–79",
+  "age_80_plus"  = "80+",
   "age_other"    = "Other"
 )
 
@@ -174,7 +174,7 @@ ggsave(filename = "growth_df_age_income.png", path = graph_dir)
 
 ## 3 Mean excess functions with income and age restrictions
 
-From `growth_2014_tb`, select observations with beginning-of-period income of at least $10^{6.5}$ yen, outside `size_9_over`, and beginning-of-period age between 26 and 60, inclusive.
+From `growth_2014_tb`, select observations with beginning-of-period income of at least $10^{6.5}$ yen, outside `size_9_over`, and beginning-of-period age between 25 and 60, inclusive.
 Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the following expression.
 
 $$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$
@@ -188,7 +188,7 @@ Include growth rates outside the displayed range in the calculations, and displa
 growth_2014_tb |>
   filter(
     pre_income >= 10^6.5, size_class != "size_9_over",
-    age >= 26, age <= 60
+    age >= 25, age <= 60
   ) |> 
   arrange(desc(growth)) |> 
   group_by(size_class) |> 
