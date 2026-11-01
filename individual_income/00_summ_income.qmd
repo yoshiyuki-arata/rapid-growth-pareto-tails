@@ -37,27 +37,27 @@ Both the output directory for 01 and the input directory for 02–11 are `../inc
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Data preparation and summary statistics</th></tr>
 <tr><td>01 Synthetic data generation</td><td>Generate individual attributes, an income panel for 2014–2020, and log growth rates</td><td><a href="01_data_simulation.qmd">QMD</a></td><td><a href="01_data_simulation.html">HTML</a></td></tr>
-<tr><td>02 Summary statistics</td><td>Summary statistics for log income in 2014–2020 and annual growth rates and growth rates over periods starting in 2014</td><td><a href="02_summ_stat.qmd">QMD</a></td><td><a href="02_summ_stat.html">HTML</a></td></tr>
+<tr><td>02 Summary statistics</td><td>Summary statistics for log income in 2014–2020 and annual growth rates and growth rates over periods starting in 2014 (Table 2)</td><td><a href="02_summ_stat.qmd">QMD</a></td><td><a href="02_summ_stat.html">HTML</a></td></tr>
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Income distribution and age</th></tr>
-<tr><td>03 Income distribution by age</td><td>Age distribution, income distributions by year, and income distributions, Q-Q plots, and age composition by income threshold for ages 26–60 in 2020</td><td><a href="03_dist_by_age.qmd">QMD</a></td><td><a href="03_dist_by_age.html">HTML</a></td></tr>
+<tr><td>03 Income distribution by age</td><td>Age distribution, income distributions by year, and income distributions, Q-Q plots, and age composition by income threshold for ages 26–60 in 2020 (Figures 4, 5, 8(b)) (Figures 5 and 7 in the Appendix)</td><td><a href="03_dist_by_age.qmd">QMD</a></td><td><a href="03_dist_by_age.html">HTML</a></td></tr>
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Growth dependence and distributions</th></tr>
-<tr><td>04 Growth dependence</td><td>Spearman rank correlations across six annual growth periods, a tail dependence measure for two consecutive periods, and the cumulative mean of nonnegative growth in the following period</td><td><a href="04_random_walk.qmd">QMD</a></td><td><a href="04_random_walk.html">HTML</a></td></tr>
-<tr><td>05 Growth distributions</td><td>Densities and mean excess functions for annual and cumulative log growth rates starting in 2014</td><td><a href="05_growth_dist.qmd">QMD</a></td><td><a href="05_growth_dist.html">HTML</a></td></tr>
-<tr><td>06 Girard's method</td><td>Estimate tail parameters, extreme quantiles, and tail probabilities from growth rates for 2019–2020</td><td><a href="06_Girard.qmd">QMD</a></td><td><a href="06_Girard.html">HTML</a></td></tr>
+<tr><td>04 Growth dependence</td><td>Spearman rank correlations across six annual growth periods, a tail dependence measure for two consecutive periods, and the cumulative mean of nonnegative growth in the following period (Table 4, Figure 10)</td><td><a href="04_random_walk.qmd">QMD</a></td><td><a href="04_random_walk.html">HTML</a></td></tr>
+<tr><td>05 Growth distributions</td><td>Densities and mean excess functions for annual and cumulative log growth rates starting in 2014 (Figures 15 and 16) (Figures 6(a,b) and 8(a,b) in the Appendix)</td><td><a href="05_growth_dist.qmd">QMD</a></td><td><a href="05_growth_dist.html">HTML</a></td></tr>
+<tr><td>06 Girard's method</td><td>Estimate tail parameters, extreme quantiles, and tail probabilities from growth rates for 2019–2020 (Figure 17)</td><td><a href="06_Girard.qmd">QMD</a></td><td><a href="06_Girard.html">HTML</a></td></tr>
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Initial income and high-growth groups</th></tr>
-<tr><td>07 Initial income distribution</td><td>Compare log income distributions and mean excess functions at age 25 across 2014–2020</td><td><a href="07_init_size.qmd">QMD</a></td><td><a href="07_init_size.html">HTML</a></td></tr>
-<tr><td>08 Tail index</td><td>Hill estimation for income ratios over 2014–2020, income at age 25 in 2020, and income by age for ages 25–60 in 2020</td><td><a href="08_tail_slope.qmd">QMD</a></td><td><a href="08_tail_slope.html">HTML</a></td></tr>
-<tr><td>09 Minimum growth rate</td><td>Classify high-growth groups using six-year growth and compare distributions and summary statistics of minimum annual growth rates</td><td><a href="09_k-1_smallest.qmd">QMD</a></td><td><a href="09_k-1_smallest.html">HTML</a></td></tr>
-<tr><td>10 U-shape</td><td>Compare the ratio of log growth over the first three years to cumulative log growth over 2014–2020</td><td><a href="10_u-shape.qmd">QMD</a></td><td><a href="10_u-shape.html">HTML</a></td></tr>
+<tr><td>07 Initial income distribution</td><td>Compare log income distributions and mean excess functions at age 25 across 2014–2020 (Figure 19)</td><td><a href="07_init_size.qmd">QMD</a></td><td><a href="07_init_size.html">HTML</a></td></tr>
+<tr><td>08 Tail index</td><td>Hill estimation for income ratios over 2014–2020, income at age 25 in 2020, and income by age for ages 25–60 in 2020 (Figure 20(b))</td><td><a href="08_tail_slope.qmd">QMD</a></td><td><a href="08_tail_slope.html">HTML</a></td></tr>
+<tr><td>09 Minimum growth rate</td><td>Classify high-growth groups using six-year growth and compare distributions and summary statistics of minimum annual growth rates (Figure 23(b)) (Figures 6(c) and 8(c) in the Appendix)</td><td><a href="09_k-1_smallest.qmd">QMD</a></td><td><a href="09_k-1_smallest.html">HTML</a></td></tr>
+<tr><td>10 U-shape</td><td>Compare the ratio of log growth over the first three years to cumulative log growth over 2014–2020 (Figure 22)</td><td><a href="10_u-shape.qmd">QMD</a></td><td><a href="10_u-shape.html">HTML</a></td></tr>
 </tbody>
 <tbody>
 <tr><th colspan="4" scope="rowgroup" style="background-color: #edf2f7; padding: 0.65em 0.5em; border-top: 2px solid #cbd5e1;">Relationships between income, age, and growth</th></tr>
-<tr><td>11 Growth, age, and beginning-of-period income</td><td>Compare 2014–2015 growth by income and age classes and plot mean excess functions</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
+<tr><td>11 Growth, age, and beginning-of-period income</td><td>Compare 2014–2015 growth by income and age classes and plot mean excess functions (Figures 3 and 4 in the Appendix)</td><td><a href="11_growth_age_size.qmd">QMD</a></td><td><a href="11_growth_age_size.html">HTML</a></td></tr>
 </tbody>
 </table>
