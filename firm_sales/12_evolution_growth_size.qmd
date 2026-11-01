@@ -128,7 +128,7 @@ Since the variance of a symmetric Weibull variable is $\Gamma(1+2/\alpha)$, over
 
 weibull_tb |>  
   filter(abs(sum_x) < 30) |>  
-  mutate(year = str_pad(year, width = 2, pad = "0")) |>  
+  mutate(year = factor(year, levels = 1:12)) |>  
 ggplot(aes(sum_x, color = year)) + 
   geom_line(stat = "density", aes(y = after_stat(density))) + 
   scale_color_viridis_d(option = "C") + 
@@ -142,7 +142,7 @@ ggsave(filename = "Weibull_sum.png", path = "graph")
 
 weibull_tb |> 
   filter(abs(sum_x) < 50) |> 
-  mutate(year = str_pad(year, width = 2, pad = "0")) |> 
+  mutate(year = factor(year, levels = 1:12)) |> 
 ggplot(aes(sum_x, color = year)) + 
   geom_line(stat = "density", aes(y = after_stat(density))) + 
   geom_function(fun = \(x) dnorm(x, sd = sqrt(12 * gamma(1 + 2 / 0.7))), 
