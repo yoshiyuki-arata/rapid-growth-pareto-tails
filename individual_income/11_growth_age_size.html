@@ -3774,18 +3774,19 @@ Assign missing or negative values to <code>age_other</code>.</li>
 <p>Exclude <code>age_other</code> from the common density sample <code>density_tb</code> and compare growth densities by age class. Apply no additional income-class restrictions, and use the same scales and display ranges as in the income-class figure.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>density_tb <span class="sc">|&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(growth, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.0</span>, <span class="fl">2.0</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="fl">2.5</span>}, <span class="dv">10</span><span class="sc">^</span><span class="dv">1</span>)) <span class="sc">+</span> </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Growth rate&quot;</span>, </span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Probability density (log scale)&quot;</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>) </span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;growth_df_age_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_class =</span> <span class="fu">factor</span>(age_class, <span class="at">levels =</span> <span class="fu">names</span>(age_class_labels))) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(growth, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.0</span>, <span class="fl">2.0</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="fl">2.5</span>}, <span class="dv">10</span><span class="sc">^</span><span class="dv">1</span>)) <span class="sc">+</span> </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Growth rate&quot;</span>, </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Probability density (log scale)&quot;</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>) </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;growth_df_age_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
@@ -4443,59 +4444,60 @@ Assign missing or negative values to <code>age_other</code>.</li>
 <span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>density_tb <span class="sc">|&gt;</span></span>
 <span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_class <span class="sc">!=</span> <span class="st">&quot;age_other&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(growth, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
-<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
-<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
-<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
-<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.0</span>, <span class="fl">2.0</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="fl">2.5</span>}, <span class="dv">10</span><span class="sc">^</span><span class="dv">1</span>)) <span class="sc">+</span> </span>
-<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Growth rate&quot;</span>, </span>
-<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Probability density (log scale)&quot;</span>,</span>
-<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>) </span>
-<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;growth_df_age_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span>
-<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Mean excess functions with income and age restrictions</span></span>
-<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>From <span class="in">`growth_2014_tb`</span>, select observations with beginning-of-period income of at least $10^{6.5}$ yen, outside <span class="in">`size_9_over`</span>, and beginning-of-period age between 25 and 60, inclusive.</span>
-<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the following expression.</span>
-<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>$$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$</span>
-<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a>Use colors to distinguish income classes.</span>
-<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a>Include growth rates outside the displayed range in the calculations, and display a horizontal range of 0.1–4 and a vertical range of 0–1.</span>
-<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>growth_2014_tb <span class="sc">|&gt;</span></span>
-<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>    pre_income <span class="sc">&gt;=</span> <span class="dv">10</span><span class="sc">^</span><span class="fl">6.5</span>, size_class <span class="sc">!=</span> <span class="st">&quot;size_9_over&quot;</span>,</span>
-<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>    age <span class="sc">&gt;=</span> <span class="dv">25</span>, age <span class="sc">&lt;=</span> <span class="dv">60</span></span>
-<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(growth)) <span class="sc">|&gt;</span> </span>
-<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(size_class) <span class="sc">|&gt;</span> </span>
-<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">m_excess =</span> <span class="fu">lag</span>(<span class="fu">cummean</span>(growth)) <span class="sc">-</span> growth) <span class="sc">|&gt;</span> </span>
-<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(growth, m_excess, <span class="at">color =</span> size_class)) <span class="sc">+</span></span>
-<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_scattermore</span>(<span class="at">pointsize =</span> <span class="fl">1.2</span>) <span class="sc">+</span> </span>
-<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
-<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
-<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> \(x) <span class="fu">parse</span>(<span class="at">text =</span> size_class_labels[x])</span>
-<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
-<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="dv">4</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">1.0</span>)) <span class="sc">+</span> </span>
-<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Threshold u&quot;</span>, </span>
-<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Mean excess&quot;</span>,</span>
-<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Size&quot;</span></span>
-<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;mean_excess_relevant_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span>
-<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_class =</span> <span class="fu">factor</span>(age_class, <span class="at">levels =</span> <span class="fu">names</span>(age_class_labels))) <span class="sc">|&gt;</span></span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(growth, <span class="at">color =</span> age_class)) <span class="sc">+</span> </span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> age_class_labels</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.0</span>, <span class="fl">2.0</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">10</span><span class="sc">^</span>{<span class="sc">-</span><span class="fl">2.5</span>}, <span class="dv">10</span><span class="sc">^</span><span class="dv">1</span>)) <span class="sc">+</span> </span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Growth rate&quot;</span>, </span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Probability density (log scale)&quot;</span>,</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Age&quot;</span>) </span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;growth_df_age_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3 Mean excess functions with income and age restrictions</span></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>From <span class="in">`growth_2014_tb`</span>, select observations with beginning-of-period income of at least $10^{6.5}$ yen, outside <span class="in">`size_9_over`</span>, and beginning-of-period age between 25 and 60, inclusive.</span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>Let $g_{(i)}$ denote growth rates in descending order within each class. Calculate the following expression.</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>$$m_{\mathrm{excess},i}=\frac{1}{i-1}\sum_{j=1}^{i-1}g_{(j)}-g_{(i)}, \qquad i\geq2.$$</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a>Use colors to distinguish income classes.</span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>Include growth rates outside the displayed range in the calculations, and display a horizontal range of 0.1–4 and a vertical range of 0–1.</span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>growth_2014_tb <span class="sc">|&gt;</span></span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>    pre_income <span class="sc">&gt;=</span> <span class="dv">10</span><span class="sc">^</span><span class="fl">6.5</span>, size_class <span class="sc">!=</span> <span class="st">&quot;size_9_over&quot;</span>,</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>    age <span class="sc">&gt;=</span> <span class="dv">25</span>, age <span class="sc">&lt;=</span> <span class="dv">60</span></span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(growth)) <span class="sc">|&gt;</span> </span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(size_class) <span class="sc">|&gt;</span> </span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">m_excess =</span> <span class="fu">lag</span>(<span class="fu">cummean</span>(growth)) <span class="sc">-</span> growth) <span class="sc">|&gt;</span> </span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(growth, m_excess, <span class="at">color =</span> size_class)) <span class="sc">+</span></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_scattermore</span>(<span class="at">pointsize =</span> <span class="fl">1.2</span>) <span class="sc">+</span> </span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">option =</span> <span class="st">&quot;C&quot;</span>,</span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> \(x) <span class="fu">parse</span>(<span class="at">text =</span> size_class_labels[x])</span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="dv">4</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">1.0</span>)) <span class="sc">+</span> </span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Threshold u&quot;</span>, </span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Mean excess&quot;</span>,</span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Size&quot;</span></span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">&quot;mean_excess_relevant_income.png&quot;</span>, <span class="at">path =</span> graph_dir)</span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

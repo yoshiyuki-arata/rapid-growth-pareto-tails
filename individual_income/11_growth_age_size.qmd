@@ -157,6 +157,7 @@ Apply no additional income-class restrictions, and use the same scales and displ
 
 density_tb |>
   filter(age_class != "age_other") |>
+  mutate(age_class = factor(age_class, levels = names(age_class_labels))) |>
 ggplot() + 
   geom_density(aes(growth, color = age_class)) + 
   scale_color_viridis_d(
