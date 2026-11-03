@@ -38,6 +38,7 @@ Calculate firm age `age` as observation year `year` minus establishment year `bi
 * Firm age is five.
 * Observation year is from 2010 through 2020.
 * The first two digits of industry code `ind_class` are 01–61 or 68–92.
+* Sales `sale` are positive.
 
 Original sales `sale` are measured in thousands of yen; multiply by 1000 to convert to yen when creating each figure.
 
@@ -50,6 +51,7 @@ sample_size_tb <- board |> pin_read("sample_size_tb", type = "qs2") |>
 
 init_size_tb <- sample_size_tb |> 
   filter(age == 5, 
+         sale > 0,
          as.numeric(year) >= 2010, as.numeric(year) <= 2020, 
          str_sub(ind_class, 1,2) %in% str_pad(c(1:61, 68:92), 2, pad = 0)) 
 
